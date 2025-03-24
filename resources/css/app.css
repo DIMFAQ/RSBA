@@ -1,0 +1,40 @@
+@import './loader.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+
+/* Scrollbar */
+@layer utilities {
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
+    }
+}
+
+
+#sidebar.hidden {
+    display: none;
+}
+
+#main-content.w-full {
+    width: 100%;
+}
+
+
+/* filament table reduce rows padding */
+.fi-ta-ctn .py-4 {
+    padding-top: .625rem !important;
+    padding-bottom: .625rem !important;
+}

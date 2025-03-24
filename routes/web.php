@@ -1,0 +1,63 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('guest')
+    ->group(function () {
+        Route::get('/', App\Livewire\Auth\Login::class)->name('login');
+
+        Route::get('/register', App\Livewire\Auth\Register::class)->name('register');
+    });
+
+Route::middleware('auth')
+    ->prefix('profile')
+    ->name('profile.')
+    ->group(function () {
+
+        Route::get('/', App\Livewire\Profile\Index::class)->name('index');
+        Route::get('/pesan', App\Livewire\Profile\Index::class)->name('pesan');
+        Route::get('/notif', App\Livewire\Profile\Index::class)->name('notif');
+        Route::get('/setting', App\Livewire\Profile\Index::class)->name('setting');
+    });
+
+Route::prefix('dashboard')
+    ->name('dashboard.')
+    ->group(function () {
+        Route::get('/kamar', App\Livewire\Dashboard\Kamar::class)->name('kamar');
+    });
+
+
+Route::middleware('auth')
+    ->group(function () {
+
+        Route::get('/dashboard', App\Livewire\Dashboard\Home::class)->name('dashboard');
+    });
+
+
+Route::middleware('auth')
+    ->group(function () {
+
+        Route::get('/dashboard', App\Livewire\Dashboard\Home::class)->name('dashboard');
+    });
+
+// Administrator
+Route::middleware('auth')
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::prefix('user')
+            ->name('user.')
+            ->group(function () {
+                Route::get('/', App\Livewire\User\Index::class)->name('index');
+            });
+
+        Route::prefix('settings')
+            ->name('settings.')
+            ->group(function () {
+                Route::get('/menu', App\Livewire\Settings\Menu\Index::class)->name('menu');
+                Route::get('/perusahaan', App\Livewire\Dashboard\Home::class)->name('perusahaan');
+                Route::get('/role', App\Livewire\Dashboard\Home::class)->name('role');
+                Route::get('/permission', App\Livewire\Settings\Permission\Index::class)->name('permission');
+            });
+    });
