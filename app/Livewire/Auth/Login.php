@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Auth;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
-
+use Livewire\Attributes\Lazy;
 
 #[Title('Login')]
 #[Layout('components.layouts.guest')]
+#[Lazy]
 class Login extends Component
 {
     use Interactions;
@@ -39,12 +40,14 @@ class Login extends Component
             $this->authenticate();
             session()->regenerate();
 
-            $this->toast()
-                ->success('Selamat Datang!')
-                ->flash()
-                ->send();
+            if (Auth::user()) {
+                $this->toast()
+                    ->success('Selamat Datang!', Auth::user()->karyawan->nama)
+                    ->flash()
+                    ->send();
 
-            return $this->redirect(route('profile.index'), navigate: true);
+                return $this->redirect(route('profile.index'), navigate: true);
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->toast()
                 ->error('Email atau password salah!', trans('auth.failed'))

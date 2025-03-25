@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit.prevent='update' class="flex w-full flex-col gap-2">
+    <form wire:submit.prevent='update' class="flex w-full flex-col gap-2" autocomplete="off">
 
         <x-ts:input wire:model.defer='nama' placeholder="Nama" />
 

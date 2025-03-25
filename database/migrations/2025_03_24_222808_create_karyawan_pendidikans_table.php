@@ -11,9 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('karyawan_pendidikans', function (Blueprint $table) {
+        Schema::create('sdm_kary_pendidikan', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('karyawan_id');
+            $table->string('nama', 50);
+            $table->date('tahun_lulus');
+            $table->string('instansi', 100);
+            $table->string('gelar', 50)->nullable();
+            $table->enum('set_gelar', ['preffix', 'suffix'])->nullable(); //preffix = depan, suffix = belakang
+            $table->enum('tingkat', ['sd', 'smp', 'sma', 'd3', 'd4', 's1', 's2', 's3', 'dokter', 'spesialis', 'profesi', 'lain']);
             $table->timestamps();
+
+            $table->foreign('karyawan_id')->references('id')->on('sdm_karyawan')->onDelete('cascade');
         });
     }
 
@@ -22,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('karyawan_pendidikans');
+        Schema::dropIfExists('sdm_kary_pendidikan');
     }
 };

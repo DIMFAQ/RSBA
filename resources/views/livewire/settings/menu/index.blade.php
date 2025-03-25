@@ -10,7 +10,7 @@
         </div>
     @endcan
 
-    <div class="relative overflow-x-auto rounded-lg bg-white p-4">
+    <div class="relative items-center justify-center overflow-x-auto rounded-lg bg-white px-4 py-2">
         <livewire:Settings.Menu.MenuTable :key="Str::random()" />
     </div>
 

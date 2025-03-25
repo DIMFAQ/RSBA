@@ -9,7 +9,7 @@
     </div>
 
 
-    <div class="relative overflow-auto">
+    <div class="relative overflow-x-auto rounded-lg bg-white px-4 py-2">
         <livewire:Settings.Permission.PermissionTable :key="Str::random()" />
     </div>
 

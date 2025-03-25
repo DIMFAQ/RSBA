@@ -11,7 +11,7 @@
                 <x-ts:password wire:model.defer='password' label="Password" placeholder="Password" />
             </div>
             <div class="relative">
-                <x-ts:button type="submit" loading="authenticate" class="w-full">
+                <x-ts:button type="submit" loading="submit" class="w-full">
                     <x-icon name="tabler-key" class="size-4" />
                     Login
                 </x-ts:button>

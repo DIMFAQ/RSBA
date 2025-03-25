@@ -24,12 +24,23 @@ class Karyawan extends Model
         return $this->hasOne(User::class, 'karyawan_id');
     }
 
-    public function masaKerja(): Attribute
+    public function masakerja(): Attribute
     {
+
         return Attribute::make(
-            get: fn() => Carbon::parse($this->tgl_masuk)->diffInYears() . ' Tahun ' .
-                Carbon::parse($this->tgl_masuk)->diffInMonths() % 12 . ' Bulan ' .
-                Carbon::parse($this->tgl_masuk)->diffInDays() % 30 . ' Hari'
+            get: function () {
+                $tglMasuk = Carbon::parse($this->tgl_masuk);
+                $now = Carbon::now();
+
+                if ($tglMasuk->greaterThan($now)) {
+                    return 'Belum Masuk Kerja';
+                }
+
+                // set Different date
+                $diff = $tglMasuk->diff($now);
+
+                return  "{$diff->y} Tahun {$diff->m} Bulan {$diff->d} Hari";
+            }
         );
     }
 

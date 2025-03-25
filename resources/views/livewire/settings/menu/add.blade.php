@@ -6,7 +6,7 @@
         Ketika membuat menu baru, pastikan route tersedia.
     </div>
 
-    <form wire:submit.prevent='submit' class="mt-4 flex flex-col gap-2">
+    <form wire:submit.prevent='submit' class="mt-4 flex flex-col gap-2" autocomplete="off">
         <x-ts:input wire:model='nama' placeholder="Menu" />
         <div>
             <x-ts:input wire:model.live.debounce.300='route' placeholder="Route (Route Name)" />

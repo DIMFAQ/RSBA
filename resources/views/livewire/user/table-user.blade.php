@@ -1,7 +1,5 @@
-<div>
-    <div class="items-center px-4 py-2">
-        {{ $this->table }}
-    </div>
+<div class="flex flex-col">
+    {{ $this->table }}
 
     {{-- modal --}}
     <x-filament::modal id="set-user-role">
