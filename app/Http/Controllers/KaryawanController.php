@@ -9,7 +9,6 @@ use Illuminate\Database\Query\Builder;
 
 class KaryawanController extends Controller
 {
-
     // Cari Karyawan Untuk Registrasi
     public function register(Request $request)
     {
@@ -32,45 +31,5 @@ class KaryawanController extends Controller
 
         // return data
         return response()->json($karyawans);
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

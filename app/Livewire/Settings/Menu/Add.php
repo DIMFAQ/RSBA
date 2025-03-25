@@ -27,9 +27,19 @@ class Add extends Component
     public $groups;
     public $routes;
 
-    public $rules = [
-        'nama' => "required|string"
-    ];
+    public function rules(): array
+    {
+        return [
+            'nama' => "required|string",
+            'route' => "nullable|string",
+            'route_avail' => ['boolean', function ($attribute, $value, $fail) {
+                if (!empty($this->route) && !$this->route_avail) {
+                    $fail('Route harus tersedia.');
+                }
+            }],
+            'parent_id' => "required|integer",
+        ];
+    }
 
     public function mount()
     {

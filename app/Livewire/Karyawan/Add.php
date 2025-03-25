@@ -4,15 +4,12 @@ namespace App\Livewire\Karyawan;
 
 use App\Enums\Agama;
 use App\Enums\Kelamin;
-use Livewire\Component;
-use App\Models\Sdm\Karyawan;
 use App\Enums\StatusKaryawan;
-use Livewire\Attributes\Lazy;
 use App\Livewire\Forms\KaryawanForm;
+use Livewire\Component;
 use TallStackUi\Traits\Interactions;
 
-#[Lazy]
-class EditIdentitas extends Component
+class Add extends Component
 {
     use Interactions;
 
@@ -20,6 +17,7 @@ class EditIdentitas extends Component
 
     public $status_options;
     public $agama_options;
+    public $isDomisiliKTP = false;
     public $jk_options;
     public $pernikahan_options = [
         ['value' => 'belum', 'label' => 'Belum Menikah'],
@@ -27,40 +25,19 @@ class EditIdentitas extends Component
         ['value' => 'single', 'label' => 'Janda/Duda']
     ];
 
-    public $isDomisiliKTP = false;
-
-    public function mount($id)
+    public function mount()
     {
-        $karyawan = Karyawan::findOrFail($id);
-        $this->form->mount($karyawan);
-
-        $this->form->setIdentitas($karyawan);
-
         $this->status_options = StatusKaryawan::options();
         $this->agama_options = Agama::options();
         $this->jk_options = Kelamin::options();
     }
 
-    public function update()
+    public function placeholder()
     {
-        $this->validate();
-
-        try {
-            $this->form->updateIdentitas();
-
-            $this->dispatch('updated-karywan');
-
-            $this->toast()
-                ->success('Updated', 'Update identitas karyawan berhasil.')
-                ->send();
-        } catch (\Throwable $e) {
-            $this->toast()
-                ->error('Failed', 'Error ' . $e->getMessage())
-                ->send();
-        }
+        return view('components.skeleton');
     }
 
-    function domisili()
+    public function domisili()
     {
         $this->isDomisiliKTP = ! $this->isDomisiliKTP;
         if ($this->isDomisiliKTP) {
@@ -78,8 +55,28 @@ class EditIdentitas extends Component
         }
     }
 
+    function submit()
+    {
+        $this->form->validate();
+
+        $submitting = $this->form->store();
+
+        if ($submitting['status'] === 'sukses') {
+            $this->dispatch('new-karyawan-created');
+
+            $this->toast()
+                ->success('Berhasil', 'Simpan data karyawan berhasil.')
+                ->send();
+        } else {
+            $this->toast()
+                ->error('Tidak Berhasil', 'Error' . $submitting['message'])
+                ->send();
+        }
+    }
+
+
     public function render()
     {
-        return view('livewire.karyawan.edit-identitas');
+        return view('livewire.karyawan.add');
     }
 }

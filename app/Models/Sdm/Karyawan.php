@@ -39,7 +39,7 @@ class Karyawan extends Model
                 // set Different date
                 $diff = $tglMasuk->diff($now);
 
-                return  "{$diff->y} Tahun {$diff->m} Bulan {$diff->d} Hari";
+                return  "{$diff->y} Tahun {$diff->m} Bulan ";
             }
         );
     }
@@ -47,7 +47,15 @@ class Karyawan extends Model
     public function usia(): Attribute
     {
         return Attribute::make(
-            get: fn() => Carbon::parse($this->tgl_lahir)->diffInYears() . ' Tahun '
+            // get: fn() => Carbon::parse($this->tgl_lahir)->diffInYears() . ' Tahun '
+            get: function () {
+                $tglLahir = Carbon::parse($this->tgl_lahir);
+                $now = Carbon::now();
+
+                $diff = $tglLahir->diff($now);
+
+                return "{$diff->y} Tahun";
+            }
         );
     }
 
@@ -64,5 +72,15 @@ class Karyawan extends Model
         return $this->belongsToMany(Jabatan::class, KaryawanJabatan::class)
             ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
             ->orderBy('pivot_created_at', 'desc');
+    }
+
+
+    // get Jabatan latest / Saat Ini
+    function jabatan()
+    {
+        return $this->belongsToMany(Jabatan::class, 'sdm_kary_jabatan', 'karyawan_id', 'jabatan_id')
+            ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
+            ->orderBy('pivot_created_at', 'desc')
+            ->limit(1);
     }
 }

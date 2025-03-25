@@ -1,16 +1,26 @@
-<div class="w-full">
-    <form wire:submit.prevent="update" class="space-y-2">
+<div>
+    <form wire:submit.prevent="submit" class="space-y-2" autocomplete="off">
         @csrf
         <div class="flex flex-col gap-2 lg:flex-row">
             <div class="w-full lg:w-1/4">
-                <x-ts:input wire:model.lazy="form.nip" placeholder="NIP [Auto Generate]" readonly />
+                <x-ts:select.styled wire:model.lazy='form.status' placeholder="Status Pegawai" :options="$status_options" select="label:label|value:value" />
             </div>
             <div class="w-full lg:w-1/4">
                 <x-ts:date wire:model.lazy='form.tgl_masuk' placeholder="Tgl. Masuk" />
             </div>
+            <div class="w-full lg:w-1/4">
+                <x-ts:input wire:model.lazy="form.nip" placeholder="NIP [Auto Generate]" readonly />
+            </div>
         </div>
 
         {{-- identitas --}}
+        <div class="space-y-2 pt-2">
+            <hr>
+            <span class="flex gap-1 font-semibold text-primary-500">
+                <x-ts:icon name="tabler.user" class="h-5 w-5" />
+                Identitas
+            </span>
+        </div>
         <div class="flex w-full flex-col gap-2 lg:flex-row">
             <div class="w-full lg:w-1/2">
                 <x-ts:input wire:model.lazy="form.nama" placeholder="Nama Lengkap" hint="Input nama tanpa gelar." />
@@ -103,7 +113,7 @@
 
         {{-- domisili --}}
         <div class="flex w-full flex-row lg:w-full">
-            <x-ts:checkbox wire:click='domisili' label="Domisili Sama Dengan Alamat ? " />
+            <x-ts:checkbox wire:click='domisili' label="Domisili Sama Dengan KTP ? " />
             <span wire:loading wire:target='domisili' class="text-indigo-500"> Wait...</span>
         </div>
 
@@ -130,7 +140,8 @@
 
 
         <div class="flex justify-end gap-2 pt-4">
-            <x-ts:button loading="update" sm icon="tabler.user-edit" type="submit">Update</x-ts:button>
+            <x-ts:button md outline @click="$dispatch('close-modal',{id:'new-karyawan'})">Tutup</x-ts:button>
+            <x-ts:button loading="submit" md type="submit">Simpan</x-ts:button>
         </div>
     </form>
 </div>

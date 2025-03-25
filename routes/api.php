@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\RuanganController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -11,5 +14,16 @@ Route::get('/user', function (Request $request) {
 Route::prefix('karyawan')
     ->name('api.karyawan.')
     ->group(function () {
-        Route::get('/register', 'KaryawanController@register')->name('register');
+        Route::get('/register', [KaryawanController::class, 'register'])->name('register');
     });
+
+
+# Wilayah
+Route::get('prov', [WilayahController::class, 'prov'])->name('api.prov');
+Route::get('kab/{id?}', [WilayahController::class, 'kab'])->name('api.kab');
+Route::get('kec/{id?}', [WilayahController::class, 'kec'])->name('api.kec');
+Route::get('desa/{id?}', [WilayahController::class, 'desa'])->name('api.desa');
+
+
+// Master Data
+Route::get('ruangan', [RuanganController::class, 'list'])->name('api.ruangan');
