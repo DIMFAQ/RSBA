@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Karyawan
 Route::prefix('karyawan')
     ->name('karyawan.')
     ->group(function () {
@@ -11,6 +12,7 @@ Route::prefix('karyawan')
     });
 
 
+// Master data
 Route::prefix('master')
     ->name('master.')
     ->group(function () {
@@ -40,4 +42,15 @@ Route::prefix('master')
 
                 Route::get('/', App\Livewire\Master\Spesialisasi\Index::class)->name('index');
             });
+    });
+
+
+// Surat Surat
+Route::prefix('surat')
+    ->name('surat.')
+    ->group(function () {
+        Route::get('cuti', App\Livewire\Surat\Cuti\Index::class)->name('cuti');
+        Route::get('cuti/approval/{id?}', App\Livewire\Surat\Cuti\Approval::class)->name('cuti.approval');
+
+        Route::get('sp3', App\Livewire\Surat\Sp3\Index::class)->name('sp3');
     });

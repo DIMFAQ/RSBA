@@ -1,0 +1,55 @@
+<div x-data="{
+    tglCuti: @entangle('form.tgl_cuti'),
+    lamaCuti: @entangle('form.lama_cuti'),
+    updateLamaCuti(value) {
+        this.tglCuti = value;
+        this.lamaCuti = this.tglCuti.length;
+        {{-- $wire.set('form.tgl_cuti', this.tglCuti); --}}
+        {{-- $wire.set('form.lama_cuti', this.lamaCuti); --}}
+    }
+}">
+    <form wire:submit.prevent='submit' class="flex flex-col gap-2">
+        <div class="flex w-full flex-col gap-2">
+            <span class="text-lg font-semibold text-primary-500">{{ $karyawan?->nama }}</span>
+
+            <div class="flex w-full flex-row gap-2">
+                <x-ts:badge outline class="w-1/2">
+                    hari sisa cuti
+                    <x-slot:left>
+                        <p class="mr-2 text-xl" wire:loading.class="animate-pulse opacity-10" wire:target='form.jenis_cuti'>
+                            {{ $form->sisa_cuti }}</p>
+                    </x-slot:left>
+                </x-ts:badge>
+
+                <x-ts:badge color="red" outline class="w-1/2">
+                    hari pengajuan cuti
+                    <x-slot:left>
+                        <p class="mr-2 text-xl" x-text="lamaCuti"></p>
+                    </x-slot:left>
+                </x-ts:badge>
+            </div>
+
+            @error('form.lama_cuti')
+                <span class="text-danger-500">{{ $message }}</span>
+            @enderror
+
+            <x-ts:select.styled wire:model='form.jenis_cuti' placeholder="Jenis Cuti" :options="$form->options_urgensi" select="label:label|value:id"
+                x-on:select="$wire.set('form.jenis_cuti',$event.detail.select.id)" />
+
+            <x-ts:date multiple wire:model='form.tgl_cuti' x-on:select="updateLamaCuti($event.detail.date)" :min-date="now()->subDays(-1)" placeholder="Tgl Cuti"
+                hint="Pilih satu per satu tanggal cuti yang diajukan." />
+
+            <x-ts:textarea wire:model.defer='form.keterangan' placeholder="Keterangan" />
+
+            <x-ts:textarea wire:model.defer='form.alamat' placeholder="Alamat selama Cuti" />
+
+            <x-ts:select.styled wire:key="atasan-select" multiple searchable wire:model.defer="form.atasan" placeholder="Persetujuan Atasan" :request="route('api.karyawan.ref')" select="label:nama|value:id" />
+
+        </div>
+        <div class="ml-auto flex justify-end gap-2">
+            <x-ts:button outline x-on:click="$dispatch('close-modal',{id:'new-cuti'})">Tutup</x-ts:button>
+            <x-ts:button type="submit" icon="tabler.checks" loading="submit">Ajukan</x-ts:button>
+
+        </div>
+    </form>
+</div>

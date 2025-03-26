@@ -5,6 +5,7 @@ namespace App\Models\Sdm;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Enums\StatusKaryawan;
+use App\Models\Surat\SuratCuti;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -82,5 +83,11 @@ class Karyawan extends Model
             ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
             ->orderBy('pivot_created_at', 'desc')
             ->limit(1);
+    }
+
+    // Relation cuti
+    public function suratCuti()
+    {
+        return $this->hasMany(SuratCuti::class, 'karyawan_id');
     }
 }

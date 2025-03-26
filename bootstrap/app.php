@@ -25,6 +25,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('kepegawaian')
                 ->name('kepegawaian.')
                 ->group(base_path('routes/kepegawaian.php'));
+
+
+            // Umum routes
+            Route::middleware(['auth', 'web'])
+                ->prefix('umum')
+                ->name('umum.')
+                ->group(base_path('routes/umum.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
