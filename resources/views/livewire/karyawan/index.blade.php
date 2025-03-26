@@ -45,9 +45,9 @@
                 @break
 
                 @case('dokter')
-                    {{-- <livewire:Karyawan.Dokter.TableDokter :key="Str::random()"> --}}
-                @break
-            @endswitch
+                    <livewire:Karyawan.Dokter.TableDokter :key="Str::random()">
+                    @break
+                @endswitch
         </div>
     </div>
 

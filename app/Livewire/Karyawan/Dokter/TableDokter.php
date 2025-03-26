@@ -4,10 +4,9 @@ namespace App\Livewire\Karyawan\Dokter;
 
 use Livewire\Component;
 use Filament\Tables\Table;
-use App\Models\Sdm\Karyawan;
 use App\Enums\StatusKaryawan;
-use App\Models\Dokter;
-use App\Models\DokterSpesialisasi;
+use App\Models\Sdm\Dokter;
+use App\Models\Sdm\DokterSpesialisasi;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
@@ -15,10 +14,12 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Filters\SelectFilter;
+use TallStackUi\Traits\Interactions;
 
 class TableDokter extends Component implements HasTable, HasForms
 {
     use InteractsWithTable, InteractsWithForms;
+    use Interactions;
 
     public static function table(Table $table): Table
     {
@@ -43,14 +44,14 @@ class TableDokter extends Component implements HasTable, HasForms
                 TextColumn::make('spesialis.nama')
                     ->label('Sub Spesialis')
             ])
-            // ->filters([
-            //     SelectFilter::make('spesialis_id')
-            //         ->label('Sub Spesialis')
-            //         ->options(
-            //             fn() => DokterSpesialisasi::pluck('nama', 'id')->toArray()
-            //         )->searchable()
+            ->filters([
+                SelectFilter::make('spesialis_id')
+                    ->label('Sub Spesialis')
+                    ->options(
+                        fn() => DokterSpesialisasi::pluck('nama', 'id')->toArray()
+                    )->searchable()
 
-            // ])
+            ])
             ->actions([
                 Action::make('edit')
                     ->iconButton()
@@ -65,8 +66,45 @@ class TableDokter extends Component implements HasTable, HasForms
                 Action::make('delete')
                     ->iconButton()
                     ->icon('tabler-trash')
-                    ->color('danger'),
+                    ->color('danger')
+                    ->action(fn(Dokter $dokter, $livewire) => $livewire->delete(
+                        id: $dokter->getKey()
+                    )),
             ]);
+    }
+
+    function delete($id)
+    {
+        $dokter = Dokter::findOrFail($id);
+
+        $this->dialog()
+            ->question('Warning!', "Yakin hapus <b>{$dokter->karyawan->nama}</b> dari dokter. ?")
+            ->confirm('Hapus', 'confirmed', $id)
+            ->cancel('Batal', 'cancelled')
+            ->send();
+    }
+
+    function confirmed($id)
+    {
+        $dokter = Dokter::findOrFail($id);
+        try {
+            $dokter->delete();
+
+            $this->toast()
+                ->success('Berhasil', "<b>{$dokter->karyawan->nama}</b> berhasil dihapus.")
+                ->send();
+        } catch (\Throwable $th) {
+            $this->toast()
+                ->error('Gagal', "Error : " . $th->getMessage())
+                ->send();
+        }
+    }
+
+    function cancelled()
+    {
+        $this->toast()
+            ->info('Dibatalkan', 'Hapus data dokter dibatalkan.')
+            ->send();
     }
 
 
