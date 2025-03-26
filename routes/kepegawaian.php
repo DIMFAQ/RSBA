@@ -54,3 +54,11 @@ Route::prefix('surat')
 
         Route::get('sp3', App\Livewire\Surat\Sp3\Index::class)->name('sp3');
     });
+
+
+// Jasa Medis
+Route::prefix('jasmed')
+    ->name('jasmed.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Jasmed\Index::class)->name('index');
+    });
