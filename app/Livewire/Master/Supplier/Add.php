@@ -13,7 +13,7 @@ class Add extends Component
 {
     use Interactions;
 
-    public string $nama, $telp, $email, $npwp, $bank, $norek, $an, $alamat;
+    public string $nama, $telp, $email = '', $npwp = '', $bank = '', $norek = '', $an = '', $alamat;
 
     public $rules = [
         'nama' => 'required|unique:um_supplier,nama',

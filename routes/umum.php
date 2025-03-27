@@ -11,3 +11,36 @@ Route::prefix('master')
         Route::get('supplier', App\Livewire\Master\Supplier\Index::class)->name('supplier');
         Route::get('penyimpanan', App\Livewire\Master\Penyimpanan\Index::class)->name('penyimpanan');
     });
+
+
+Route::prefix('pembelian')
+    ->name('pembelian.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Pembelian\Index::class)->name('index');
+    });
+
+Route::prefix('distribusi')
+    ->name('distribusi.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Distribusi\Index::class)->name('index');
+    });
+
+
+Route::prefix('gudang')
+    ->name('gudang.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Gudang\Index::class)->name('index');
+    });
+
+Route::prefix('asset')
+    ->name('asset.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Asset\Index::class)->name('index');
+    });
+
+
+Route::prefix('opname')
+    ->name('opname.')
+    ->group(function () {
+        Route::get('/', App\Livewire\StokOpname\Index::class)->name('index');
+    });

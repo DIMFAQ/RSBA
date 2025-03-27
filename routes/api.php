@@ -2,9 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AssetController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\WilayahController;
 use App\Http\Controllers\KaryawanController;
-use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\SupplierController;
 
 Route::get('/user', function (Request $request) {
@@ -31,3 +33,19 @@ Route::get('desa/{id?}', [WilayahController::class, 'desa'])->name('api.desa');
 // Master Data
 Route::get('ruangan', [RuanganController::class, 'list'])->name('api.ruangan');
 Route::get('supplier', [SupplierController::class, 'list'])->name('api.supplier');
+Route::get('ruangan', [RuanganController::class, 'list'])->name('api.ruangan');
+
+Route::prefix('barang')
+    ->name('api.barang.')
+    ->group(function () {
+        Route::get('ref', [BarangController::class, 'list'])->name('ref');
+        Route::get('stok', [BarangController::class, 'stok'])->name('stok');
+    });
+
+
+// Asset
+Route::prefix('asset')
+    ->name('api.asset.')
+    ->group(function () {
+        Route::get('main_item', [AssetController::class, 'mainItem'])->name('main_item');
+    });
