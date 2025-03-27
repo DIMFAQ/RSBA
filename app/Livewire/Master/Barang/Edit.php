@@ -31,8 +31,8 @@ class Edit extends Component
 
     function mount($id)
     {
-        $this->kategoriOptions = BarangKategori::withoutTrashed()->get();
-        $this->satuanOptions = BarangSatuan::withoutTrashed()->get();
+        $this->kategoriOptions = BarangKategori::get();
+        $this->satuanOptions = BarangSatuan::get();
 
         $this->barang = MasterBarang::findOrFail($id);
         $this->sku = $this->barang->sku;

@@ -26,13 +26,12 @@
                                     <div class="flex justify-end">
                                         <x-ts:checkbox wire:model='permission' value="{{ $permission }}" />
                                     </div>
-
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-            @elseif(!$menu->parent_id)
+            @elseif($menu->parent_id === $mainMenu->id)
                 <table class="w-full rounded-lg">
                     <thead>
                         <tr class="bg-primary-100 font-semibold">

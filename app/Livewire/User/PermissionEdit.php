@@ -16,6 +16,7 @@ class PermissionEdit extends Component
     use Interactions;
 
     public ?User $user;
+    public $mainMenu;
     public $menus;
     // public $menu;
 
@@ -30,8 +31,9 @@ class PermissionEdit extends Component
     public function mount($id)
     {
         $this->user = User::findOrFail($id);
+        $this->mainMenu = Menu::first();
 
-        $this->menus = Menu::where('id', '!=', 1)->with('submenus')->get();
+        $this->menus = Menu::where('id', '!=', $this->mainMenu->id)->with('submenus')->get();
         $this->permission = $this->user->getAllPermissions()->pluck('name')->toArray();
 
 

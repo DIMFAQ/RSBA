@@ -44,3 +44,9 @@ Route::prefix('opname')
     ->group(function () {
         Route::get('/', App\Livewire\StokOpname\Index::class)->name('index');
     });
+
+Route::prefix('laporan')
+    ->name('laporan.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Laporan\Umum\Index::class)->name('index');
+    });
