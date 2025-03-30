@@ -113,7 +113,8 @@ class TemplateImportJasa implements FromArray, WithHeadings
                         'No Sep',
                         'Kelompok Jasa (ri_no/ri_op/ri_mata/ri_partus/ri_sc/ri_curet/ri_hd)',
                         'Nama Dokter Sppdkgh',
-                        'Nama Dokter Umum Sertifikat'
+                        'Nama Dokter Umum Sertifikat',
+                        'Nama Dokter DPJP HD'
                     ]
                 ];
                 break;
@@ -186,7 +187,7 @@ class TemplateImportJasa implements FromArray, WithHeadings
                 break;
 
             case 'rincian':
-                # code...
+                return [];
                 break;
 
             case 'rincian_inacbg':
@@ -221,7 +222,8 @@ class TemplateImportJasa implements FromArray, WithHeadings
                     'sep',
                     'kelompok',
                     'sppdkgh',
-                    'umum_sertifikat'
+                    'umum_sertifikat',
+                    'dpjp_hd'
                 ];
                 break;
 
@@ -235,7 +237,7 @@ class TemplateImportJasa implements FromArray, WithHeadings
                 break;
 
             default:
-                # code...
+                return [];
                 break;
         }
     }

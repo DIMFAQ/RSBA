@@ -42,8 +42,9 @@
                     <td class="px-4 py-2">{{ $item->sep }}</td>
                     <td class="px-4 py-2">{{ $item->kelompok }}</td>
                     <td class="px-4 py-2">{{ $item->dpjp }}</td>
-                    <td class="px-4 py-2">
-                        <input type="text" class="h-8 border-2 border-gray-300 p-2" {{-- wire:model="anastesi.{{ $item->id }}" --}}>
+                    <td class="flex flex-row items-center gap-2 px-4 py-2">
+                        <input type="text" class="h-8 rounded-md border-2 border-gray-300 p-2" placeholder="Input Dokter" wire:model.live.debounce.300="anastesi.{{ $item->id }}">
+                        <x-spinner target="anastesi.{{ $item->id }}" sm />
                     </td>
                 </tr>
                 @endforeach
