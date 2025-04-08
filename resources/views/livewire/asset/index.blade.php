@@ -1,16 +1,16 @@
-<div class="w-full flex flex-col gap-2">
+<div class="flex w-full flex-col gap-2">
 
-    <div class="bg-white rounded-lg flex flex-row justify-between p-4">
+    <div class="flex flex-row justify-between rounded-lg bg-white p-4">
         <div class="relative w-3/4 lg:w-1/3">
-            <input id="search-asset" placeholder="Cari Barang..." type="text" class="h-8 px-10 transition-all duration-300 border-gray-200 rounded-lg w-full focus:outline-none" />
+            <input id="search-asset" placeholder="Cari Barang..." type="text" class="h-8 w-full rounded-lg border-gray-200 px-10 transition-all duration-300 focus:outline-none" autocomplete="off" />
 
             <!-- Icon (Search) -->
-            <x-ts:icon name="tabler.scan" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <x-ts:icon name="tabler.scan" class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
         </div>
 
     </div>
 
-    <div class="w-full bg-white rounded-lg p-4">
+    <div class="w-full rounded-lg bg-white p-4">
         <livewire:Asset.TableAsset :key="Str::random()" />
     </div>
 

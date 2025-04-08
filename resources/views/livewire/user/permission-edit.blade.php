@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-2" x-data="{ menu: @entangle('menu') }">
 
-    <form wire:submit.prevent='submit' class="space-y-2">
+    <form wire:submit.prevent='submit' class="no-scrollbar h-screen space-y-2 overflow-auto">
         Role Permission{{ $rolePermission }}
 
         @foreach ($menus as $menu)

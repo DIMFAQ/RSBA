@@ -89,7 +89,7 @@ class Catat extends Component
          * 001 : Sub asset dari asset 0001
          */
 
-        $preffix = $this->assetBarang->barang->kategori->preffix;
+        $prefix = $this->assetBarang->barang->kategori->prefix;
         [$tahun, $bulan] = explode('-', date('Y-m', strtotime($this->tgl_catat)));
 
         // get last asset
@@ -126,7 +126,7 @@ class Catat extends Component
 
 
         // return string formated kode
-        return $preffix . '/' . $bulan . date('y', strtotime($tahun)) . '/' . $nomor;
+        return $prefix . '/' . $bulan . date('y', strtotime($tahun)) . '/' . $nomor;
     }
 
     public function render()
