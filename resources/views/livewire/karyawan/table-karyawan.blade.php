@@ -7,7 +7,7 @@
         <x-slot name="heading">
             Karyawan Baru
         </x-slot>
-        <livewire:karyawan.add lazy @new-karyawan-created="$refresh" />
+        <livewire:Karyawan.add lazy @new-karyawan-created="$refresh" />
     </x-filament::modal>
 
 
@@ -30,7 +30,7 @@
             Histori Jabatan
         </x-slot>
         <div class="flex w-full">
-            <livewire:karyawan.HistoryJabatan :$karyawanId :key="Str::random()" />
+            <livewire:Karyawan.HistoryJabatan :$karyawanId :key="Str::random()" />
         </div>
     </x-filament::modal>
 
@@ -40,7 +40,7 @@
             Import Karyawan
         </x-slot>
         <div class="flex w-full">
-            <livewire:Karyawan.Import @karyawanImported="$refresh" />
+            <livewire:Karyawan.ImportKaryawan @karyawan-imported="$refresh" />
         </div>
     </x-filament::modal>
 </div>
