@@ -11,19 +11,15 @@ use Livewire\Attributes\Lazy;
 #[Lazy]
 class Dashboard extends Component
 {
-    public $bulan;
-    public array $options_bulan = [];
 
-    public $tahun;
-    public array $options_tahun = [];
-
+    public string $periode;
     public $layanan;
     public array $layanan_opt = [
         ['label' => 'Rajal', 'value' => 'rajal'],
         ['label' => 'Ranap', 'value' => 'ranap'],
     ];
 
-    public $cabar;
+    public string $cabar;
     public array $cabar_opt = [
         ['label' => 'BPJS', 'value' => 'bpjs'],
         ['label' => 'Tunai', 'value' => 'tunai'],
@@ -44,50 +40,30 @@ class Dashboard extends Component
 
     function mount()
     {
-        // populate array 5 years before $tahun_skr and 5 years after $tahun_skr
-        $this->tahun = Carbon::now()->format('Y');
-        for ($y = $this->tahun - 10; $y <= $this->tahun + 3; $y++) {
-            $push = [
-                'id' => $y,
-                'label' => $y
-            ];
-            array_push($this->options_tahun, $push);
-        }
-
-        //populate bulan
-        // $this->bulan = Carbon::now()->format('m');
-        for ($m = 1; $m <= 12; $m++) {
-            $push_bulan = [
-                'id' => $m,
-                'label' => Carbon::create()->month($m)->translatedFormat('M')
-            ];
-            array_push($this->options_bulan, $push_bulan);
-        }
+        $this->periode = Carbon::now()->format('Y-m');
     }
 
+    function updated($propertyName)
+    {
+        $this->updateDashboard();
+    }
 
-    // #[Computed()]
     function updateDashboard()
     {
-        for ($a = 1; $a <= 9; $a++) {
-            $this->bulan = str_pad($this->bulan, 2, "0", STR_PAD_LEFT);
-        }
-
-        $tahun_bulan = "$this->tahun-$this->bulan";
         $layanan = $this->layanan;
         $cabar = $this->cabar;
-        $this->periode = $tahun_bulan;
+        $periode = $this->periode;
 
 
         // Stats Pasien
-        $this->getStatsPasien(periode: $tahun_bulan, layanan: $layanan, cabar: $cabar);
+        $this->getStatsPasien(periode: $periode, layanan: $layanan, cabar: $cabar);
 
 
         // Stats Klaim
-        $this->getStatsKlaim(periode: $tahun_bulan, layanan: $layanan, cabar: $cabar);
+        $this->getStatsKlaim(periode: $periode, layanan: $layanan, cabar: $cabar);
 
         // Stats Jasa
-        $this->getStatsJasa(periode: $tahun_bulan, layanan: $layanan, cabar: $cabar);
+        $this->getStatsJasa(periode: $periode, layanan: $layanan, cabar: $cabar);
     }
 
     private function getStatsPasien($periode, $layanan, $cabar)
