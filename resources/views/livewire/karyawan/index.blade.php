@@ -21,9 +21,21 @@
         <div class="ms-auto px-3 py-2">
             @switch($content)
                 @case('all')
-                    <x-ts:button sm icon="tabler.user-plus" x-on:click="$dispatch('open-modal', {id:'new-karyawan'})">
-                        Karyawan Baru
-                    </x-ts:button>
+                    <div class="flex flex-row items-center justify-center space-x-2">
+                        <x-ts:button sm icon="tabler.user-plus" x-on:click="$dispatch('open-modal', {id:'new-karyawan'})">
+                            Karyawan Baru
+                        </x-ts:button>
+
+                        @can('export-karyawan')
+                            <x-ts:dropdown>
+                                <x-slot:action>
+                                    <x-ts:icon name="tabler.dots-vertical" role="button" class="text-indigo-500" x-on:click="show = !show" />
+                                </x-slot:action>
+                                <x-ts:dropdown.items icon="tabler.upload" text="Import Karyawan" x-on:click="$dispatch('open-modal',{id:'import-karyawan'})" />
+                                <x-ts:dropdown.items icon="tabler.download" text="Export Karyawan" separator wire:click='downloadKaryawan' />
+                            </x-ts:dropdown>
+                        @endcan
+                    </div>
                 @break
 
                 @case('dokter')

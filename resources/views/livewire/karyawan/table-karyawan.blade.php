@@ -33,4 +33,14 @@
             <livewire:karyawan.HistoryJabatan :$karyawanId :key="Str::random()" />
         </div>
     </x-filament::modal>
+
+
+    <x-filament::modal id="import-karyawan" :autofocus="false" :close-by-clicking-away="false">
+        <x-slot name="heading" class="text-indigo-500">
+            Import Karyawan
+        </x-slot>
+        <div class="flex w-full">
+            <livewire:Karyawan.Import @karyawanImported="$refresh" />
+        </div>
+    </x-filament::modal>
 </div>

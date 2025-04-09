@@ -19,7 +19,7 @@ class Dashboard extends Component
         ['label' => 'Ranap', 'value' => 'ranap'],
     ];
 
-    public string $cabar;
+    public $cabar;
     public array $cabar_opt = [
         ['label' => 'BPJS', 'value' => 'bpjs'],
         ['label' => 'Tunai', 'value' => 'tunai'],
