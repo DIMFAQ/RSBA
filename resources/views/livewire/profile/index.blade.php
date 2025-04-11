@@ -2,15 +2,19 @@
     <div class="flex flex-col gap-2 lg:flex-row">
         <div class="w-full lg:w-1/4">
             <div class="flex flex-col space-y-2 rounded-lg bg-white p-8">
-                <div class="flex flex-col items-center justify-center" x-data="{ userPreview: '{{ $userTmp ? $userTmp->temporaryUrl() : asset('storage' . $user) }}' }">
+                <div class="flex flex-col items-center justify-center" x-data="{ userPreview: '{{ $profileTmp ? $profileTmp->temporaryUrl() : asset('storage/' . $user->karyawan->foto) }}' }">
                     <div class="flex h-44 w-44 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-indigo-300">
                         <img :src="userPreview" class="h-full w-full object-cover" alt="Click to update" x-on:click="document.getElementById('profileInput').click();">
                     </div>
 
-                    <input type="file" wire:model='userTmp' id="profileInput" style="display: none" @change="userPreview = URL.createObjectURL($event.target.files[0])" />
+                    <input type="file" wire:model='profileTmp' id="profileInput" style="display: none" @change="userPreview = URL.createObjectURL($event.target.files[0])" />
 
-                    @if ($userTmp)
-                        <x-ts:button sm wire:click="updateAvatar" loading="updateAvatar">
+                    @error('profileTmp')
+                        <span class="text-sm italic text-red-500">{{ $message }}</span>
+                    @enderror
+
+                    @if ($profileTmp)
+                        <x-ts:button xs class="mt-2" wire:click="updateAvatar" loading="updateAvatar">
                             Update
                         </x-ts:button>
                     @endif

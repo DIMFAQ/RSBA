@@ -2,12 +2,83 @@
 
 namespace App\Livewire\Laporan\Umum;
 
-use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
 
 #[Lazy]
 class Distribusi extends Component
 {
+    public bool $init = true;
+
+    #[Locked]
+    public $headers = [
+        ['index' => 'nama_barang', 'label' => 'Barang'],
+        ['index' => 'tanggal', 'label' => 'Tanggal'],
+        ['index' => 'ruangan', 'label' => 'Ruangan'],
+        ['index' => 'jumlah', 'label' => 'Jumlah'],
+        ['index' => 'harga', 'label' => 'Harga Satuan'],
+        ['index' => 'total', 'label' => 'Total'],
+    ];
+
+    #[Locked]
+    public $rows = [];
+
+    #[On('cariDistribusi')]
+    function cariDataDistribusi($periode, $ruangan)
+    {
+        $this->init = false;
+        $this->getDataDistribusi($periode, $ruangan);
+    }
+
+
+    #[Computed]
+    public function getDataDistribusi($periode, $ruangan)
+    {
+        // periode to string $periode
+        [$periode_awal, $periode_akhir] = $periode;
+
+        $data = \App\Models\Gudang\DistribusiDetail::with('distribusi', 'stoks', 'stoks.barang')
+            ->whereHas(
+                'distribusi',
+                function ($query) use ($periode_awal, $periode_akhir) {
+                    $query->whereBetween(
+                        'tanggal',
+                        [$periode_awal, $periode_akhir]
+                    );
+                    // $query->where('tanggal', '>=', $periode_awal)
+                    //     ->where('tanggal', '<=', $periode_akhir);
+                }
+            )
+            ->when(
+                $ruangan,
+                function ($query, $ruangan) {
+                    $query->whereHas(
+                        'distribusi',
+                        function ($q) use ($ruangan) {
+                            $q->where('tujuan', $ruangan);
+                        }
+                    );
+                }
+            )
+            ->get()
+            ->sortBy('distribusi.tanggal');
+
+        // return $data;
+        $this->rows = $data->map(function ($data): array {
+            return [
+                'nama_barang' => $data->stoks->barang->nama,
+                'tanggal' => $data->distribusi->tanggal,
+                'ruangan' => $data->distribusi->ruangan->nama,
+                'jumlah' => $data->jml . ' ' . $data->stoks->barang->satuan->nama,
+                'harga' => formatRupiah($data->stoks->harga_satuan, false, false),
+                'total' => formatRupiah(($data->jml * $data->stoks->harga_satuan), false, false),
+            ];
+        })->toArray();
+    }
+
     public function render()
     {
         return view('livewire.laporan.umum.distribusi');

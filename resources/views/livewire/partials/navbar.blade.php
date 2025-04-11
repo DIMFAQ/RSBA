@@ -52,8 +52,7 @@
                                 <span class="text-lg font-semibold">{{ Auth::user()->karyawan->nama }}</span>
                                 <span class="text-xs text-gray-500/80">{{ Auth::user()->email }}</span>
                             </div>
-                            <x-ts:avatar :model="auth()->user()->karyawan" property="nama" color="fff" md />
-                            {{-- <x-ts:avatar :model="auth()->user()->karyawan->nama" property="nama" :background="substr(str_shuffle('F0123456789'), 0, 6)" color="fff" md /> --}}
+                            <x-ts:avatar :image="auth()->user()->karyawan->foto ? asset('storage/' . auth()->user()->karyawan->foto) : null" :model="!auth()->user()->karyawan->foto ? auth()->user()->karyawan : null" property="nama" color="fff" md borderless="{{ auth()->user()->karyawan->foto ? true : false }}" />
                         </div>
                     </x-slot:action>
 

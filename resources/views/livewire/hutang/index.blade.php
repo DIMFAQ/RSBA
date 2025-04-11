@@ -9,11 +9,11 @@
     </div>
 
     <div class="flex w-full flex-col gap-2 lg:grid lg:grid-cols-3">
-        <x-ts:stats color="blue" icon="tabler.file-percent" title="Hutang" :number="formatRupiah($hutang)" />
+        <x-ts:stats color="blue" icon="tabler.file-percent" title="Total Periode Ini" :number="formatRupiah($hutang, true, false)" />
 
-        <x-ts:stats color="green" icon="tabler.checklist" title="Dibayar" :number="formatRupiah($dibayar)" />
+        <x-ts:stats color="green" icon="tabler.checklist" title="Telah Dibayar" :number="formatRupiah($dibayar, true, false)" />
 
-        <x-ts:stats color="red" icon="tabler.file-alert" title="Belum Dibayar" :number="formatRupiah($belumDibayar)" />
+        <x-ts:stats color="red" icon="tabler.file-alert" title="Belum Dibayar" :number="formatRupiah($belumDibayar, true, false)" />
     </div>
 
     {{-- table list hutang --}}

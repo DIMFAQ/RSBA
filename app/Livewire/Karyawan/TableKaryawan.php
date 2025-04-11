@@ -55,7 +55,10 @@ class TableKaryawan extends Component implements HasForms, HasTable
                     ->default('-')
                     ->action(function (Karyawan $record, $livewire): void {
                         // dispatch event to livewire
-                        $livewire->historyJabatan('history-jabatan', $record->getKey());
+                        $livewire->modal(
+                            modal: 'history-jabatan',
+                            karyawan: $record->getKey()
+                        );
                     })
                     ->tooltip('History Jabatan'),
 
@@ -113,7 +116,10 @@ class TableKaryawan extends Component implements HasForms, HasTable
                     ->icon('tabler-printer')
                     ->color('primary')
                     ->action(function (Karyawan $record, $livewire): void {
-                        $livewire->profileKaryawan('modal-print-cv', $record->getKey());
+                        $livewire->modal(
+                            modal: 'modal-print-cv',
+                            karyawan: $record->getKey()
+                        );
                     }),
 
                 Action::make('edit')
@@ -127,10 +133,10 @@ class TableKaryawan extends Component implements HasForms, HasTable
             ]);
     }
 
-    function profileKaryawan($id, $karyawan)
+    function modal($modal, $karyawan)
     {
         $this->karyawanId = $karyawan;
-        $this->dispatch('open-modal', id: $id);
+        $this->dispatch('open-modal', id: $modal);
     }
 
     // #[On('open-history-jabatan')]

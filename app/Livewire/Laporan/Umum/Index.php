@@ -2,15 +2,57 @@
 
 namespace App\Livewire\Laporan\Umum;
 
+use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
-use Livewire\Component;
+use App\Livewire\Laporan\Umum\Pembelian as PembelianLaporan;
+use App\Livewire\Laporan\Umum\Distribusi as DistribusiLaporan;
 
 #[Title('Laporan Umum')]
 #[Lazy]
 class Index extends Component
 {
-    public $tab;
+    public string $tab;
+
+    public $optionsFaktur = [
+        ['label' => 'Alat Kesehatan', 'value' => 'alkes'],
+        ['label' => 'BHP', 'value' => 'bhp'],
+        ['label' => 'Umum', 'value' => 'umum'],
+    ];
+    public array $periode = [];
+    public $jenis, $vendor, $ruangan;
+
+    public function mount()
+    {
+        $this->tab = 'Pembelian';
+        $this->periode = [
+            now()->startOfMonth()->toDateString(),
+            now()->endOfMonth()->toDateString(),
+        ];
+
+        // dd($this->periode);
+    }
+
+    public function cariPembelian(): void
+    {
+        $this->validateOnly('periode', ['periode' => 'required|array']);
+        $this->dispatch(
+            'cariPembelian',
+            periode: $this->periode,
+            vendor: $this->vendor,
+            jenis: $this->jenis,
+        )->to(PembelianLaporan::class);
+    }
+
+    public function cariDistribusi(): void
+    {
+        $this->validateOnly('periode', ['periode' => 'required|array']);
+        $this->dispatch(
+            'cariDistribusi',
+            periode: $this->periode,
+            ruangan: $this->ruangan,
+        )->to(DistribusiLaporan::class);
+    }
 
     public function render()
     {

@@ -3,18 +3,22 @@
 namespace App\Livewire\Profile;
 
 use Livewire\Component;
+use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Title;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use TallStackUi\Traits\Interactions;
 
 #[Lazy]
 #[Title('Profile')]
 class Index extends Component
 {
+    use Interactions;
     use WithFileUploads;
 
-    public $userTmp;
+    public $profileTmp;
     public $user;
 
     public $tab = 'Home';
@@ -26,22 +30,31 @@ class Index extends Component
 
     function updateAvatar()
     {
-
         $this->validate([
-            'profileTmp' => 'required|image|max:1024', // 1MB Max
+            'profileTmp' => 'required|image|max:250', // 300kb Max
         ]);
 
+        DB::beginTransaction();
         try {
-            $path = $this->logoTmp->store('user', 'public');
+            $path = $this->profileTmp->store('user/profile', 'public');
 
-            // Perusahaan::where('id', 1)->update(['logo' => $path]);
+            Karyawan::where('id', $this->user->karyawan_id)
+                ->update(['foto' => $path]);
 
-            $this->toast()->success('Success!', 'Photo profile berhasil diupdate.')->send();
+            $this->toast()
+                ->success('Berhasil !', 'Profile foto berhasil diupdate.')
+                ->send();
+
+            DB::commit();
         } catch (\Throwable $e) {
-            $this->toast()->error('Failed!', 'Error : ' . $e->getMessage())->send();
+            DB::rollBack();
+
+            $this->toast()
+                ->error('Gagal Update Profile !', 'Error : ' . $e->getMessage())
+                ->send();
         }
 
-        $this->reset('userTmp');
+        $this->reset('profileTmp');
     }
 
     public function render()
