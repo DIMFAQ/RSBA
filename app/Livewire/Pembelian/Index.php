@@ -16,6 +16,7 @@ class Index extends Component
     use WithPagination;
 
     public $tab;
+    public bool $stats = false;
     public $search = '';
 
     public ?Pembelian $pembelian;

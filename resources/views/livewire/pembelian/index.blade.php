@@ -160,31 +160,12 @@
         </div>
     </div>
 
-    {{-- Stats Pembelian --}}
-    {{-- <div x-data="{ showStats: false }" class="rounded-lg border border-white p-2">
-        <!-- Toggle Button -->
-        <div class="flex justify-between">
-
-            <span @click="showStats = !showStats" class="flex flex-row items-center gap-2 font-semibold text-indigo-500">
-                <x-ts:icon name="tabler.chart-histogram" class="h-5" />
-                Stats
-            </span>
-
-            <div class="text-gray-500" role="button">
-                <x-ts:icon name="tabler.plus" @click="showStats = !showStats" x-show="!showStats" />
-                <x-ts:icon name="tabler.minus" @click="showStats = !showStats" x-show="showStats" />
-            </div>
-        </div>
-
-        <!-- Card -->
-        <div x-show="showStats" x-transition>
-            <template x-if="showStats">
-                <div x-bind:key="key">
-                    <livewire:pembelian.stats :key="Str::random()" />
-                </div>
-            </template>
-        </div>
-    </div> --}}
+    <div>
+        <x-ts:toggle sm wire:model.live.debounce='stats' label="Stats" />
+        @if ($stats)
+            <livewire:pembelian.stats :key="Str::random()" />
+        @endif
+    </div>
 
     {{-- Table List Pembelian --}}
     <div class="w-full">

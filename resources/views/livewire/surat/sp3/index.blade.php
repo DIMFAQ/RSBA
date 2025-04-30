@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-2">
     <div class="flex w-full items-center rounded-md bg-white px-4 py-2">
-        <div class="ml-auto justify-end">
-            <x-ts:button sm icon="tabler.checks" x-on:click="$dispatch('open-modal',{id:'modal-verify-sp3'})">
+        <div class="ml-auto justify-between">
+            <x-ts:button sm outline icon="tabler.checks" x-on:click="$dispatch('open-modal',{id:'modal-verify-sp3'})">
                 Verify
             </x-ts:button>
 
