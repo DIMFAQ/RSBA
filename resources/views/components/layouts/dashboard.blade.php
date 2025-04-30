@@ -14,8 +14,9 @@
     </head>
 
     <body class="h-screen">
+        <x-ts:toast />
         <div class="min-h-screen rounded-lg py-6 shadow-lg sm:px-6 lg:px-8">
-            <div class="space-y-auto flex w-full flex-col rounded-lg border border-gray-100 p-2">
+            <div class="space-y-auto flex w-full flex-col rounded-lg border border-gray-200 p-2">
                 {{ $slot }}
             </div>
         </div>

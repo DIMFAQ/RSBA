@@ -26,6 +26,9 @@ class Distribusi extends Component
     #[Locked]
     public $rows = [];
 
+    #[Locked]
+    public $total = 0;
+
     #[On('cariDistribusi')]
     function cariDataDistribusi($periode, $ruangan)
     {
@@ -77,6 +80,10 @@ class Distribusi extends Component
                 'total' => formatRupiah(($data->jml * $data->stoks->harga_satuan), false, false),
             ];
         })->toArray();
+
+        $this->total = $data->sum(function ($item) {
+            return $item->jml * $item->stoks->harga_satuan;
+        });
     }
 
     public function render()

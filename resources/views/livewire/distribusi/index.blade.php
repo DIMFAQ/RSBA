@@ -19,31 +19,31 @@
             })
         },
     }">
-        <div class="flex flex-row bg-white rounded-lg py-2 px-4">
+        <div class="flex flex-row rounded-lg bg-white px-4 py-2">
 
             {{-- search input --}}
-            <div class="flex flex-row w-full gap-2 items-center">
+            <div class="flex w-full flex-row items-center gap-2">
 
                 <div class="relative w-3/4 lg:w-1/3">
                     <!-- Input Field -->
                     <input x-ref="searchInput" wire:model.live.debounce.300ms='search' placeholder="Cari No. Transaksi Distribusi"
-                        class="h-8 px-10 transition-all duration-300 border-gray-200 rounded-lg w-full focus:outline-none" autocomplete="off" />
+                        class="h-8 w-full rounded-lg border-gray-200 px-10 transition-all duration-300 focus:outline-none" autocomplete="off" />
 
                     <!-- Icon (Search) -->
-                    <x-ts:icon name="tabler.scan" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <x-ts:icon name="tabler.scan" class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
 
                     {{-- clear icon --}}
-                    <button x-show="searchTerm" @click="reset" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-600" type="button">
-                        <x-ts:icon name="tabler.x" class="w-4 h-4" />
+                    <button x-show="searchTerm" @click="reset" class="absolute right-3 top-1/2 -translate-y-1/2 transform text-red-500 hover:text-red-600" type="button">
+                        <x-ts:icon name="tabler.x" class="h-4 w-4" />
                     </button>
 
                 </div>
             </div>
 
-            <div class="flex ml-auto justify-end gap-2 items-center">
+            <div class="ml-auto flex items-center justify-end gap-2">
 
-                <span role="button" x-show="transaksiPanel" x-on:click="transaksiDistribusi()" class="flex flex-row items-center px-2 py-1 text-red-500 hover:bg-red-200/25 hover:rounded-lg ">
-                    <x-ts:icon name="tabler.chevron-left" class="w-5 h-5" />
+                <span role="button" x-show="transaksiPanel" x-on:click="transaksiDistribusi()" class="flex flex-row items-center px-2 py-1 text-red-500 hover:rounded-lg hover:bg-red-200/25">
+                    <x-ts:icon name="tabler.chevron-left" class="h-5 w-5" />
                     Kembali
                 </span>
 
@@ -59,19 +59,19 @@
             x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 transform scale-100"
             x-transition:leave-end="opacity-0 transform scale-95" class="relative w-3/5">
 
-            <div class="absolute z-10 inset-0 left-0">
-                <div class="relative bg-white rounded-md shadow-2xl p-4 mt-1 border-2 border-b-4 border-indigo-500 transition-transform transform">
-                    <div class="absolute top-[-12px] left-[3%] transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-indigo-500 mb-1">
+            <div class="absolute inset-0 left-0 z-10">
+                <div class="relative mt-1 transform rounded-md border-2 border-b-4 border-indigo-500 bg-white p-4 shadow-2xl transition-transform">
+                    <div class="absolute left-[3%] top-[-12px] mb-1 h-0 w-0 -translate-x-1/2 transform border-b-8 border-l-8 border-r-8 border-transparent border-b-indigo-500">
                     </div>
                     {{-- content --}}
 
                     <div class="mb-2">
-                        <span class="text-gray-500 italic" wire:loading wire:target='search'> Searching : </span>
-                        <span class="text-gray-500 italic" wire:loading.remove> Hasil Pencarian : </span>
+                        <span class="italic text-gray-500" wire:loading wire:target='search'> Searching : </span>
+                        <span class="italic text-gray-500" wire:loading.remove> Hasil Pencarian : </span>
                         <span class="font-semibold text-indigo-500" x-text="searchTerm"></span>
                     </div>
 
-                    <div wire:loading wire:target="search" class="text-sm text-gray-400 italic">
+                    <div wire:loading wire:target="search" class="text-sm italic text-gray-400">
                         Loading ...
                     </div>
 
@@ -94,7 +94,31 @@
     <div x-show="!transaksiPanel" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" class="flex flex-col gap-2">
         {{-- stats --}}
         <div class="w-full">
-            <livewire:Distribusi.Stats />
+            {{-- Stats Pembelian --}}
+            <div x-data="{ showCard: false, key: '{{ \Illuminate\Support\Str::random() }}' }" class="rounded-lg border border-white p-2">
+                <!-- Toggle Button -->
+                <div class="flex justify-between">
+
+                    <span @click="showCard = !showCard" class="flex flex-row items-center gap-2 font-semibold text-indigo-500">
+                        <x-ts:icon name="tabler.chart-histogram" class="h-5" />
+                        Stats
+                    </span>
+
+                    <div class="text-gray-500" role="button">
+                        <x-ts:icon name="tabler.plus" @click="showCard = !showCard" x-show="!showCard" />
+                        <x-ts:icon name="tabler.minus" @click="showCard = !showCard" x-show="showCard" />
+                    </div>
+                </div>
+
+                <!-- Card -->
+                <div x-show="showCard" x-transition>
+                    <template x-if="showCard">
+                        <div x-bind:key="key">
+                            <livewire:Distribusi.Stats :key="Str::random()" />
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
         {{-- end stats --}}
 

@@ -147,6 +147,23 @@ class TablePembelian extends Component implements HasTable, HasForms
                             id: $record->getKey()
                         )
                     ),
+                Action::make('sp3-create')
+                    ->icon('tabler-file-dollar')
+                    ->iconButton()
+                    ->color('success')
+                    ->visible(
+                        function ($record) {
+                            if ($record->status === 'selesai') {
+                                return true;
+                            }
+                        }
+                    )
+                    ->action(
+                        fn($record, $livewire) => $livewire->modalForm(
+                            modal: 'modal-create-sp3',
+                            id: $record->getKey()
+                        )
+                    ),
             ]);
     }
 

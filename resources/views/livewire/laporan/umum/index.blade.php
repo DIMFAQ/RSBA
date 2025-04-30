@@ -8,11 +8,16 @@
             </x-slot:left>
 
             <div class="flex flex-col gap-2">
-                <form wire:submit.prevent='cariPembelian' class="flex w-full flex-col items-center justify-between gap-3 rounded-lg bg-white px-4 py-2 lg:grid lg:grid-cols-4">
-                    <x-ts:date range wire:model.lazy='periode' placeholder="Periode" />
-                    <x-ts:select.styled wire:model.lazy='vendor' :request="route('api.supplier')" select="label:nama|value:id" placeholder="Vendor / Supplier" />
-                    <x-ts:select.styled wire:model.lazy='jenis' :options="$optionsFaktur" select="label:label|value:value" placeholder="Jenis Pembelian" />
-
+                <form wire:submit.prevent='cariPembelian' class="flex w-full flex-col items-center justify-between gap-3 rounded-lg bg-white px-4 py-2 lg:grid lg:grid-cols-6">
+                    <div class="w-full lg:col-span-2">
+                        <x-ts:date range wire:model.lazy='periode' placeholder="Periode" />
+                    </div>
+                    <div class="w-full">
+                        <x-ts:select.styled wire:model.lazy='vendor' :request="route('api.supplier')" select="label:nama|value:id" placeholder="Vendor / Supplier" />
+                    </div>
+                    <div class="w-full">
+                        <x-ts:select.styled wire:model.lazy='jenis' :options="$optionsFaktur" select="label:label|value:value" placeholder="Jenis Pembelian" />
+                    </div>
                     <div class="w-10">
                         <x-ts:button sm outline type="submit" icon="tabler.zoom" loading="cariPembelian" position="left">Cari</x-ts:button>
                     </div>
@@ -31,9 +36,13 @@
             </x-slot:left>
 
             <div class="flex flex-col gap-2">
-                <form wire:submit.prevent='cariDistribusi' class="flex w-full flex-col items-center justify-between gap-3 rounded-lg bg-white px-4 py-2 lg:grid lg:grid-cols-4">
-                    <x-ts:date range wire:model.lazy='periode' placeholder="Periode Distribusi" />
-                    <x-ts:select.styled wire:model.lazy='ruangan' :request="route('api.ruangan')" select="label:nama|value:id" placeholder="Ruangan" />
+                <form wire:submit.prevent='cariDistribusi' class="flex w-full flex-col items-center justify-between gap-3 rounded-lg bg-white px-4 py-2 lg:grid lg:grid-cols-6">
+                    <div class="w-full lg:col-span-2">
+                        <x-ts:date range wire:model.lazy='periode' placeholder="Periode Distribusi" />
+                    </div>
+                    <div class="w-full">
+                        <x-ts:select.styled wire:model.lazy='ruangan' :request="route('api.ruangan')" select="label:nama|value:id" placeholder="Ruangan" />
+                    </div>
                     <div class="w-10">
                         <x-ts:button sm outline type="submit" loading="cariDistribusi" icon="tabler.zoom" position="left">Cari</x-ts:button>
                     </div>

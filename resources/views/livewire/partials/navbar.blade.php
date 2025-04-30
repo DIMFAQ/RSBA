@@ -17,31 +17,13 @@
                 <div class="me-6 hidden space-x-4 lg:block">
                     <x-ts:button.circle flat outline x-on:click="$slideOpen('pesan-drawer')" class="relative">
                         <x-tabler-mail />
+                        <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
 
-                        @php
-                            $pesan = rand(0, 20);
-                            if ($pesan > 9) {
-                                $pesan = '9+';
-                            }
-                        @endphp
-
-                        @if ($pesan > 0)
-                            <x-ts:badge color="yellow" text="{{ $pesan }}" round light class="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 transform" />
-                        @endif
                     </x-ts:button.circle>
 
                     <x-ts:button.circle flat outline x-on:click="$slideOpen('notif-drawer')" class="relative">
                         <x-tabler-bell />
-
-                        @php
-                            $notif = rand(0, 20);
-                            if ($notif > 9) {
-                                $notif = '9+';
-                            }
-                        @endphp
-                        @if ($notif > 0)
-                            <x-ts:badge color="yellow" text="{{ $notif }}" round light class="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 transform" />
-                        @endif
+                        <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
                     </x-ts:button.circle>
                 </div>
 
@@ -100,6 +82,13 @@
             <x-tabler-mail class="size-7" />
             Pesan
         </x-slot:title>
-        <livewire:Profile.Pesan :key="auth()->user()->id">
+        <div class="no-scrollbar relative h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
+            <livewire:Profile.Pesan.ListPesan :key="auth()->user()->id" />
+        </div>
+        <div class="absolute bottom-4 flex w-full items-center justify-center gap-2">
+            <a href="{{ route('profile.pesan') }}" wire:navigate>
+                <span role="button" class="rounded-lg p-2 hover:bg-indigo-200/10 hover:text-indigo-500">Lihat Semua Pesan</span>
+            </a>
+        </div>
     </x-ts:slide>
 </div>

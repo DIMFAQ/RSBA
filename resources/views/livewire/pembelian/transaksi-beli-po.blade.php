@@ -121,7 +121,8 @@
                 <div x-data="{ popUpCancelConfirm: false }" class="relative">
                     <x-ts:button outline color="neutral" x-on:click="popUpCancelConfirm = true">Tutup</x-ts:button>
 
-                    <div x-show="popUpCancelConfirm" x-transition x-trap.noscroll="popUpCancelConfirm" class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg">
+                    <div x-show="popUpCancelConfirm" x-transition x-trap.noscroll="popUpCancelConfirm" x-on:click.away="popUpCancelConfirm = false"
+                        x-on:keydown.escape.window="popUpCancelConfirm = false" class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg">
 
                         <!-- Tooltip Header -->
                         <div class="mb-3 flex items-center justify-between">

@@ -8,4 +8,11 @@
 
         <livewire:Pembelian.ViewDetailPembelian :id="$selectedId" :key="time() . $selectedId" />
     </x-filament::modal>
+
+
+    <x-filament::modal id="modal-create-sp3" width="5xl" :close-on-click-away="false">
+        <x-slot:heading>Create SP3 Pembelian</x-slot:heading>
+
+        <livewire:Surat.Sp3.AddSp3Pembelian :id="$selectedId" :key="time() . $selectedId" />
+    </x-filament::modal>
 </div>

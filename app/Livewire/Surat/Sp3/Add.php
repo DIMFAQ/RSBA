@@ -75,16 +75,24 @@ class Add extends Component
     function updatedJabatan($value)
     {
         // get id user karyawan base jabatan
-        $karyawanJabatan = KaryawanJabatan::with('karyawan')
-            ->where('jabatan_id', $value)
-            ->orderBy('id', 'desc')
-            ->first();
+        $jabatan = Jabatan::find($value);
 
-        if ($karyawanJabatan) {
-            $this->mengetahui = $karyawanJabatan->karyawan->id;
+        if ($jabatan) {
+            $karyawanJabatan = $jabatan->jabatans()
+                ->where('tgl_berakhir', null)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($karyawanJabatan) {
+                $this->mengetahui = $karyawanJabatan->karyawan->id;
+            } else {
+                $this->toast()
+                    ->error('Pejabat tidak ditemukan.', "Tidak ada karyawan dengan jabatan <b>{$jabatan->nama}</b>.")
+                    ->send();
+            }
         } else {
             $this->toast()
-                ->error('Not Found', 'Mengetahui tidak ditemukan.')
+                ->error('Harus Diisi', 'Mengetahui harus dipilih.')
                 ->send();
         }
     }
@@ -99,8 +107,7 @@ class Add extends Component
             'rekanan' => $this->rekanan,
             'bayar' => $this->method_bayar,
             'keterangan' => $this->keterangan,
-            'disetujui' => $this->mengetahui,
-            'jabatan' => $this->jabatan,
+            'jabatan_id' => $this->jabatan,
             'created_by' => auth()->user()->id,
         ];
 
@@ -140,19 +147,23 @@ class Add extends Component
 
     private function createNomor()
     {
-        $tahun = date('Y', strtotime($this->tgl));
+        // Format Nomor {no}/S4/SP.3/PBA-{kode_surat_jabatan (A10,A11,A12)}/{tanggal 14.04.2025}
 
         $last = SuratSp3::select('no')
-            ->whereYear('tahun', $tahun)
-            ->where('jabatan', $this->jabatan)
+            ->where('jabatan_id', $this->jabatan)
             ->orderBy('id', 'desc')
             ->first();
 
+        $jabatan = Jabatan::find($this->jabatan);
+
+        $tanggal = date('d.m.Y', strtotime($this->tgl));
         $no = 1;
         if ($last) {
-            $no = (int)$last->no + 1;
+            $fullNomor = explode('/', $last->no);
+            $lastNomor = $fullNomor[0];
+            $no = (int)$lastNomor + 1;
         }
-        return $no;
+        return "{$no}/S4/SP.3/PBA-{$jabatan->kode_surat}/{$tanggal}";
     }
 
     public function render()

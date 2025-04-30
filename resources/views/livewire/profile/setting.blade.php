@@ -4,6 +4,12 @@
             <livewire:Profile.GantiPassword />
         </x-ts:tab.items>
 
+        @can('tanda-tangan-digital')
+            <x-ts:tab.items tab="Certificate Tanda Tangan">
+                <livewire:Profile.SignatureCerts.Index />
+            </x-ts:tab.items>
+        @endcan
+
         <x-ts:tab.items tab="Role Permission">
             <livewire:Profile.RolePermission />
         </x-ts:tab.items>

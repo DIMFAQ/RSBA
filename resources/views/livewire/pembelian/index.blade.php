@@ -78,17 +78,15 @@
                     </x-ts:button>
 
                     <!-- Tooltip Modal -->
-                    <div class="absolute right-0 z-50 mt-2 w-48 rounded-lg bg-white p-4 shadow-lg" x-show="showOptionsBeli" x-transition x-trap.noscroll="showOptionsBeli">
+                    <div class="absolute right-0 z-50 mt-2 w-60 rounded-lg bg-white p-4 shadow-lg" x-show="showOptionsBeli" x-transition x-trap.noscroll="showOptionsBeli"
+                        x-on:click.away="showOptionsBeli = false" x-on:keydown.escape.window="showOptionsBeli = false">
 
                         <!-- Tooltip Header -->
                         <div class="mb-3 flex items-center justify-between">
-                            <span class="flex flex-row gap-2 font-semibold text-indigo-500">
-                                <x-ts:icon name="tabler.shopping-cart-plus" class="h-5 w-5" />
-                                Pembelian
+                            <span class="flex flex-row items-center gap-1 font-semibold text-indigo-500">
+                                <x-ts:icon name="tabler.shopping-cart-plus" class="h-4" />
+                                Cara Pembelian
                             </span>
-                            <button x-on:click="showOptionsBeli = false" class="text-gray-400 hover:text-gray-600">
-                                &times;
-                            </button>
                         </div>
 
                         <!-- Options -->
@@ -99,12 +97,12 @@
                                     <label class="text-xs text-red-500" x-text="validationErrors.caraBeli"></label>
                                 </template>
 
-                                <label>
+                                <label role="button">
                                     <input type="radio" x-model="selectedCaraBeli" value="langsung" x-on:change="validationErrors.caraBeli = null" />
                                     Langsung
                                 </label>
 
-                                <label>
+                                <label role="button">
                                     <input type="radio" x-model="selectedCaraBeli" value="pre-order" x-on:change="validationErrors.caraBeli = null" />
                                     Pre Order
                                 </label>
@@ -113,7 +111,7 @@
 
                         <!-- Actions -->
                         <div class="mt-4 flex justify-end gap-2">
-                            <x-ts:button sm x-on:click="confirmSelectBeli()">
+                            <x-ts:button sm x-on:click="confirmSelectBeli()" icon="tabler.corner-down-right-double">
                                 Lanjutkan
                             </x-ts:button>
                         </div>
@@ -162,12 +160,31 @@
         </div>
     </div>
 
-
     {{-- Stats Pembelian --}}
-    <div>
-        <livewire:Pembelian.Stats />
-    </div>
+    {{-- <div x-data="{ showStats: false }" class="rounded-lg border border-white p-2">
+        <!-- Toggle Button -->
+        <div class="flex justify-between">
 
+            <span @click="showStats = !showStats" class="flex flex-row items-center gap-2 font-semibold text-indigo-500">
+                <x-ts:icon name="tabler.chart-histogram" class="h-5" />
+                Stats
+            </span>
+
+            <div class="text-gray-500" role="button">
+                <x-ts:icon name="tabler.plus" @click="showStats = !showStats" x-show="!showStats" />
+                <x-ts:icon name="tabler.minus" @click="showStats = !showStats" x-show="showStats" />
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div x-show="showStats" x-transition>
+            <template x-if="showStats">
+                <div x-bind:key="key">
+                    <livewire:pembelian.stats :key="Str::random()" />
+                </div>
+            </template>
+        </div>
+    </div> --}}
 
     {{-- Table List Pembelian --}}
     <div class="w-full">

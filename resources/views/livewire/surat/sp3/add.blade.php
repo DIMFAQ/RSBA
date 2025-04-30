@@ -32,9 +32,9 @@
 
         <div class="grid grid-cols-2 gap-2">
             <x-ts:select.styled wire:model.defer='method_bayar' searchable :options="$caraBayarOptions" select="label:label|value:value" placeholder="Metode Bayar" />
-            <x-ts:select.styled wire:model.live.debounce='jabatan' searchable :options="$mengetahuiOptions" select="label:label|value:value" placeholder="Mengetahui" />
+            <x-ts:select.styled wire:model.live.debounce.300='jabatan' searchable :options="$mengetahuiOptions" select="label:label|value:value" placeholder="Mengetahui" />
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div>
             <x-ts:textarea wire:model.defer='keterangan' placeholder="Subject / Berita / Keterangan" />
         </div>
 
@@ -46,7 +46,8 @@
             @enderror
         </div>
 
-        <div x-data="listSp3" class="mt-2 border-t-2 border-dashed py-4">
+        <div x-data="listSp3" class="mt-2 flex flex-col border-t-2 border-dashed py-4">
+            <span class="text-xs italic text-gray-500">Rincian Pembayaran</span>
             <template x-for="(item, index) in itemsSp3" :key="index">
                 <div class="flex w-full flex-row items-center gap-2">
                     {{-- item --}}
@@ -64,7 +65,9 @@
 
                 {{-- addin item --}}
             </template>
-            <span x-on:click="addingItem" class="text-indigo-500 hover:font-semibold" role="button">+ New Item</span>
+            <span class="mt-2 flex-row items-center rounded-md px-2 text-indigo-500 hover:bg-indigo-200/35 hover:font-semibold" role="button" x-on:click="addingItem">
+                + Tambah Item
+            </span>
 
 
             <div class="mt-2 flex w-full flex-col rounded-md bg-indigo-200/25 px-4 py-2">

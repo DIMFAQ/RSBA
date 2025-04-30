@@ -9,7 +9,7 @@
 
     {{-- modal new invoice --}}
     <x-filament::modal id="modal-new-invoices" width="w-11/12">
-        <x-slot:heading>Inovices Baru</x-slot:heading>
-
+        <x-slot:heading>Buat Invoice</x-slot:heading>
+        <livewire:Piutang.AddInvoice :key="Str::random()" />
     </x-filament::modal>
 </div>

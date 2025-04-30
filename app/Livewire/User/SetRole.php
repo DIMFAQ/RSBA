@@ -15,6 +15,7 @@ class SetRole extends Component
     use Interactions;
 
     public ?User $user;
+    public ?Role $roleIdSelected;
 
     public $roles;
     public $role;
@@ -50,6 +51,15 @@ class SetRole extends Component
                 ->error('Failed', 'Error:' . $e->getMessage())
                 ->send();
         }
+    }
+
+    function editPermission($roleId)
+    {
+        $this->roleIdSelected = Role::findOrFail($roleId);
+        $this->dispatch(
+            'open-modal',
+            id: 'set-permission'
+        );
     }
 
 

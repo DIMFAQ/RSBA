@@ -75,11 +75,24 @@ class TableBarang extends Component implements HasTable, HasForms
             ])
 
             ->actions([
+                Action::make('print')
+                    ->iconButton()
+                    ->icon('tabler-tags')
+                    ->action(
+                        fn($record, $livewire) => $livewire->modalForm(
+                            modal: 'modal-print-label',
+                            id: $record->getKey()
+                        )
+                    ),
+
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit')
                     ->action(
-                        fn($record, $livewire) => $livewire->modalForm($record->getKey())
+                        fn($record, $livewire) => $livewire->modalForm(
+                            modal: 'modal-edit-barang',
+                            id: $record->getKey()
+                        )
                     ),
 
 
@@ -90,10 +103,10 @@ class TableBarang extends Component implements HasTable, HasForms
             ]);
     }
 
-    function modalForm($id)
+    function modalForm($modal, $id)
     {
         $this->selectedId = $id;
-        $this->dispatch('open-modal', id: 'modal-edit-barang');
+        $this->dispatch('open-modal', id: $modal);
     }
 
     public function render()

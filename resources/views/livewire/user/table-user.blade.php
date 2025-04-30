@@ -2,7 +2,7 @@
     {{ $this->table }}
 
     {{-- modal --}}
-    <x-filament::modal id="set-user-role">
+    <x-filament::modal id="set-user-role" :close-by-clicking-away="false">
         <x-slot name="heading">
             Set Role <span class="text-primary-500">{{ $user?->karyawan->nama }}</span>
         </x-slot>
@@ -11,7 +11,7 @@
     </x-filament::modal>
 
 
-    <x-filament::modal id="edit-user-permission" width="lg">
+    <x-filament::modal id="edit-user-permission" width="full" :close-by-clicking-away="false">
         <x-slot name="heading">
             User Permission <span class="text-primary-500">{{ $user?->karyawan->nama }}</span>
         </x-slot>

@@ -30,6 +30,9 @@ class Pembelian extends Component
     #[Locked]
     public $rows = [];
 
+    #[Locked]
+    public $total = 0;
+
     #[On('cariPembelian')]
     public function cariDataBeli($periode, $vendor, $jenis)
     {
@@ -80,6 +83,11 @@ class Pembelian extends Component
                 'total' => formatRupiah(($data->stoks->stok * $data->stoks->harga_satuan), false, false)
             ];
         })->toArray();
+
+        // Total Table
+        $this->total = $data->map(function ($data) {
+            return $data->stoks->stok * $data->stoks->harga_satuan;
+        })->sum();
     }
 
     public function render()

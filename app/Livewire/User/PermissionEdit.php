@@ -5,7 +5,9 @@ namespace App\Livewire\User;
 use App\Models\Menu;
 use App\Models\User;
 use Livewire\Component;
+use App\Enums\MenuGroup;
 use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use TallStackUi\Traits\Interactions;
@@ -17,28 +19,41 @@ class PermissionEdit extends Component
 
     public ?User $user;
     public $mainMenu;
-    public $menus;
-    // public $menu;
-
+    public $group = 'sdm';
 
     public $permission = [];
     public $rolePermission = [];
-
-    // public $rules = [
-    //     'permission' => 'required'
-    // ];
 
     public function mount($id)
     {
         $this->user = User::findOrFail($id);
         $this->mainMenu = Menu::first();
 
-        $this->menus = Menu::where('id', '!=', $this->mainMenu->id)->with('submenus')->get();
-        $this->permission = $this->user->getAllPermissions()->pluck('name')->toArray();
+        // $this->menus = Menu::where('id', '!=', $this->mainMenu->id)->with('submenus')->get();
 
+        $this->permission = $this->user->getAllPermissions()->pluck('name')->toArray();
 
         $roleUser = Role::findByName($this->user->getRoleNames()[0]);
         $this->rolePermission = $roleUser->permissions->pluck('name');
+    }
+
+    #[Computed]
+    public function groupMenu()
+    {
+        return collect(MenuGroup::cases())->mapWithKeys(fn($case) => [
+            $case->value => $case->nama()
+        ]);
+    }
+
+    #[Computed]
+    public function menus()
+    {
+        return Menu::where('id', '!=', $this->mainMenu->id)
+            ->with('submenus')
+            ->orderBy('group', 'ASC')
+            ->orderBy('nama', 'ASC')
+            ->get()
+            ->groupBy('group');
     }
 
     function submit()

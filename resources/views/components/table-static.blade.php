@@ -1,16 +1,16 @@
 @props(['headers', 'rows', 'striped' => false, 'paginator' => false, 'no' => false, 'headerless' => false])
 
-<div class="w-full">
-    <table class="border-collapses min-w-full table-fixed overflow-auto">
+<div class="no-scrollbar w-full overflow-x-auto">
+    <table class="border-collapses w-full min-w-full table-auto">
 
         @if (!$headerless)
             <thead class="text-left text-sm capitalize text-gray-600">
                 <tr>
                     @if ($no)
-                        <th class="px-4 py-2">No.</th>
+                        <th class="w-[50px] px-4 py-2">No.</th>
                     @endif
                     @foreach ($headers as $index => $header)
-                        <th class="px-4 py-2">{{ $header['label'] }}</th>
+                        <th class="{{ $loop->last ? 'text-right' : '' }} px-4 py-2">{{ $header['label'] }}</th>
                     @endforeach
                 </tr>
             </thead>
@@ -19,16 +19,16 @@
         <tbody>
             @forelse ($rows as $index => $row)
                 <tr @class([
-                    'text-sm text-gray-800 border-y  hover:bg-indigo-100/50',
+                    'text-sm text-gray-800 border-y hover:bg-indigo-100/50 ',
                     'even:bg-gray-200/25' => $striped,
                 ]) :key="{{ $index }}">
 
                     @if ($no)
-                        <td class="px-4 py-2">{{ $loop->iteration }}</td>
+                        <td class="w-[50px] px-4 py-2">{{ $loop->iteration }}</td>
                     @endif
 
                     @foreach ($headers as $header)
-                        <td class="px-4 py-2">
+                        <td class="{{ $loop->last ? 'text-right' : '' }} px-4 py-2"">
                             {{ $row[$header['index']] }}
                         </td>
                     @endforeach

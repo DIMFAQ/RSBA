@@ -192,7 +192,8 @@
                         </x-ts:button>
 
                         <!-- Tooltip Modal -->
-                        <div class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg" x-show="waitOrDone" x-transition x-trap.noscroll="waitOrDone">
+                        <div class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg" x-show="waitOrDone" x-transition x-trap.noscroll="waitOrDone"
+                            x-on:click.away="waitOrDone = false" x-on:keydown.escape.window="waitOrDone = false">
 
                             <!-- Tooltip Header -->
                             <div class="mb-3 flex items-center justify-between">

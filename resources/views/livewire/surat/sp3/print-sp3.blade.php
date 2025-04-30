@@ -5,15 +5,14 @@
         }
     </style>
 
-    <div align="center">
-        <img src="" style="height:40px;">
+    <div align="center" class="mb-2">
+        <img src="{{ asset('storage/' . $rs->logo) }}" style="height:60px;">
+        <h2 class="bold text-lg uppercase">{{ $rs->nama }}</h2>
+        <span class="text-sm">SURAT PERMINTAAN PROSES PEMBAYARAN<br>(Kontrak, Sundries, Material, dll.)</span>
     </div>
     <table cellpadding="3" align="center" style="font-size:10px; ">
         <tr>
-            <td align="center" colspan="6" style="font-size:16px;text-transform: uppercase;"><b><?= $rs->nama ?></b></td>
-        </tr>
-        <tr>
-            <td align="center" colspan="6">SURAT PERMINTAAN PROSES PEMBAYARAN<br>(Kontrak, Sundries, Material, dll.)<br><br></b></td>
+            <td colspan="6" style="border-top:1px solid;"></td>
         </tr>
         <tr>
             <td style="width:200px;" class="bold">Kepada</td>
@@ -27,10 +26,10 @@
         <tr>
             <td><b>Dari</b></td>
             <td><b>:</b></td>
-            <td><?= '' ?></td>
-            <td><b>Tgl</b></td>
+            <td><?= $suratSp3->jabatans->nama ?></td>
+            <td><b>Tanggal</b></td>
             <td><b>:</b></td>
-            <td><?= '' ?></td>
+            <td><?= Carbon\Carbon::parse($suratSp3->tgl)->translatedFormat('d M Y') ?></td>
         </tr>
         <tr>
             <td colspan="6" style="border-top:1px solid;"></td>
@@ -39,34 +38,46 @@
             <td colspan="6"><b>Terlampir dikirimkan dokumen pendukung pembayaran atas (Kontrak, Sundries, Material, dll) sbb:</b><br></td>
         </tr>
         <tr>
-            <td><b>Keterangan Pembayaran</b></td>
-            <td><b>:</b></td>
-            <td colspan="4"><?= '' ?></td>
+            <td valign="top"><b>Keterangan Pembayaran</b></td>
+            <td valign="top"><b>:</b></td>
+            <td colspan="4"><?= nl2br(e($suratSp3->keterangan)) ?></td>
         </tr>
         <tr>
             <td><b>Nama Rekanan / Pelaksana</b></td>
             <td><b>:</b></td>
-            <td colspan="4"><?= '' ?></td>
+            <td colspan="4"><?= $suratSp3->rekanan ?></td>
         </tr>
         <tr>
-            <td valign="top"><b>Jumlah Pembayaran</b></td>
+            <td valign="top"><b>Untuk Pembayaran</b></td>
             <td valign="top"><b>:</b></td>
             <td colspan="4">
-                <table cellpadding="5" border="1" style='border-collapse:collapse;font-size:12px;'>
-
+                <table cellpadding="5" border="1" style='font-size:12px;width:95%;border:1px solid black;'>
+                    @foreach ($suratSp3->details as $item)
+                        <tr style="border:1px solid black;">
+                            <td>{{ $loop->iteration }}.</td>
+                            <td style="width:60%">{{ $item->keterangan }}</td>
+                            <td style="width:40%" align="right">{{ formatRupiah($item->nominal, true, false) }}</td>
+                        </tr>
+                    @endforeach
+                    <tr style="border:1px solid black;font-weight:bold;">
+                        <td colspan="2">Total</td>
+                        <td align="right">{{ formatRupiah($suratSp3->details->sum('nominal'), true, false) }}</td>
+                    </tr>
                 </table>
             </td>
         </tr>
         <tr>
-            <td><b>Terbilang</b></td>
-            <td><b>:</b></td>
-            <td colspan="4"></td>
+            <td valign="top"><b>Terbilang</b></td>
+            <td valign="top"><b>:</b></td>
+            <td colspan="4">
+                {{ terbilang($suratSp3->details->sum('nominal')) }}<br>
+            </td>
         </tr>
         <tr>
             <td><b>Cara Pembayaran</b></td>
             <td><b>:</b></td>
             <td colspan="4">
-
+                {{ $suratSp3->method_bayar }}
             </td>
         </tr>
         <tr>
@@ -74,19 +85,29 @@
                     terima kasih.</b></td>
         </tr>
         <tr>
-            <td colspan="6" align="right">
-                <table style="font-size:12px;">
-                    <tr>
-                        <td>Disetujui Oleh,</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><b><br><br><br> </b></td>
-                    </tr>
-                </table>
-            </td>
+            @forelse ($this->approvals as $item)
+                <td colspan="6" align="right">
+                    <table style="font-size:12px;">
+                        <tr>
+                            <td>{{ $item['status'] }} Oleh, <br> {{ $suratSp3->jabatans->nama }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="data:image/png;base64,{{ $this->generateBarcode }}" alt="Barcode Tanda Tangan" style="height: auto; width:128px; ">
+                                {{ $item['nama'] }}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            @empty
+                <td colspan="6" align="right">
+                    <table style="font-size:12px; font-style:italic;">
+                        <tr>
+                            <td>Menunggu Persetujuan</td>
+                        </tr>
+                    </table>
+                </td>
+            @endforelse
         </tr>
         <tr>
             <td colspan="6">
