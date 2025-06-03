@@ -46,32 +46,13 @@
     </div>
 
 
-    <span class="mt-1 text-sm text-gray-500">Check Data :</span>
-    <div class="mt-1 flex flex-row gap-2">
-        <x-ts:button flat class="h-5" x-on:click="$dispatch('open-modal',{id:'modalDokterNull'})">
-            Dokter Kosong
-        </x-ts:button>
+    <span role="button" class="mt-2 text-sm text-indigo-500 hover:rounded-md hover:bg-indigo-100" x-on:click="$dispatch('open-modal',{id:'modalDataDokter'})">Check Data Dokter</span>
 
-        <x-ts:button flat class="h-5" x-on:click="$dispatch('open-modal',{id:'modalAnastesiNull'})">
-            Anastesi Kosong
-        </x-ts:button>
-    </div>
-
-    {{-- modal chek data --}}
-    <x-filament::modal id="modalDokterNull" width="3/4" class="max-h-screen overflow-auto">
-        <x-slot:heading>Dokter visit tidak ada : </x-slot:heading>
-
-        <livewire:Jasmed.CheckVisit :key="Str::random()" />
+    {{-- Modal Check Data Dokter --}}
+    <x-filament::modal id="modalDataDokter" width="3/4" class="max-h-screen overflow-auto">
+        <x-slot:heading>Data Dokter </x-slot:heading>
+        <livewire:Jasmed.Dokter.Index :key="Str::random()" />
     </x-filament::modal>
-
-
-    <x-filament::modal id="modalAnastesiNull" width="3/4" class="max-h-screen overflow-auto">
-        <x-slot:heading>Dokter Anastesi tidak ada / belum diinput : </x-slot:heading>
-
-        <livewire:Jasmed.CheckAnastesi :key="Str::random()" />
-    </x-filament::modal>
-    {{-- end modal check data --}}
-
 
     <hr class="my-3">
     <h2 class="font-semibold">Step 4 - Import Data Rincian</h2>
