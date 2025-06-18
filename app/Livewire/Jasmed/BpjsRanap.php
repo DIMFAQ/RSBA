@@ -174,8 +174,9 @@ class BpjsRanap extends Component
         $total_billing = $rincian->riil_rs;
         $chosaring = $rincian->chosaring;
 
-        $klaim = $pasien->disetujui;
-        $jasa = ceil((($klaim + $chosaring) * 38) / 100);
+        $klaim = $pasien->disetujui + $chosaring;
+        // $jasa = ceil((($klaim + $chosaring) * 38) / 100);
+        $jasa = ceil(($klaim * 38) / 100);
         $rincian = $total_billing + $jasa;
         $klaim_rincian = $klaim - $rincian;
 
