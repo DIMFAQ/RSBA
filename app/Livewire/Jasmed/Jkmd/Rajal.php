@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Jasmed;
+namespace App\Livewire\Jasmed\Jkmd;
 
 use App\Models\JmJasa;
 use Livewire\Component;
@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
-#[Lazy(isolate: false)]
-class BpjsRajal extends Component
+#[Lazy]
+class Rajal extends Component
 {
     use WithFileUploads;
     use Interactions;
@@ -30,7 +30,7 @@ class BpjsRajal extends Component
             ->whereMonth('tgl_checkout', $bulan)
             ->where('disetujui', '>', 0)
             ->where('layanan', 'rajal')
-            ->where('cabar', 'bpjs')
+            ->where('cabar', 'jkmd')
             ->where('batch', $batch)
             ->whereNotNull('kelompok');
     }
@@ -297,11 +297,11 @@ class BpjsRajal extends Component
         return Excel::download(
             new RajalExport(
                 periode: $this->bulan_rj,
-                cabar: 'bpjs',
+                cabar: 'jkmd',
                 kelompok: $this->pilih_download_rajal,
                 batch: $this->batch_rj
             ),
-            'Rekap Jasa Rajal BPJS ' . $this->bulan_rj . '.xlsx'
+            'Rekap Jasa Rajal JKMD ' . $this->bulan_rj . '.xlsx'
         );
 
         $this->toast()->success('Sukses!', 'Download berhasil.')->send();
@@ -320,6 +320,6 @@ class BpjsRajal extends Component
 
     public function render()
     {
-        return view('livewire.jasmed.bpjs-rajal');
+        return view('livewire.jasmed.jkmd.rajal');
     }
 }

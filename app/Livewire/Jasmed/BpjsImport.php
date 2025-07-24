@@ -24,7 +24,13 @@ class BpjsImport extends Component
     public $excelDisetujui;
     public $excelDokter;
     public $excelRincian;
+    public string $cabar;
 
+
+    public function mount(String $content): void
+    {
+        $this->cabar = $content;
+    }
 
     function importData($file, $importClass, $successMessage)
     {

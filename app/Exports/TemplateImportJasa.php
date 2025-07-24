@@ -207,7 +207,7 @@ class TemplateImportJasa implements FromArray, WithHeadings
                     'pelayanan_darah',
                     'rehabilitasi',
                     'kamar_akomodasi',
-                    'kamar_intensif',
+                    'rawat_intensif',
                     'obat',
                     'alkes',
                     'bmhp',

@@ -16,15 +16,16 @@ class CheckAnastesi extends Component
 {
     use Interactions;
 
-    public $tgl_checkout;
+    public $tgl_checkout, $cabar;
     public $search_option = 'no_rekmedis';
     public $cari = '';
 
     public $anastesi = [];
 
-    public function mount($tgl_checkout, $search_option, $cari)
+    public function mount($tgl_checkout, $cabar, $search_option, $cari)
     {
         $this->tgl_checkout = $tgl_checkout;
+        $this->cabar = $cabar;
         $this->search_option = $search_option;
         $this->cari = $cari;
     }
@@ -48,7 +49,7 @@ class CheckAnastesi extends Component
             })
             ->whereNull('jm_dokter.id')
             ->where('layanan', 'ranap')
-            ->where('cabar', 'bpjs')
+            ->where('cabar', $this->cabar)
             ->whereBetween('tgl_checkout', [
                 Carbon::parse($this->tgl_checkout)->startOfMonth(),
                 Carbon::parse($this->tgl_checkout)->endOfMonth()

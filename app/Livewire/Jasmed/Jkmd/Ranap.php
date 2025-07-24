@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Jasmed;
+namespace App\Livewire\Jasmed\Jkmd;
 
 use App\Models\JmJasa;
 use Livewire\Component;
@@ -16,8 +16,8 @@ use App\Exports\TemplateImportJasa;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 
-#[Lazy(isolate: false)]
-class BpjsRanap extends Component
+#[Lazy]
+class Ranap extends Component
 {
     use WithFileUploads;
     use Interactions;
@@ -58,7 +58,7 @@ class BpjsRanap extends Component
             ->whereMonth('tgl_checkout', $bulan)
             ->where('disetujui', '>', 0)
             ->where('layanan', 'ranap')
-            ->where('cabar', 'bpjs')
+            ->where('cabar', 'jkmd')
             ->where('batch', $batch)
             ->whereNotNull('kelompok')
             ->get();
@@ -93,37 +93,20 @@ class BpjsRanap extends Component
     {
         $rincian = JmRincian::where('jm_pasien_id', $pasien->id)->first();
 
-        $total =
-            $rincian->prosedur_non_bedah +
-            // $rincian->prosedur_bedah +
-            ceil(($rincian->konsultasi * 70) / 100) +
-            // $rincian->tenaga_ahli +
-            $rincian->keperawatan +
-            $rincian->penunjang +
-            $rincian->radiologi +
-            $rincian->laboratorium +
-            $rincian->pelayanan_darah +
-            $rincian->rehabilitasi +
-            $rincian->kamar_akomodasi +
-            $rincian->rawat_intensif +
-            $rincian->obat +
-            $rincian->alkes +
-            $rincian->bmhp +
-            $rincian->sewa_alat +
-            $rincian->obat_kronis +
-            $rincian->obat_kemo;
+        $tarif_rs = $pasien->tarif_rs;
+        $total_to_no = $rincian->prosedur_bedah + $rincian->prosedur_non_bedah;
+        $real_rs = ($tarif_rs - $total_to_no) - (ceil($tarif_rs * 20) / 100);
 
         $data = [
-            'riil_rs' =>  $total,
+            'riil_rs' =>  $real_rs,
             'chosaring' => $rincian->chosaring
-
         ];
         return json_decode(json_encode($data));
     }
 
 
     /** 
-     * HITUNG JASA RAWAT INAP BPJS
+     * HITUNG JASA RAWAT INAP JKMD
      */
     function sumbitProcessRanap()
     {
@@ -284,6 +267,7 @@ class BpjsRanap extends Component
             'jasa_um_sertifikat' => $j_umum_s,
             'jasa_dpjp_hd' => $j_dpjp_hd
         ];
+
         $prosentase = JmProsentase::updateOrCreate(
             ['jm_pasien_id' => $pasien->id],
             $data
@@ -531,11 +515,11 @@ class BpjsRanap extends Component
         return Excel::download(
             new RanapExport(
                 periode: $this->bulan_ri,
-                cabar: 'bpjs',
+                cabar: 'jkmd',
                 kelompok: $this->pilih_download_ranap,
                 batch: $this->batch_ri
             ),
-            'Rekap Jasa Ranap BPJS ' . $this->bulan_ri . '.xlsx'
+            'Rekap Jasa Ranap JKMD ' . $this->bulan_ri . '.xlsx'
         );
 
         $this->toast()->success('Sukses !', 'Download berhasil.')->send();
@@ -553,6 +537,6 @@ class BpjsRanap extends Component
 
     public function render()
     {
-        return view('livewire.jasmed.bpjs-ranap');
+        return view('livewire.jasmed.jkmd.ranap');
     }
 }

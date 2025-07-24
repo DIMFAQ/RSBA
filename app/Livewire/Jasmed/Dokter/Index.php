@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Jasmed\Dokter;
 
+use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
+#[Lazy]
 class Index extends Component
 {
     public string $tab = '';
@@ -16,11 +18,25 @@ class Index extends Component
         ['value' => 'sep', 'label' => 'SEP'],
     ];
 
+    public $cabarOptions = [
+        ['value' => 'bpjs', 'label' => 'BPJS'],
+        ['value' => 'jkmd', 'label' => 'JKMD'],
+        ['value' => 'tunai', 'label' => 'Tunai']
+    ];
+
+
     public $tgl_checkout;
+    public string $cabar = 'bpjs';
     public string $search_option = 'no_rekmedis';
     public string $cari = '';
     public bool $is_no_klaim = false;
     public bool $has_no_dokter = false;
+
+
+    public function mount(String $cabar): void
+    {
+        $this->cabar = $cabar;
+    }
 
     public function rules(): array
     {

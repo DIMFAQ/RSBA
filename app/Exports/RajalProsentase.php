@@ -10,12 +10,14 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 class RajalProsentase implements FromCollection, WithHeadings, WithTitle
 {
     private $periode;
+    private $cabar;
     private $kelompok;
     private $batch;
 
-    public function __construct($periode, $kelompok, $batch)
+    public function __construct($periode, $cabar, $kelompok, $batch)
     {
         $this->periode = $periode;
+        $this->cabar = $cabar;
         $this->kelompok = $kelompok;
         $this->batch = $batch;
     }
@@ -42,7 +44,7 @@ class RajalProsentase implements FromCollection, WithHeadings, WithTitle
             ->whereYear('jm_pasien.tgl_checkout', $tahun)
             ->whereMonth('jm_pasien.tgl_checkout', $bulan)
             ->where('jm_pasien.layanan', 'rajal')
-            ->where('jm_pasien.cabar', 'bpjs')
+            ->where('jm_pasien.cabar', $this->cabar)
             ->where('jm_pasien.kelompok', $this->kelompok)
             ->where('jm_pasien.batch', $this->batch)
             ->get();

@@ -8,13 +8,15 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class RajalExport implements WithMultipleSheets
 {
     protected $periode;
+    protected $cabar;
     protected $kelompok;
     protected $pelayanan = 'rajal';
     protected $batch;
 
-    public function __construct($periode, $kelompok, $batch)
+    public function __construct($periode, $cabar, $kelompok, $batch)
     {
         $this->periode = $periode;
+        $this->cabar = $cabar;
         $this->kelompok = $kelompok;
         $this->batch = $batch;
     }
@@ -26,8 +28,19 @@ class RajalExport implements WithMultipleSheets
 
         if ($this->kelompok) {
             return [
-                'Sheet1' => new RajalProsentase($this->periode, $this->kelompok, $this->batch),
-                'Sheet2' => new RekapJasaDokter($this->periode, $this->kelompok, $this->pelayanan, $this->batch),
+                'Sheet1' => new RajalProsentase(
+                    periode: $this->periode,
+                    cabar: $this->cabar,
+                    kelompok: $this->kelompok,
+                    batch: $this->batch
+                ),
+                'Sheet2' => new RekapJasaDokter(
+                    periode: $this->periode,
+                    cabar: $this->cabar,
+                    kelompok: $this->kelompok,
+                    pelayanan: $this->pelayanan,
+                    batch: $this->batch
+                ),
             ];
         }
         // kelompok tidak dipilih
@@ -43,11 +56,22 @@ class RajalExport implements WithMultipleSheets
 
             foreach ($semua_kelompok as $kelompok) {
                 // prosentase per kelompok
-                $sheets[] = new RajalProsentase($this->periode, $kelompok, $this->batch);
+                $sheets[] = new RajalProsentase(
+                    periode: $this->periode,
+                    cabar: $this->cabar,
+                    kelompok: $kelompok,
+                    batch: $this->batch
+                );
             }
 
             // sheets rekap dokter
-            $sheets[] = new RekapJasaDokter($this->periode, $this->kelompok, $this->pelayanan, $this->batch);
+            $sheets[] = new RekapJasaDokter(
+                periode: $this->periode,
+                cabar: $this->cabar,
+                kelompok: $this->kelompok,
+                pelayanan: $this->pelayanan,
+                batch: $this->batch
+            );
 
             return $sheets;
         }

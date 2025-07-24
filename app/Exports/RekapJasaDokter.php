@@ -12,13 +12,15 @@ class RekapJasaDokter implements FromCollection, WithHeadings, WithTitle
 {
 
     private $periode;
+    private $cabar;
     private $kelompok;
     private $pelayanan;
     private $batch;
 
-    public function __construct($periode, $kelompok, $pelayanan, $batch)
+    public function __construct($periode, $cabar, $kelompok, $pelayanan, $batch)
     {
         $this->periode = $periode;
+        $this->cabar = $cabar;
         $this->kelompok  = $kelompok;
         $this->pelayanan = $pelayanan;
         $this->batch = $batch;
@@ -45,7 +47,7 @@ class RekapJasaDokter implements FromCollection, WithHeadings, WithTitle
             ->whereMonth('jm_pasien.tgl_checkout', $bulan)
             ->where('jm_pasien.layanan', $this->pelayanan)
             ->where('jm_pasien.batch', $this->batch)
-            ->where('jm_pasien.cabar', 'bpjs');
+            ->where('jm_pasien.cabar', $this->cabar);
 
         if ($this->kelompok) {
             $query->where('jm_pasien.kelompok', $this->kelompok);

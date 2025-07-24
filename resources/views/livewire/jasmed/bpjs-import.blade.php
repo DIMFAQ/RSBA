@@ -51,7 +51,7 @@
     {{-- Modal Check Data Dokter --}}
     <x-filament::modal id="modalDataDokter" width="3/4" class="max-h-screen overflow-auto">
         <x-slot:heading>Data Dokter </x-slot:heading>
-        <livewire:Jasmed.Dokter.Index :key="Str::random()" />
+        <livewire:Jasmed.Dokter.Index :$cabar :key="Str::random()" />
     </x-filament::modal>
 
     <hr class="my-3">

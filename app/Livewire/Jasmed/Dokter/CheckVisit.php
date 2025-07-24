@@ -15,17 +15,18 @@ class CheckVisit extends Component
 {
     use WithPagination;
 
-    public $tgl_checkout, $search_option, $cari;
+    public $tgl_checkout, $cabar, $search_option, $cari;
     public bool $is_no_klaim = false;
     public bool $has_no_dokter = false;
 
     #[Locked]
     public $selectedId;
 
-    public function mount($tgl_checkout, $search_option, $cari, $is_no_klaim, $has_no_dokter)
+    public function mount($tgl_checkout, $cabar, $search_option, $cari, $is_no_klaim, $has_no_dokter)
     {
         $this->tgl_checkout = $tgl_checkout;
         $this->search_option = $search_option;
+        $this->cabar = $cabar;
         $this->cari = $cari;
         $this->is_no_klaim = $is_no_klaim;
         $this->has_no_dokter = $has_no_dokter;
@@ -47,7 +48,7 @@ class CheckVisit extends Component
         ])
             ->with(['dokter'])
             ->where('jm_pasien.layanan', 'ranap')
-            ->where('jm_pasien.cabar', 'bpjs')
+            ->where('jm_pasien.cabar', $this->cabar)
             ->where('jm_pasien.disetujui', $this->is_no_klaim ? '=' : '>', 0)
             ->where($this->search_option, 'like', '%' . $this->cari . '%')
             ->whereBetween('jm_pasien.tgl_checkout', [

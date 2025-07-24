@@ -20,6 +20,11 @@ class PermissionSeeder extends Seeder
             'create-cuti-other-karyawan',
             'tanda-tangan-digital',
             'terima-pembelian',
+
+            // Jasmed
+            'jasmed-bpjs',
+            'jasmed-tunai',
+            'jasmed-jkmd',
         ];
 
         foreach ($permissions as $permission) {
