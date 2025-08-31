@@ -95,7 +95,13 @@ class Ranap extends Component
 
         $tarif_rs = $pasien->tarif_rs;
         $total_to_no = $rincian->prosedur_bedah + $rincian->prosedur_non_bedah;
-        $real_rs = ($tarif_rs - $total_to_no) - (ceil($tarif_rs * 20) / 100);
+
+
+        // real manual atau otomatis 20 persen dari tarif rs
+        $real_rs = $rincian->real_billing_jasa > 0
+            ? $rincian->real_billing_jasa
+            : $real_rs = ($tarif_rs - $total_to_no) - (ceil($tarif_rs * 20) / 100);;
+
 
         $data = [
             'riil_rs' =>  $real_rs,

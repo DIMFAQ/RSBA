@@ -103,6 +103,7 @@ class TemplateImportJasa implements FromArray, WithHeadings
                         'Total Sewa Alat',
                         'Total Obat Kronis',
                         'Total Obat Kemo',
+                        'Total Real Billing Jasa (jika nilai billing manual)'
                     ]
                 ];
                 break;
@@ -214,6 +215,7 @@ class TemplateImportJasa implements FromArray, WithHeadings
                     'sewa_alat',
                     'obat_kronis',
                     'obat_kemo',
+                    'real_billing_jasa'
                 ];
                 break;
 
