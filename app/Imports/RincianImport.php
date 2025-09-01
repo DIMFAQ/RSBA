@@ -51,7 +51,7 @@ class RincianImport implements ToModel, WithHeadingRow
                         'sewa_alat' => $row['sewa_alat'] ?? 0,
                         'obat_kronis' => $row['obat_kronis'] ?? 0,
                         'obat_kemo' => $row['obat_kemo'] ?? 0,
-                        'real_billling_jasa' => $row['real_billing_jasa'] ?? 0
+                        'real_billing_jasa' => $row['real_billing_jasa'] ?? 0
                     ]
                 );
             });
