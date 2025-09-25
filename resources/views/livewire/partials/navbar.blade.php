@@ -31,10 +31,10 @@
                     <x-slot:action>
                         <div role="button" class="flex gap-3" x-on:click="show = !show">
                             <div class="flex flex-col">
-                                <span class="text-lg font-semibold">{{ Auth::user()->karyawan->nama }}</span>
-                                <span class="text-xs text-gray-500/80">{{ Auth::user()->email }}</span>
+                                <span class="text-lg font-semibold">{{ $nama }}</span>
+                                <span class="text-xs text-gray-500/80">{{ $email }}</span>
                             </div>
-                            <x-ts:avatar :image="auth()->user()->karyawan->foto ? asset('storage/' . auth()->user()->karyawan->foto) : null" :model="!auth()->user()->karyawan->foto ? auth()->user()->karyawan : null" property="nama" color="fff" md borderless="{{ auth()->user()->karyawan->foto ? true : false }}" />
+                            <x-ts:avatar :image="$foto" :text="$textFoto" :color="$colorFoto" md borderless="{{ $hasFoto ? true : false }}" />
                         </div>
                     </x-slot:action>
 

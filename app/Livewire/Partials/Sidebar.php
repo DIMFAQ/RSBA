@@ -14,96 +14,99 @@ class Sidebar extends Component
 
     public string $searchMenu = '';
 
-    function mount()
+    public function mount()
     {
-        $menus = $this->getMenuSubmenus();
-        /**
-         * Main menu & submenu di filter berdasarkan permission user 
-         */
-        if (!Auth::user()->hasRole('Super-Admin')) {
 
+        $id_user = auth()->id();
+        $this->getMenuUser(
+            id_user: $id_user
+        );
+    }
 
-            // Not Super-Admin
-            // $menus = collect($menus)->map(function ($menu) {
-            //     // Check if the user has 'view-*' permission for the parent menu
-            //     $hasParentPermission = collect($menu['permission'])->contains(
-            //         fn($permission) => str_starts_with($permission, 'view') && Auth::user()->hasPermissionTo($permission)
-            //     );
+    public function getMenuUser(int $id_user)
+    {
+        $keyCache = 'user-sidebar-menu:' . $id_user;
 
-            //     // Filter submenus to include only those with permissions
-            //     $permittedSubmenus = collect($menu['submenus'])->filter(function ($submenu) {
-            //         return collect($submenu['permission'])->contains(
-            //             fn($permission) => str_starts_with($permission, 'view') && Auth::user()->hasPermissionTo($permission)
-            //         );
-            //     })->values()->toArray();
+        $menuCache =  cache()->remember($keyCache, 60 * 60, function () use ($id_user) {
+            $menus = $this->getMenuSubmenus();
 
-            //     // Include the menu if the user has permission for the parent or any of its submenus
-            //     if ($hasParentPermission || count($permittedSubmenus) > 0) {
-            //         $menu['submenus'] = $permittedSubmenus; // Set only the permitted submenus
-            //         return $menu;
-            //     }
+            if (Auth::user()->hasRole('Super-Admin')) {
+                return $menus;
+            }
 
-            //     return null; // Exclude this menu if no permissions
-            // })->filter()->toArray();
+            // Pre-compute semua view permissions user
+            $userViewPermissions = $this->getCachedUserViewPermissions(userId: $id_user);
 
+            return collect($menus)
+                ->map(function ($groupedMenus, $groupName) use ($userViewPermissions) {
+                    $filteredMenus = collect($groupedMenus)
+                        ->map(function ($menu) use ($userViewPermissions) {
+                            return $this->filterMenuWithViewPermissions($menu, $userViewPermissions);
+                        })
+                        ->filter()
+                        ->values()
+                        ->toArray();
 
-
-            // BUKAN ADMIN
-            // New With Group
-            $menus = collect($menus) //Mengubah array `$menus` menjadi koleksi untuk memanfaatkan fungsi-fungsi Laravel Collection
-
-                //[01] each menu pada group , eksekusi per group menu
-                ->map(function ($groupedMenus, $groupName) {
-
-                    // Proses by setiap menu dalam group
-                    $filteredMenus = collect($groupedMenus)->map(function ($menu) {
-
-                        // [02] Check jika user has 'view-*' permission pada menu utama
-                        // **Pastikan key 'permission' ada dan tidak kosong
-                        $hasParentPermission = !empty($menu['permission'])
-                            &&
-                            collect($menu['permission'])->contains(
-                                fn($permission) => str_starts_with($permission, 'view') && Auth::user()->hasPermissionTo($permission)
-                            );
-
-                        // [03] Filter submenus jika subemenu adaa item nya
-                        $permittedSubmenus = collect($menu['submenus'] ?? [])->filter(function ($submenu) {
-                            // Periksa izin untuk setiap submenu
-                            // ** Pastikan key 'permission' pada submenu ada dan tidak kosong
-                            return !empty($submenu['permission'])
-                                &&
-                                collect($submenu['permission'])->contains(
-                                    fn($permission) => str_starts_with($permission, 'view') && Auth::user()->hasPermissionTo($permission)
-                                );
-
-                            // Mengatur hasil filter submenu menjadi array yang rapi
-                        })->values()->toArray();
-
-                        // [04] return ke group
-                        // Sertakan menu induk jika user memiliki izin atau submenunya ada yang diizinkan
-                        if ($hasParentPermission || count($permittedSubmenus) > 0) {
-                            $menu['submenus'] = $permittedSubmenus; // Menyimpan submenu yang diizinkan saja
-                            return $menu; // Mengembalikan menu dengan submenu yang sudah difilter
-                        }
-
-
-                        // EXCLUDE  
-                        //Jika tidak memiliki izin, menu ini tidak disertakan
-                        return null;
-
-                        // Menghapus menu yang `null` dan menyusun ulang indeks array
-                    })->filter()->values()->toArray();
-
-                    // Sertakan grup jika masih memiliki menu setelah difilter
                     return count($filteredMenus) > 0 ? [$groupName => $filteredMenus] : null;
                 })
-                ->filter() // Menghapus grup menu yang kosong
-                ->collapse() // Menggabungkan hasil menjadi struktur array satu tingkat
-                ->toArray(); // Mengubah kembali menjadi array biasa
+                ->filter()
+                ->collapse()
+                ->toArray();
+        });
+
+        $this->menus = array_merge($this->menus, $menuCache);
+
+        return $this->menus; // Return the merged menus
+    }
+
+    /**
+     * Hanya ambil permissions yang diawali dengan 'view'
+     */
+    private function getCachedUserViewPermissions(int $userId)
+    {
+        $permissionCacheKey = 'user-permissions:view:' . $userId;
+
+        return cache()->remember($permissionCacheKey, 60 * 60, function () {
+            $user = Auth::user();
+
+            $allPermissions = method_exists($user, 'getAllPermissions')
+                ? $user->getAllPermissions()->pluck('name')->toArray()
+                : ($user->permissions->pluck('name')->toArray() ?? []);
+
+            // Filter hanya permissions yang diawali dengan 'view'
+            return array_filter($allPermissions, function ($permission) {
+                return str_starts_with($permission, 'view');
+            });
+        });
+    }
+
+    /**
+     * Filter menu menggunakan pre-computed view permissions
+     */
+    private function filterMenuWithViewPermissions($menu, array $userViewPermissions)
+    {
+        // Check menu permissions
+        // dd($menu, $userViewPermissions);
+
+        $menuPermissions = !empty($menu['permission']) ? $menu['permission'] : [];
+        // dd($menuPermissions);
+        $hasParentPermission = !empty(array_intersect($menuPermissions, $userViewPermissions));
+
+        // Filter submenus
+        $permittedSubmenus = collect($menu['submenus'] ?? [])
+            ->filter(function ($submenu) use ($userViewPermissions) {
+                $submenuPermissions = !empty($submenu['permission']) ? $submenu['permission'] : [];
+                return !empty(array_intersect($submenuPermissions, $userViewPermissions));
+            })
+            ->values()
+            ->toArray();
+
+        if ($hasParentPermission || count($permittedSubmenus) > 0) {
+            $menu['submenus'] = $permittedSubmenus;
+            return $menu;
         }
 
-        // merge ke menus
-        $this->menus = array_merge($this->menus, $menus);
+        return null;
     }
 
 
@@ -113,10 +116,12 @@ class Sidebar extends Component
         $this->menus = $this->getMenuSubmenus();
     }
 
-
     function getMenuSubmenus()
     {
-        return cache()->remember('menus', 60 * 60, function () {
+        $cacheKey = "user-sidebar-menu:menus";
+        $cacheExp = 60 * 720; //12 jam
+
+        return cache()->remember($cacheKey, $cacheExp, function () {
             $MainMenu = Menu::first();
             $menus = Menu::where('parent_id', $MainMenu->id) // select menu yg bukan submenu, parent_id = 0
                 ->with(['submenus' => function ($query) {

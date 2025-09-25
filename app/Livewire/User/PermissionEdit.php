@@ -11,6 +11,7 @@ use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use TallStackUi\Traits\Interactions;
+use Illuminate\Support\Facades\Cache;
 
 #[Lazy]
 class PermissionEdit extends Component
@@ -69,6 +70,11 @@ class PermissionEdit extends Component
             DB::commit();
 
             $this->dispatch('updated-permission-user');
+
+            // Clear Cache Menu & Permissions User
+            Cache::forget('user-sidebar-menu:' . $this->user->id);
+            Cache::forget('user-permissions:view:' . $this->user->id);
+
             $this->toast()
                 ->success('Sukses', 'Spesial permission diperbaharui.')
                 ->send();
