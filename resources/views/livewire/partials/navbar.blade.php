@@ -26,7 +26,6 @@
                         <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
                     </x-ts:button.circle>
                 </div>
-
                 <x-ts:dropdown>
                     <x-slot:action>
                         <div role="button" class="flex gap-3" x-on:click="show = !show">
@@ -63,32 +62,33 @@
                 </x-ts:dropdown>
             </div>
         </div>
+
+
+        {{-- drawer notification --}}
+        <x-ts:slide id="notif-drawer" blur="md">
+            <x-slot:title class="flex gap-2 text-lg">
+                <x-tabler-bell class="size-7" />
+                Notification
+            </x-slot:title>
+
+            <livewire:Profile.Notif :key="auth()->user()->id" />
+        </x-ts:slide>
+
+
+        {{-- drawer Pesan --}}
+        <x-ts:slide id="pesan-drawer" blur="md">
+            <x-slot:title class="flex gap-2 text-lg">
+                <x-tabler-mail class="size-7" />
+                Pesan
+            </x-slot:title>
+            <div class="no-scrollbar relative h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
+                <livewire:Profile.Pesan.ListPesan :key="auth()->user()->id" />
+            </div>
+            <div class="absolute bottom-4 flex w-full gap-2">
+                <a href="{{ route('profile.pesan') }}" wire:navigate>
+                    <span role="button" class="rounded-lg p-2 text-sm italic hover:bg-indigo-50 hover:text-indigo-500"> Lihat Semua Pesan</span>
+                </a>
+            </div>
+        </x-ts:slide>
     </nav>
-
-    {{-- drawer notification --}}
-    <x-ts:slide id="notif-drawer" blur="md">
-        <x-slot:title class="flex gap-2 text-lg">
-            <x-tabler-bell class="size-7" />
-            Notification
-        </x-slot:title>
-
-        <livewire:Profile.Notif :key="auth()->user()->id" />
-    </x-ts:slide>
-
-
-    {{-- drawer Pesan --}}
-    <x-ts:slide id="pesan-drawer" blur="md">
-        <x-slot:title class="flex gap-2 text-lg">
-            <x-tabler-mail class="size-7" />
-            Pesan
-        </x-slot:title>
-        <div class="no-scrollbar relative h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
-            <livewire:Profile.Pesan.ListPesan :key="auth()->user()->id" />
-        </div>
-        <div class="absolute bottom-4 flex w-full items-center justify-center gap-2">
-            <a href="{{ route('profile.pesan') }}" wire:navigate>
-                <span role="button" class="rounded-lg p-2 hover:bg-indigo-200/10 hover:text-indigo-500">Lihat Semua Pesan</span>
-            </a>
-        </div>
-    </x-ts:slide>
 </div>

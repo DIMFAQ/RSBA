@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\WilayahController;
@@ -39,6 +40,8 @@ Route::prefix('barang')
     ->name('api.barang.')
     ->group(function () {
         Route::get('ref', [BarangController::class, 'list'])->name('ref');
+        Route::get('by_kategori/{kategori?}', [BarangController::class, 'listByKategori'])->name('by_kategori');
+
         Route::get('stok', [BarangController::class, 'stok'])->name('stok');
     });
 
@@ -47,5 +50,15 @@ Route::prefix('barang')
 Route::prefix('asset')
     ->name('api.asset.')
     ->group(function () {
-        Route::get('main_item', [AssetController::class, 'mainItem'])->name('main_item');
+        Route::get('main_item/{in?}', [AssetController::class, 'mainItem'])->name('main_item');
+    });
+
+
+Route::prefix('users')
+    ->name('api.users.')
+    ->group(function () {
+        Route::get('ref', [UsersController::class, 'list'])->name('ref');
+
+        Route::get('avatar/{userId}', [App\Http\Controllers\ProfileImageCacheController::class, 'show'])
+            ->name('avatar');
     });

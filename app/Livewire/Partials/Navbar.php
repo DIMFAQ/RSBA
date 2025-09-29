@@ -3,14 +3,12 @@
 namespace App\Livewire\Partials;
 
 use Livewire\Component;
-use Livewire\Attributes\On;
 use App\Livewire\Auth\Login;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Isolate;
 use Illuminate\Support\Facades\Auth;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\Cache;
-use TallStackUi\View\Components\ThemeSwitch;
 
 #[Lazy]
 #[Isolate]
@@ -36,11 +34,6 @@ class Navbar extends Component
         $this->loadUserData();
     }
 
-    #[On('update-title')]
-    function updateTitle($title)
-    {
-        $this->title = $title;
-    }
 
     function loadUserData()
     {
@@ -57,7 +50,9 @@ class Navbar extends Component
             return [
                 'nama' => $karyawan->nama,
                 'email' => $User->email,
-                'foto' => $karyawan->foto ? asset('storage/' . $karyawan->foto) : null,
+                // 'foto' => $karyawan->foto ? asset('storage/' . $karyawan->foto) : null,
+                // 'foto' => $karyawan->foto ?? null,
+                'foto' => $karyawan->foto ? route('api.users.avatar', ['userId' => $User->id]) : null,
                 'has_foto' => !empty($karyawan->foto),
                 'text_foto' => $this->getInitials($karyawan->nama),
                 'color' => $karyawan->jk === 'L' ? 'indigo' : 'rose'
