@@ -96,9 +96,9 @@ class BpjsRanap extends Component
         $total =
             $rincian->prosedur_non_bedah +
             // $rincian->prosedur_bedah +
-            ceil(($rincian->konsultasi * 70) / 100) +
+            // ceil(($rincian->konsultasi * 70) / 100) +
             // $rincian->tenaga_ahli +
-            $rincian->keperawatan +
+            // $rincian->keperawatan +
             $rincian->penunjang +
             $rincian->radiologi +
             $rincian->laboratorium +
