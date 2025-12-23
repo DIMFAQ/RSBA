@@ -83,43 +83,54 @@
                     <table class="min-w-full table-fixed border-collapse">
                         <thead>
                             <tr class="border-b bg-gray-100 text-left text-sm text-gray-600">
-                                <th class="px-4 py-2">No.</th>
-                                <th class="px-4 py-2">SKU</th>
-                                <th class="px-4 py-2">Barang</th>
-                                <th class="px-4 py-2">Satuan</th>
-                                <th class="px-4 py-2">Jumlah Beli</th>
-                                <th class="px-4 py-2">Harga Satuan</th>
-                                <th class="px-4 py-2">Batch</th>
-                                <th class="px-4 py-2">Sub Total</th>
+                                <th class="p-2">No.</th>
+                                <th class="p-2">Tipe</th>
+                                <th class="p-2">SKU</th>
+                                <th class="p-2">Barang</th>
+                                <th class="p-2">Satuan</th>
+                                <th class="p-2">Jumlah Beli</th>
+                                <th class="p-2">Harga Satuan</th>
+                                <th class="p-2">Serial / Batch</th>
+                                <th class="p-2">Exp / Waranty</th>
+                                <th class="p-2">Sub Total</th>
                                 <th></th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <template x-for="(item, index) in cartItems" :key="index">
-                                <tr class="border-b even:bg-gray-100/75 hover:bg-indigo-100">
-                                    <td class="px-4 py-2" x-text="index + 1"></td>
-                                    <td class="px-4 py-2" x-text="item.sku"></td>
-                                    <td class="px-4 py-2" x-text="item.nama"></td>
-                                    <td class="px-4 py-2" x-text="item.satuan"></td>
-                                    <td class="px-4 py-2">
-                                        <input type="number" x-model.number="item.jumlah" @keyup="recalculateTotal(index)" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Qty" />
+                                <tr class="border-b border-dashed text-sm even:bg-gray-100/75 hover:bg-indigo-100">
+                                    <td class="p-2" x-text="index + 1"></td>
+                                    <td class="p-2">
+                                        <span x-text="item.bhp ? 'BHP' : 'Barang'"></span>
                                     </td>
-                                    <td class="px-4 py-2">
-                                        <input type="number" x-model.number="item.harga" @keyup="recalculateTotal(index)" class="h-8 max-w-32 rounded-lg border border-gray-100"
-                                            placeholder="Harga Satuan" />
+                                    <td class="p-2" x-text="item.sku"></td>
+                                    <td class="p-2" x-text="item.nama"></td>
+                                    <td class="p-2" x-text="item.satuan"></td>
+                                    <td class="p-2">
+                                        <input type="number" min="1" x-model.number="item.jumlah" @keyup="recalculateTotal(index)"
+                                            class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm" placeholder="Qty" />
                                     </td>
-                                    <td class="px-4 py-2">
-                                        <input type="text" x-model="item.batch" class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="Batch" />
+                                    <td class="p-2">
+                                        <input type="number" step="any" min="0" x-model.number="item.harga" @keyup="recalculateTotal(index)"
+                                            class="h-8 max-w-32 rounded-lg border border-gray-100 text-sm" placeholder="Harga Satuan" />
                                     </td>
-                                    <td class="px-4 py-2" x-text="item.subTotal.toLocaleString()"></td>
-                                    <td class="px-4 py-2">
-                                        <x-tabler-trash class="text-red-500" role="button" @click="removeItemFromCart(index)" />
+                                    <td class="p-2">
+                                        <input type="text" x-model="item.batch" class="max-w-42 h-8 rounded-lg border border-gray-100 text-sm"
+                                            x-bind:placeholder="item.bhp ? 'Batch' : 'Serial Numbers'" />
+                                    </td>
+                                    <td class="p-2">
+                                        <x-ts:date x-model="item.waranty_date" class="max-w-42 h-8 rounded-lg border border-gray-100 text-sm"
+                                            x-bind:placeholder="item.bhp ? 'Exp Date' : 'Waranty Date'" />
+                                    </td>
+                                    <td class="p-2" x-text="item.subTotal.toLocaleString()"></td>
+                                    <td class="p-2">
+                                        <x-tabler-trash class="h-5 w-auto text-red-500" role="button" @click="removeItemFromCart(index)" />
                                     </td>
                                 </tr>
                             </template>
                             <tr x-show="cartItems.length === 0">
-                                <td colspan="9" class="px-4 py-2 text-center italic text-gray-400">
+                                <td colspan="9" class="p-2 text-center text-sm italic text-gray-400">
                                     Belum ada list pembelian barang.
                                 </td>
                             </tr>
@@ -148,7 +159,7 @@
 
             {{-- cancel confirm popup --}}
             <div x-data="{ popUpCancelConfirm: false }" class="relative">
-                <x-ts:button outline color="neutral" x-on:click="popUpCancelConfirm = true">Tutup</x-ts:button>
+                <x-ts:button sm outline color="neutral" x-on:click="popUpCancelConfirm = true">Tutup</x-ts:button>
 
                 <div x-show="popUpCancelConfirm" x-transition x-trap.noscroll="popUpCancelConfirm" x-on:click.away="popUpCancelConfirm = false"
                     x-on:keydown.escape.window="popUpCancelConfirm = false" class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg">
@@ -180,7 +191,7 @@
                 </div>
 
             </div>
-            <x-ts:button type="submit" loading="submit" icon="tabler.checks">Simpan</x-ts:button>
+            <x-ts:button sm type="submit" loading="submit" icon="tabler.checks">Simpan</x-ts:button>
 
         </div>
     </form>
@@ -199,7 +210,7 @@
         <x-slot:heading>Tambah Supplier</x-slot:heading>
 
 
-        <livewire:Master.Supplier.Add :term="$createTerm" :key="Str::random()" @new-supplier-created="$refresh" />
+        <livewire:Master.Supplier.Add :term="$createTerm" :key="Str::random()" />
     </x-filament::modal>
 </div>
 
@@ -224,12 +235,14 @@
                             } else {
                                 const newItem = {
                                     id: barang.id,
+                                    bhp: barang.bhp,
                                     sku: barang.sku,
                                     nama: barang.nama,
                                     satuan: barang.satuan,
                                     jumlah: 1,
                                     harga: 0,
                                     batch: '',
+                                    waranty_date: '',
                                     subTotal: 0
                                 };
                                 this.cartItems.push(newItem);

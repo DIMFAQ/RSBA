@@ -12,6 +12,7 @@ class Index extends Component
 {
     public function render()
     {
+        $this->authorize('view-asset');
         return view('livewire.asset.index');
     }
 }

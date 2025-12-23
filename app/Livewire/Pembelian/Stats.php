@@ -51,8 +51,8 @@ class Stats extends Component
                 });
         })->flatten(1)->sortByDesc('sum')->first();
         $this->topItemDibeli = $topItem ? $topItem['nama'] : '-';
-        $this->countTopItemBelli = $topItem ? $topItem['count'] : 0;
-        $this->sumTopItemBelli = $topItem ? $topItem['sum'] : 0;
+        // $this->countTopItemBeli = $topItem ? $topItem['count'] : 0;
+        // $this->sumTopItemBeli = $topItem ? $topItem['sum'] : 0;
 
 
         // STAT : Supplier paling banyak
@@ -65,7 +65,7 @@ class Stats extends Component
             })->sortByDesc('count')->first();
 
         $this->topDistibutor = $topDistibutor ? $topDistibutor['nama'] : '-';
-        $this->totalTopDistributor = $topDistibutor ? $topDistibutor['count'] : '-';
+        // $this->totalTopDistributor = $topDistibutor ? $topDistibutor['count'] : '-';
 
 
         // STATS : Barang dengan harga tertinggi yang dibeli
@@ -73,7 +73,6 @@ class Stats extends Component
     }
 
     public function render()
-
     {
         return view('livewire.pembelian.stats');
     }

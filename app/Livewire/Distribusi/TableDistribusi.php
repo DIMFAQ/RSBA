@@ -46,13 +46,26 @@ class TableDistribusi extends Component implements HasTable, HasForms
 
                 TextColumn::make('ruangan.nama', 'Ruangan'),
 
+                TextColumn::make('keterangan')
+                    ->label('Keterangan')
+                    ->wrap()
+                    ->limit(72),
+
                 TextColumn::make('dist_as')
-                    ->label('Distribusi Sebagai')
+                    ->label('Distribusi Sbg')
+                    ->badge()
                     ->formatStateUsing(
                         fn($state) => match ($state) {
                             'keluar' => 'Pengeluaran',
                             'asset' => 'Sebagai Asset',
                             default => $state,
+                        }
+                    )
+                    ->color(
+                        fn($state) => match ($state) {
+                            'keluar' => 'danger',
+                            'asset' => 'success',
+                            default => 'secondary',
                         }
                     ),
 

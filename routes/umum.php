@@ -36,6 +36,14 @@ Route::prefix('asset')
     ->name('asset.')
     ->group(function () {
         Route::get('/', App\Livewire\Asset\Index::class)->name('index');
+        // Route::get('/maintenance/{id?}', App\Livewire\Asset\Maintenance\Index::class)->name('maintenance');
+    });
+
+Route::prefix('maintenance')
+    ->name('maintenance.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Maintenance\Index::class)->name('index');
+        // Route::get('/create', App\Livewire\Maintenance\Create::class)->name('create');
     });
 
 
@@ -50,3 +58,13 @@ Route::prefix('laporan')
     ->group(function () {
         Route::get('/', App\Livewire\Laporan\Umum\Index::class)->name('index');
     });
+
+
+Route::prefix('pengajuan')
+    ->name('pengajuan.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Pembelian\Permintaan\Index::class)->name('index');
+    });
+
+
+// Route::livewire('/opname-block', App\Livewire\StokOpname\BlockBlocked::class)->name('opname.blocked');

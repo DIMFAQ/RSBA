@@ -39,6 +39,16 @@ class TableGudang extends Component implements HasTable, HasForms
             )
             ->deferLoading(false)
             ->striped()
+            ->headerActions([
+                Action::make('download')
+                    ->label('Stoks')
+                    ->color('gray')
+                    ->icon('tabler-file-excel')
+                    ->tooltip('Stok Tersedia')
+                    ->action(
+                        fn() => $this->downloadStok()
+                    ),
+            ])
             ->columns([
                 TextColumn::make('nama')
                     ->label('Barang')
@@ -111,6 +121,11 @@ class TableGudang extends Component implements HasTable, HasForms
                 ])->tooltip('Actions')
             ])
         ;
+    }
+
+    public function downloadStok()
+    {
+        dd('hai');
     }
 
     public function modalForm($modal, $id)

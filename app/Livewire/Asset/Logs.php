@@ -15,7 +15,7 @@ class Logs extends Component
     public function mount($id)
     {
         $this->assetBarang = AssetBarang::findOrFail($id);
-        $this->logs = $this->assetBarang->logs;
+        $this->logs = $this->assetBarang->logs()->latest()->get();
     }
 
     public function render()

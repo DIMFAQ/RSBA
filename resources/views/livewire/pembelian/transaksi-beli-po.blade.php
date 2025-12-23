@@ -74,36 +74,39 @@
 
                     <table class="min-w-full table-fixed border-collapse">
                         <thead>
-                            <tr class="border-b text-left text-sm text-gray-600">
-                                <th class="px-4 py-2">No.</th>
-                                <th class="px-4 py-2">SKU</th>
-                                <th class="px-4 py-2">Barang</th>
-                                <th class="px-4 py-2">Satuan</th>
-                                <th class="px-4 py-2">Jumlah</th>
+                            <tr class="border-b bg-gray-100 text-left text-sm text-gray-600">
+                                <th class="p-2">No.</th>
+                                <th class="p-2">Tipe</th>
+                                <th class="p-2">SKU</th>
+                                <th class="p-2">Barang</th>
+                                <th class="p-2">Satuan</th>
+                                <th class="p-2">Jumlah</th>
                                 <th></th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <template x-for="(item,index) in cartItems" :key="index">
-                                <tr class="border-b even:bg-gray-100/75 hover:bg-indigo-100">
-                                    <td class="px-4 py-2" x-text="index + 1"></td>
-                                    <td class="px-4 py-2" x-text="item.sku"></td>
-                                    <td class="px-4 py-2" x-text="item.nama"></td>
-                                    <td class="px-4 py-2" x-text="item.satuan"></td>
+                                <tr class="border-b border-dashed text-sm even:bg-gray-100/75 hover:bg-indigo-100">
+                                    <td class="p-2" x-text="index + 1"></td>
+                                    <td class="p-2" x-text="item.bhp ? 'BHP':'Barang'"></td>
+                                    <td class="p-2" x-text="item.sku"></td>
+                                    <td class="p-2" x-text="item.nama"></td>
+                                    <td class="p-2" x-text="item.satuan"></td>
 
-                                    <td class="px-4 py-2">
-                                        <input required type="number" x-model.number="item.jumlah" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Jumlah" />
+                                    <td class="p-2">
+                                        <input required type="number" x-model.number="item.jumlah" min="1" class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm"
+                                            placeholder="Jumlah" />
                                     </td>
 
-                                    <td class="px-4 py-2">
-                                        <x-ts:icon role="button" x-on:click="removeItemFromCart(index)" name="tabler.trash" class="text-red-500 hover:text-red-700" />
+                                    <td class="flex justify-end p-2">
+                                        <x-ts:icon role="button" x-on:click="removeItemFromCart(index)" name="tabler.trash" class="h-5 w-auto text-red-500 hover:text-red-700" />
                                     </td>
                                 </tr>
 
                             </template>
                             <tr x-show="cartItems.length === 0">
-                                <td colspan="4" class="px-4 py-2 text-center text-gray-500">
+                                <td colspan="4" class="p-2 text-center text-sm text-gray-400">
                                     Belum ada list pesanan barang.
                                 </td>
                             </tr>
@@ -119,7 +122,7 @@
             <div class="ml-auto flex flex-row justify-end gap-2">
                 {{-- cancel button --}}
                 <div x-data="{ popUpCancelConfirm: false }" class="relative">
-                    <x-ts:button outline color="neutral" x-on:click="popUpCancelConfirm = true">Tutup</x-ts:button>
+                    <x-ts:button sm outline color="neutral" x-on:click="popUpCancelConfirm = true">Tutup</x-ts:button>
 
                     <div x-show="popUpCancelConfirm" x-transition x-trap.noscroll="popUpCancelConfirm" x-on:click.away="popUpCancelConfirm = false"
                         x-on:keydown.escape.window="popUpCancelConfirm = false" class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg">
@@ -153,7 +156,7 @@
                 </div>
 
                 {{-- submit button --}}
-                <x-ts:button type="submit" loading="submit" icon="tabler.checks">Simpan</x-ts:button>
+                <x-ts:button sm type="submit" loading="submit" icon="tabler.checks">Simpan</x-ts:button>
 
             </div>
         </div>
@@ -196,6 +199,7 @@
                             } else {
                                 const newItem = {
                                     id: barang.id,
+                                    bhp: barang.bhp,
                                     sku: barang.sku,
                                     nama: barang.nama,
                                     satuan: barang.satuan,

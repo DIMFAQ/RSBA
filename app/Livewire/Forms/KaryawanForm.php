@@ -83,7 +83,6 @@ class KaryawanForm extends Form
         $this->tgl_masuk = $karyawan->tgl_masuk;
         $this->gelar_depan = $karyawan->gelar_depan;
         $this->gelar_belakang = $karyawan->gelar_belakang;
-        $this->gelar_belakang2 = $karyawan->gelar_belakang2;
         $this->nik = $karyawan->nik;
         $this->npwp = $karyawan->npwp;
         $this->tempat_lahir = $karyawan->tempat_lahir;

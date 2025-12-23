@@ -9,19 +9,19 @@
                     Tujuan
                 </h1>
 
-                <x-ts:date wire:model.defer='tgl_distribusi' placeholder="Tgl Distribusi" />
+                <x-ts:date wire:model.defer='form.tgl_distribusi' placeholder="Tgl Distribusi" />
 
-                <x-ts:select.styled wire:model.defer='ruangan' searchable :request="route('api.ruangan')" select="label:nama|value:id" placeholder="Ruangan" />
+                <x-ts:select.styled wire:model.defer='form.ruangan' searchable :request="route('api.ruangan')" select="label:nama|value:id" placeholder="Ruangan" />
 
-                <x-ts:select.styled wire:model.defer='penerima' searchable :request="route('api.karyawan.ref')" select="label:nama|value:id" placeholder="Penerima" />
+                <x-ts:select.styled wire:model.defer='form.penerima' searchable :request="route('api.karyawan.ref')" select="label:nama|value:id" placeholder="Penerima" />
 
                 <label class="text-sm text-gray-500">Catat Sebagai :</label>
                 <div class="flex flex-row gap-2">
-                    <x-ts:radio wire:model='sebagai' id="keluar" value="keluar" label="Pengeluaran" />
-                    <x-ts:radio wire:model='sebagai' id="asset" value="asset" label="Asset" />
+                    <x-ts:radio wire:model='form.sebagai' id="keluar" value="keluar" label="Pengeluaran" />
+                    <x-ts:radio wire:model='form.sebagai' id="asset" value="asset" label="Asset" />
                 </div>
 
-                <x-ts:textarea wire:model.defer='keterangan' placeholder="Keterangan" />
+                <x-ts:textarea wire:model.defer='form.keterangan' placeholder="Keterangan" />
 
             </div>
 
@@ -58,7 +58,7 @@
 
                     </div>
                     <div class="text-sm text-red-500">
-                        @error('cartItems')
+                        @error('form.cartItems')
                             <span>{{ $message }}</span>
                         @enderror
                     </div>
@@ -77,19 +77,21 @@
                             </thead>
                             <tbody>
                                 <template x-for="(item, index) in cartItems" :key="index">
-                                    <tr :class="{ 'bg-red-300/30': item.stok === 0, 'even:bg-gray-200/25': item.stok !== 0 }" class="border-b text-left text-sm text-gray-600">
+                                    <tr :class="{ 'bg-red-100/50': item.stok == 0, 'even:bg-gray-200/25': item.stok != 0 }" class="border-b text-left text-sm text-gray-600">
                                         <td class="px-4 py-2" x-text="index+1"></td>
                                         <td class="px-4 py-2" x-text="item.sku"></td>
                                         <td class="px-4 py-2" x-text="item.barang"></td>
                                         <td class="px-4 py-2" x-text="item.satuan"></td>
                                         <td class="flex items-center gap-2 px-4 py-2">
                                             <span x-text="item.stok"></span>
-                                            <span class="italic text-red-500" x-show="item.stok === 0">
+                                            <span class="text-xs italic text-red-500" x-show="item.stok == 0">
                                                 Habis
                                             </span>
+                                            <span class="text-xs italic" x-show="item.stok == null">Belum pernah melakukan pebelian</span>
                                         </td>
                                         <td class="px-4 py-2">
-                                            <input type="number" x-model.number="item.jumlah" :max="item.stok" class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="Jumlah" />
+                                            <input type="number" :disabled="item.stok == 0 || item.stok == null" x-model.number="item.jumlah" class="h-8 max-w-32 rounded-lg border border-gray-100"
+                                                placeholder="Jumlah" />
                                         </td>
                                         <td class="flex items-center justify-end px-4 py-2">
                                             <x-tabler-trash class="text-red-500" role="button" @click="removeItemFromCart(index)" />
@@ -135,8 +137,8 @@
         Alpine.data('distribusiCart', () => {
             return {
                 sku: '',
-                seartItem: '',
-                cartItems: $wire.entangle('cartItems'),
+                searchItem: '',
+                cartItems: $wire.entangle('form.cartItems', true),
 
                 addingCart(id) {
                     try {
@@ -151,21 +153,19 @@
                                     barang: barang.nama,
                                     satuan: barang.satuan,
                                     stok: barang.stok,
-                                    jumlah: 1
+                                    jumlah: (barang.stok == 0 || barang.stok == null) ? 0 : 1
                                 };
                                 this.cartItems.push(newItem);
 
                             }
 
                         }).catch(error => {
-                            console.error('Error getBarang : ', error)
                             $interaction('toast')
                                 .error('Tidak Ditemukan', 'Kode / Nama barang tidak sesuai.')
                                 .send();
                         });
 
                     } catch (error) {
-                        console.error('Error addingCart : ', error)
                         $interaction('toast')
                             .error('Error Menambah Item', error)
                             .send();

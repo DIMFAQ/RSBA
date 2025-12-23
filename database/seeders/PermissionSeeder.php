@@ -25,6 +25,10 @@ class PermissionSeeder extends Seeder
             'jasmed-bpjs',
             'jasmed-tunai',
             'jasmed-jkmd',
+
+            // umum
+            'approval-maintenance',
+            'finish-opname-gudang'
         ];
 
         foreach ($permissions as $permission) {

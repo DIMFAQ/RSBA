@@ -1,5 +1,5 @@
 <div>
-    <div class="p-4 bg-white rounded-md">
+    <div>
         {{ $this->table }}
     </div>
 

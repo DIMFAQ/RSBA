@@ -1,4 +1,4 @@
-<div x-data="{ showModal: false }" {{ $attributes->merge(['class' => 'relative']) }} x-on:keydown.escape.window="showModal = false">
+<div x-data="{ showModal: false }" {{ $attributes->merge(['class' => 'relative inline-block']) }} x-on:keydown.escape.window="showModal = false">
 
     {{-- Trigger (e.g., a button inside a form) --}}
     <div x-on:click.prevent="showModal = true">
@@ -6,7 +6,8 @@
     </div>
 
     {{-- Confirmation Modal --}}
-    <div class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg" x-show="showModal" x-transition x-trap.noscroll="showModal">
+    <div class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg" x-show="showModal" x-transition x-trap.noscroll="showModal" x-on:click.outside="showModal = false"
+        x-on:confirm-action.window="showModal = false" role="dialog" aria-modal="true">
 
         {{-- Header --}}
         <div class="mb-3 flex items-center justify-between gap-4">

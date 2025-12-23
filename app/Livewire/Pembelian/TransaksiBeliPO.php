@@ -4,16 +4,21 @@ namespace App\Livewire\Pembelian;
 
 use Carbon\Carbon;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use App\Models\Master\Barang;
 use Livewire\Attributes\Lazy;
 use App\Models\Gudang\Pembelian;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
 use App\Models\Gudang\PembelianDetail;
+use App\Models\Gudang\PembelianRequestDetails;
+use App\Traits\BlocksTransactionDuringOpname;
+use Illuminate\Support\Facades\Cache;
 
 #[Lazy]
 class TransaksiBeliPO extends Component
 {
+    use BlocksTransactionDuringOpname;
     use Interactions;
 
     public $createTerm = '';
@@ -38,6 +43,16 @@ class TransaksiBeliPO extends Component
         ];
     }
 
+    public function mount()
+    {
+
+        $cacheKey = session()->get('current_pengajuan_cache_key');
+        $selectedIds = Cache::get($cacheKey);
+        if ($cacheKey) {
+            $this->loadProducts($selectedIds);
+        }
+    }
+
     function getBarang($id): ?object
     {
         $barang = Barang::with('satuan')
@@ -48,6 +63,7 @@ class TransaksiBeliPO extends Component
         if ($barang) {
             $items = (object) [
                 'id' => $barang->id,
+                'bhp' => $barang->bhp == 1 ? true : false,
                 'sku' => $barang->sku,
                 'nama' => $barang->nama,
                 'satuan' => $barang->satuan->nama,
@@ -55,6 +71,30 @@ class TransaksiBeliPO extends Component
             return $items;
         }
         return null;
+    }
+
+    public function loadProducts($selectedIds)
+    {
+        $pengajuan = PembelianRequestDetails::with(['barang', 'barang.satuan'])
+            ->whereIn('id', $selectedIds)
+            ->selectRaw('barang_id, SUM(jml_disetujui) as total_jml_disetujui')
+            ->groupBy('barang_id')
+            ->get()
+            ->map(function ($item): array {
+                return [
+                    'id' => $item->barang_id,
+                    'bhp' => $item->barang->bhp,
+                    'sku' => $item->barang->sku,
+                    'nama' => $item->barang->nama,
+                    'satuan' => $item->barang->satuan->nama,
+                    'jumlah' => $item->total_jml_disetujui,
+                    'harga' => 0,
+                    'batch' => '',
+                    'subTotal' => 0
+                ];
+            })->toArray();
+
+        $this->cartItems = $pengajuan;
     }
 
 
@@ -139,6 +179,10 @@ class TransaksiBeliPO extends Component
 
     public function render()
     {
+        if (!$this->blockIfOpnameActive()) {
+            return view('components.opname-block');
+        }
+
         return view('livewire.pembelian.transaksi-beli-po');
     }
 }

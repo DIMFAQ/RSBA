@@ -18,7 +18,6 @@ class Navbar extends Component
 
     public $title;
 
-
     // navbar user data
     public $nama;
     public $email;

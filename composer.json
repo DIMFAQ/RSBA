@@ -3,10 +3,14 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "filament/tables": "^3.3",
         "guzzlehttp/guzzle": "^7.9",
         "intervention/image-laravel": "^1.5",
@@ -39,7 +43,8 @@
         },
         "files": [
             "app/Helpers/RupiahHelper.php",
-            "app/Helpers/TerbilangHelper.php"
+            "app/Helpers/TerbilangHelper.php",
+            "app/Helpers/ErrorHelper.php"
         ]
     },
     "autoload-dev": {

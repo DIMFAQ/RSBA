@@ -5,18 +5,23 @@ namespace App\Livewire\Pembelian;
 use Carbon\Carbon;
 use Livewire\Component;
 use App\Models\Gudang\Stok;
+use Livewire\Attributes\On;
 use App\Models\Master\Barang;
 use Livewire\Attributes\Lazy;
 use App\Models\Gudang\Pembelian;
 use App\Models\Gudang\Penerimaan;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Gudang\PembelianDetail;
 use App\Models\Gudang\PenerimaanDetail;
+use App\Models\Gudang\PembelianRequestDetails;
+use App\Traits\BlocksTransactionDuringOpname;
 
 #[Lazy]
 class TransaksiBeliLangsung extends Component
 {
+    use BlocksTransactionDuringOpname;
     use Interactions;
 
     public $createTerm = '';
@@ -51,6 +56,39 @@ class TransaksiBeliLangsung extends Component
     public function mount()
     {
         $this->tgl_pembelian = date('Y-m-d');
+
+
+        // Check data dari pengajuan
+        $cacheKey = session()->get('cart_pengajuan_cache_key');
+        $selectedIds = Cache::get($cacheKey);
+        if ($selectedIds) {
+            $this->loadProducts($selectedIds);
+        }
+    }
+
+    public function loadProducts($selectedIds)
+    {
+        $pengajuan = PembelianRequestDetails::with(['barang', 'barang.satuan'])
+            ->whereIn('id', $selectedIds)
+            ->selectRaw('barang_id, SUM(jml_disetujui) as total_jml_disetujui') 
+            ->groupBy('barang_id')
+            ->get()
+            ->map(function ($item): array {
+                return [
+                    'id' => $item->barang_id,
+                    'bhp' => $item->barang->bhp,
+                    'sku' => $item->barang->sku,
+                    'nama' => $item->barang->nama,
+                    'satuan' => $item->barang->satuan->nama,
+                    'jumlah' => $item->total_jml_disetujui,
+                    'harga' => 0,
+                    'batch' => '',
+                    'waranty_date' => '',
+                    'subTotal' => 0
+                ];
+            })->toArray();
+
+        $this->cartItems = $pengajuan;
     }
 
     public function getBarang($id): ?object
@@ -63,6 +101,7 @@ class TransaksiBeliLangsung extends Component
         if ($barang) {
             $items = (object) [
                 'id' => $barang->id,
+                'bhp' => $barang->bhp == 1 ? true : false,
                 'sku' => $barang->sku,
                 'nama' => $barang->nama,
                 'satuan' => $barang->satuan->nama,
@@ -181,11 +220,16 @@ class TransaksiBeliLangsung extends Component
             Stok::insert($stokData);
 
 
-            // mapping data stok
+            // TODO Mutasi Stok Pemebelian Langsung
 
             DB::commit();
 
             $this->dispatch('new-transaksi-langsung-created');
+
+            // Clear Cache
+            $cacheKey = session()->get('current_pengajuan_cache_key');
+            Cache::forget($cacheKey);
+            session()->forget('current_pengajuan_cache_key');
 
             $this->toast()
                 ->success('Berhasil', 'Pembelian berhasil disimpan.')
@@ -225,6 +269,10 @@ class TransaksiBeliLangsung extends Component
 
     public function render()
     {
+        if (!$this->blockIfOpnameActive()) {
+            return view('components.opname-block');
+        }
+
         return view('livewire.pembelian.transaksi-beli-langsung');
     }
 }

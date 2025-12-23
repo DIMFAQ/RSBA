@@ -1,6 +1,6 @@
 @props(['headers', 'rows', 'striped' => false, 'paginator' => false, 'no' => false, 'headerless' => false])
 
-<div class="no-scrollbar w-full overflow-x-auto">
+<div class="scrollbar-hidden w-full overflow-x-auto">
     <table class="border-collapses w-full min-w-full table-auto">
 
         @if (!$headerless)

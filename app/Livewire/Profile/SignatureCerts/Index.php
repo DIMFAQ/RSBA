@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Profile\SignatureCerts;
 
-use App\Models\SignatureCerts;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
-use TallStackUi\Traits\Interactions;
+use App\Models\SignatureCerts;
+use App\Services\DigitalSignatureService;
 use Livewire\Attributes\Computed;
+use TallStackUi\Traits\Interactions;
+use Illuminate\Support\Facades\Crypt;
 
 #[Lazy]
 class Index extends Component
@@ -23,67 +25,57 @@ class Index extends Component
         'pkcs12_password' => 'required|string'
     ];
 
+    protected DigitalSignatureService $digitalSignatureService;
+
+    public function boot(DigitalSignatureService $digitalSignatureService)
+    {
+        $this->digitalSignatureService = $digitalSignatureService;
+    }
+
     public function mount()
     {
         $this->users = auth()->user();
+        // $this->passEncrypted = Crypt::encryptString($this->password);
+
+        // $this->passDescrypted = Crypt::decryptString($this->passEncrypted);
     }
 
     #[Computed]
     function getCertificate()
     {
-        $data = SignatureCerts::where('user_id', $this->users->id)
-            ->orderByDesc('id')
-            ->first();
+        try {
+            $certificate = $this->digitalSignatureService->getActiveCertificate($this->users->id);
+        } catch (\Throwable $e) {
+            $this->toast()
+                ->error('Not Found !.', $e->getMessage())
+                ->send();
 
-        if ($data) {
+            return;
+        }
+
+        $userId = $certificate->user_id;
+        $filename = $certificate->p12_path;
+
+        try {
+            $pathP12 = $this->digitalSignatureService->getPathP12($userId, $filename);
+
+            $cert_info = json_decode($certificate->cert_info);
+
             return [
-                'cert_info' => json_decode($data->cert_info),
-                'p12_path' => $data->p12_path,
-                'is_active' => $data->is_active,
-                'expired_at' => $data->expired_at
+                'cert_info' => $cert_info,
+                'p12_path' => $pathP12,
+                'created' => \Carbon\Carbon::parse($cert_info->validFrom_time_t)->locale('id'),
+                'expired' => \Carbon\Carbon::parse($cert_info->validTo_time_t)->locale('id'),
+                'is_expired' => time() >= (int) $cert_info->validTo_time_t ? true : false,
             ];
+        } catch (\Throwable $e) {
+            $this->toast()
+                ->error('Not Found!', $e->getMessage())
+                ->send();
+
+            return null;
         }
     }
-
-    // public function parseCertificate()
-    // {
-    //     $this->validate();
-
-    //     $certificates = $this->getCertificate();
-
-    //     $pkcs12Path = Storage::disk('certs')->path($certificates['p12_path']);
-    //     $pkcs12 = file_get_contents($pkcs12Path);
-
-    //     try {
-    //         $certs = [];
-    //         if (openssl_pkcs12_read($pkcs12, $certs, $this->pkcs12_password)) {
-    //             $this->modalPassw = false;
-    //             // Access parts of the certificate
-    //             // $privateKey = $certs['pkey'] ?? null;
-    //             $certificate = $certs['cert'];
-
-    //             // $extraCerts = $certs['extracerts'] ?? null;
-
-    //             // Get certificate details
-    //             $certDetails = openssl_x509_parse($certificate);
-    //             $now = time();
-    //             $isValid = $now >= $certDetails['validFrom_time_t'] && $now <= $certDetails['validTo_time_t'];
-
-    //             // return
-    //             return $this->certificate = [
-    //                 'certDetails' => $certDetails,
-    //                 'key' => $certs['pkey'],
-    //                 'isValid' => $isValid
-    //             ];
-    //         } else {
-    //             throw new \Exception("Invalid password");
-    //         }
-    //     } catch (\Throwable $e) {
-    //         $this->toast()
-    //             ->error('Invalid', $e->getMessage())
-    //             ->send();
-    //     }
-    // }
 
     public function render()
     {

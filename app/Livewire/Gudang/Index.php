@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Gudang;
 
-use App\Models\Gudang\Stok;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -11,41 +10,11 @@ use Livewire\Component;
 #[Lazy]
 class Index extends Component
 {
-    public int $barangAkanHabis;
-    public int $barangBelumDisusun;
-    public string $barangFastMoving;
-    public string $barangSlowMoving;
-
-    // TODO : Gudang Index
-    /**
-     * [] barang fast moving
-     * [] barang slow moving
-     * 
-     * Slow Moving t&c : 
-     * - last distribusi > 1 bulan
-     * - count distribusi < 10
-     * - stok > 0
-     * 
-     * Fast Moving t&c :
-     * - last distribusi < 1 bulan
-     * - count distribusi > 10
-     * - stok > 0
-     */
-
-    public function mount()
-    {
-        $stok = Stok::all();
-        $this->barangAkanHabis = $stok->groupBy('barang_id')->filter(function ($group) {
-            $totalStok = $group->sum('stok');
-            return $totalStok < $group->first()->barang->min_stok;
-        })->count();
-        $this->barangBelumDisusun = $stok->where('penyimpanan_id', null)->count();
-        $this->barangFastMoving = '-';
-        $this->barangSlowMoving = '-';
-    }
+    public bool $stats = false;
 
     public function render()
     {
+        $this->authorize('view-gudang');
         return view('livewire.gudang.index');
     }
 }

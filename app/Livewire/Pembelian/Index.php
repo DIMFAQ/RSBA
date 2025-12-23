@@ -3,6 +3,9 @@
 namespace App\Livewire\Pembelian;
 
 use App\Models\Gudang\Pembelian;
+use App\Models\Gudang\PembelianRequest;
+use App\Traits\BlocksTransactionDuringOpname;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Lazy;
@@ -14,6 +17,7 @@ use Livewire\Attributes\Title;
 class Index extends Component
 {
     use WithPagination;
+    use BlocksTransactionDuringOpname;
 
     public $tab;
     public bool $stats = false;
@@ -30,9 +34,21 @@ class Index extends Component
         });
     }
 
+    #[Computed]
+    public function getRequestPembelianProperty()
+    {
+        // return PembelianRequest::where('status', 'pending')->count();
+        return rand(1, 100); // Simulating a random count for requests
+    }
+
     public function render()
     {
 
+        if (!$this->blockIfOpnameActive()) {
+            return view('components.opname-block');
+        }
+
+        $this->authorize('view-pembelian');
         return view('livewire.pembelian.index');
     }
 }

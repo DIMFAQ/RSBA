@@ -1,5 +1,5 @@
 <div x-show="isOpen()" class="fixed inset-0 z-50 flex h-screen bg-white bg-opacity-75 xl:static">
-    <div @click.away="handleAway()" @keyup.escape.window="handleAway()" class="no-scrollbar w-72 overflow-y-auto bg-white shadow-xl">
+    <div @click.away="handleAway()" @keyup.escape.window="handleAway()" class="scrollbar-hidden w-72 overflow-y-auto bg-white shadow-xl">
 
         {{-- logo --}}
         <div class="mt-6 flex h-10 items-center justify-center">

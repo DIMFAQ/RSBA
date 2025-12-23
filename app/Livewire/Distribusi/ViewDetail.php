@@ -35,7 +35,7 @@ class ViewDetail extends Component
         return $this->distribusi
             ->load(['details', 'details.stoks'])
             ->details()
-            ->paginate(10);
+            ->paginate(5);
     }
 
     public function render()

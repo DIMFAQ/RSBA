@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit.prevent='submit' class="flex flex-col gap-4">
+    <form wire:submit.prevent='submit' class="flex flex-col gap-4" autocomplete="off">
         <div class="flex flex-col gap-2">
             <x-ts:input wire:model.defer='nama' placeholder="Nama" />
             <x-ts:input wire:model.defer='org' placeholder="Org" />
@@ -11,7 +11,7 @@
 
         </div>
         <div class="flex flex-row justify-end gap-2">
-            <x-ts:button type="submit" icon="tabler.checks" loading="submit">Create</x-ts:button>
+            <x-ts:button sm type="submit" icon="tabler.checks" loading="submit">Create</x-ts:button>
         </div>
 
     </form>

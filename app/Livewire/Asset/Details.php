@@ -7,17 +7,17 @@ use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
 #[Lazy]
-class Maintenance extends Component
+class Details extends Component
 {
-    public ?AssetBarang $assetBarang;
+    public AssetBarang $assetBarang;
 
-    public function mount($id)
+    public function mount($id): void
     {
         $this->assetBarang = AssetBarang::findOrFail($id);
     }
 
     public function render()
     {
-        return view('livewire.asset.maintenance');
+        return view('livewire.asset.details');
     }
 }

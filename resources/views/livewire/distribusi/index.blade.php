@@ -93,38 +93,33 @@
 
     <div x-show="!transaksiPanel" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" class="flex flex-col gap-2">
         {{-- stats --}}
-        <div class="w-full">
-            {{-- Stats Pembelian --}}
-            <div x-data="{ showCard: false, key: '{{ \Illuminate\Support\Str::random() }}' }" class="rounded-lg border border-white p-2">
-                <!-- Toggle Button -->
-                <div class="flex justify-between">
-
-                    <span @click="showCard = !showCard" class="flex flex-row items-center gap-2 font-semibold text-indigo-500">
-                        <x-ts:icon name="tabler.chart-histogram" class="h-5" />
-                        Stats
-                    </span>
-
-                    <div class="text-gray-500" role="button">
-                        <x-ts:icon name="tabler.plus" @click="showCard = !showCard" x-show="!showCard" />
-                        <x-ts:icon name="tabler.minus" @click="showCard = !showCard" x-show="showCard" />
-                    </div>
-                </div>
-
-                <!-- Card -->
-                <div x-show="showCard" x-transition>
-                    <template x-if="showCard">
-                        <div x-bind:key="key">
-                            <livewire:Distribusi.Stats :key="Str::random()" />
-                        </div>
-                    </template>
-                </div>
-            </div>
+        <div class="w-full rounded-md border-2 border-white p-1">
+            <x-ts:toggle sm wire:model.live.debounce='stats' label="Stats" />
+            @if ($stats)
+                {{-- Stats Pembelian --}}
+                <livewire:Distribusi.Stats :key="Str::random()" />
+            @endif
         </div>
         {{-- end stats --}}
 
         {{-- table --}}
         <div class="w-full">
-            <livewire:Distribusi.TableDistribusi :key="Str::random()" />
+            <x-ts:tab selected="Permintaan" class="rounded-lg bg-white p-2">
+
+                <x-ts:tab.items tab="Permintaan">
+                    <x-slot:left>
+                        <span class="absolute block h-1 w-1 animate-pulse rounded-full bg-red-500 ring-2 ring-red-300"></span>
+                    </x-slot:left>
+                </x-ts:tab.items>
+
+                <x-ts:tab.items tab="Terdistribusi">
+                    <x-slot:left>
+                        <x-ts:icon name="tabler.table" class="h-5 w-5" />
+                    </x-slot:left>
+                    <livewire:Distribusi.TableDistribusi :key="Str::random()" />
+                </x-ts:tab.items>
+
+            </x-ts:tab>
         </div>
 
         {{-- end table --}}

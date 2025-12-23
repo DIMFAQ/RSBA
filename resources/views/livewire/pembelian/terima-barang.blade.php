@@ -50,7 +50,7 @@
 
 
     {{-- form barng diterim --}}
-    <form wire:submit.prevent='submit'>
+    <form wire:submit.prevent='submit' autocomplete="off">
         <div class="flex flex-col gap-2">
             <span class="font-semibold text-indigo-500">Barang Yang Diterima </span>
             <div class="grid grid-cols-4 gap-2">
@@ -90,33 +90,36 @@
                 <table class="border-collapses min-w-full table-fixed">
                     <thead>
                         <tr class="border-b text-left text-sm text-gray-600">
-                            <th class="px-4 py-2">No.</th>
-                            <th class="px-4 py-2">Barang</th>
-                            <th class="px-4 py-2">Satuan</th>
-                            <th class="px-4 py-2">Jumlah Dipesan</th>
-                            <th class="px-4 py-2">Jumlah Telah Diterima</th>
-                            <th class="px-4 py-2">Jumlah Diterima</th>
-                            <th class="px-4 py-2">Harga Satuan</th>
-                            <th class="px-4 py-2">Batch</th>
-                            <th class="px-4 py-2">Sub Total</th>
+                            <th class="p-2">No.</th>
+                            <th class="p-2">Tipe</th>
+                            <th class="p-2">Barang</th>
+                            <th class="p-2">Satuan</th>
+                            <th class="p-2">Dipesan</th>
+                            <th class="p-2">Telah Diterima</th>
+                            <th class="p-2">Diterima Skr</th>
+                            <th class="p-2">Harga Satuan</th>
+                            <th class="p-2">Serial / Batch</th>
+                            <th class="p-2">Exp / Warranty</th>
+                            <th class="p-2">Sub Total</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @forelse ($detailPesanan as $index => $item)
-                            <tr class="border-b even:bg-gray-100/75 hover:bg-indigo-100" :key="{{ $index }}">
-                                <td class="px-4 py-2">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-2">{{ $item->barang->nama }}</td>
-                                <td class="px-4 py-2">{{ $item->barang->satuan->nama }}</td>
-                                <td class="px-4 py-2">{{ $item->jumlah }}</td>
-                                <td class="px-4 py-2">{{ $item->terimas?->sum('jumlah') }}</td>
+                            <tr class="border-b border-dashed text-sm even:bg-gray-100/75 hover:bg-indigo-100" :key="{{ $index }}">
+                                <td class="p-2">{{ $loop->iteration }}</td>
+                                <td class="p-2">{{ $item->barang->bhp ? 'BHP' : 'Barang' }}</td>
+                                <td class="p-2">{{ $item->barang->nama }}</td>
+                                <td class="p-2">{{ $item->barang->satuan->nama }}</td>
+                                <td class="p-2">{{ $item->jumlah }}</td>
+                                <td class="p-2">{{ $item->terimas?->sum('jumlah') }}</td>
 
                                 @php
                                     $sisaBlmDiterima = $item->jumlah - $item->terimas?->sum('jumlah');
                                 @endphp
                                 @if ($sisaBlmDiterima > 0)
                                     {{-- Diterima --}}
-                                    <td class="px-4 py-2">
+                                    <td class="p-2">
                                         <input required type="number" x-model.number="subtotals[{{ $index }}].jumlahDiterima" x-on:input="calculateSubtotal({{ $index }})"
                                             max="{{ $sisaBlmDiterima }}" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Diterima" />
 
@@ -126,7 +129,7 @@
                                     </td>
 
                                     {{-- Harga Satuan --}}
-                                    <td class="px-4 py-2">
+                                    <td class="p-2">
                                         <input required type="number" x-model.number="subtotals[{{ $index }}].hargaSatuan" x-on:input="calculateSubtotal({{ $index }})"
                                             class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="Harga Satuan" />
 
@@ -135,9 +138,18 @@
                                         @enderror
                                     </td>
 
-                                    {{-- Batch --}}
-                                    <td class="px-4 py-2">
-                                        <input type="text" wire:change.debounce.300ms="" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Batch" />
+                                    {{-- Serial / Batch --}}
+                                    <td class="p-2">
+                                        <input type="text" class="max-w-42 h-8 rounded-lg border border-gray-100" placeholder="{{ $item->barang->bhp ? 'Batch' : 'Serial Numbers' }}" />
+
+                                        @error('any')
+                                            <span class="text-xs text-red-500">{{ $message }}</span>
+                                        @enderror
+                                    </td>
+
+                                    {{-- Exp / Garansi --}}
+                                    <td class="p-2">
+                                        <x-ts:date class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="{{ $item->barang->bhp ? 'Expired' : 'Garansi' }}" />
 
                                         @error('any')
                                             <span class="text-xs text-red-500">{{ $message }}</span>
@@ -145,11 +157,11 @@
                                     </td>
 
                                     {{-- sub total --}}
-                                    <td class="px-4 py-2">
+                                    <td class="p-2">
                                         <span x-text="formatCurrency(subtotals[{{ $index }}].subtotal || 0)"></span>
                                     </td>
                                 @else
-                                    <td colspan="4" class="px-4 py-2">
+                                    <td colspan="4" class="p-2">
                                         <x-ts:badge color="teal">Sudah diterima</x-ts:badge>
                                     </td>
                                 @endif
@@ -167,7 +179,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-b text-center text-lg uppercase text-gray-600">
-                            <td colspan="8" class="px-4 py-2">
+                            <td colspan="10" class="px-4 py-2">
                                 Total
                             </td>
                             <td class="px-4 py-2 font-bold">

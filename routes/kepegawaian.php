@@ -62,3 +62,9 @@ Route::prefix('jasmed')
     ->group(function () {
         Route::get('/', App\Livewire\Jasmed\Index::class)->name('index');
     });
+
+Route::prefix('laporan')
+    ->name('laporan.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Laporan\Kepegawaian\Index::class)->name('index');
+    });

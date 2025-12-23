@@ -71,7 +71,11 @@
                         // Close options
                         this.showOptionsBeli = false;
                     }
-                }" class="relative">
+                }" class="relative flex flex-row gap-2">
+
+                    <x-ts:button sm outline color="violet" icon="tabler.send">
+                        Permintaan
+                    </x-ts:button>
 
                     <x-ts:button sm icon="tabler.plus" x-on:click="showOptionsBeli = true">
                         Pembelian
@@ -160,17 +164,29 @@
         </div>
     </div>
 
-    <div>
-        <x-ts:toggle sm wire:model.live.debounce='stats' label="Stats" />
-        @if ($stats)
-            <livewire:pembelian.stats :key="Str::random()" />
-        @endif
+    <div class="w-full rounded-md border-2 border-white p-1" x-data="{ showStats: false, refreshKey: Date.now() }">
+        <x-ts:toggle sm @click='showStats = !showStats; refreshKey = Date.now()' label="Stats" />
+
+        <div x-show="showStats">
+            <livewire:pembelian.stats x-bind:key="'stats-' + refreshKey" />
+        </div>
     </div>
 
     {{-- Table List Pembelian --}}
     <div class="w-full">
 
-        <x-ts:tab selected="Transaksi" x-on:navigate="$wire.set('tab',$event.detail.select)">
+        <x-ts:tab :selected="$this->getRequestPembelianProperty() ? 'Permintaan' : 'Transaksi'" x-on:navigate="$wire.set('tab',$event.detail.select)">
+
+            @if ($this->getRequestPembelianProperty())
+                <x-ts:tab.items tab="Permintaan">
+                    <x-slot:left>
+                        <span class="block h-1 w-1 animate-pulse rounded-full bg-red-500 ring-2 ring-red-300"></span>
+                    </x-slot:left>
+
+                    <livewire:Pembelian.Permintaan.ListPermintaanBarang :key="Str::random()" />
+                </x-ts:tab.items>
+            @endif
+
             <x-ts:tab.items tab="Transaksi">
                 <x-slot:left>
                     <x-ts:icon name="tabler.invoice" class="h-5 w-5" />
@@ -187,7 +203,6 @@
                 <livewire:Pembelian.TablePembelianBarang :key="Str::random()" />
             </x-ts:tab.items>
         </x-ts:tab>
-
     </div>
 
 

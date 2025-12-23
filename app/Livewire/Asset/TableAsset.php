@@ -5,15 +5,19 @@ namespace App\Livewire\Asset;
 use App\Models\Ruangan;
 use Livewire\Component;
 use Filament\Tables\Table;
+use Livewire\Attributes\Locked;
 use App\Models\Assets\AssetBarang;
+use App\Models\Master\Barang;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
-use Livewire\Attributes\Locked;
 
 class TableAsset extends Component implements HasTable, HasForms
 {
@@ -27,6 +31,8 @@ class TableAsset extends Component implements HasTable, HasForms
         return $table
             ->query(
                 AssetBarang::with(['barang', 'ruangan', 'barang.kategori'])
+                    ->withHierarchySort()
+                // AssetBarang::with(['barang', 'ruangan', 'barang.kategori'])
             )
             ->columns([
                 TextColumn::make('kode')
@@ -34,8 +40,24 @@ class TableAsset extends Component implements HasTable, HasForms
                     ->getStateUsing(
                         fn($record) => $record->kode ?? 'Belum didaftarkan'
                     )
+                    ->action(
+                        fn($record, $livewire) => match ($record->kode) {
+                            null =>  $livewire->modalAsset(
+                                modal: 'modal-catat-asset',
+                                id: $record->getKey()
+                            ),
+                            default => '',
+                        }
+
+                    )
                     ->color(
                         fn($record) => $record->kode ? '' : 'danger'
+                    )
+                    ->copyable(
+                        fn($record) => $record->kode ?? false
+                    )
+                    ->copyMessage(
+                        fn(string $state): string => "Copied : {$state}"
                     )
                     ->searchable(),
 
@@ -43,9 +65,7 @@ class TableAsset extends Component implements HasTable, HasForms
                     ->label('Item')
                     ->searchable()
                     ->getStateUsing(
-                        fn($record) => $record->main_asset_id
-                            ? "<span class='ms-2'>" . $record->barang->nama . "</span>"
-                            : $record->barang->nama
+                        fn($record) => "<span class='ms-{$record->level}'>{$record->barang->nama}</span>"
                     )
                     ->html(),
 
@@ -60,8 +80,69 @@ class TableAsset extends Component implements HasTable, HasForms
 
                 TextColumn::make('status')
                     ->label('Status')
+                    ->badge()
+                    ->color(
+                        fn(string $state): string => match ($state) {
+                            'Baik' => 'success',
+                            'Dalam Perbaikan' => 'warning',
+                            'Rusak' => 'danger',
+                            'Hilang' => 'danger',
+                            default => 'secondary'
+                        }
+                    )
+                    ->getStateUsing(
+                        fn($record) => $record->status == 'diperbaiki' ? "Dalam Perbaikan" : ucwords($record->status)
+                    )
+                    ->action(
+                        fn($record, $livewire) => match ($record->status) {
+                            'diperbaiki' => $livewire->modalAsset(
+                                modal: 'modal-maintenance-status',
+                                id: $record->getKey()
+                            ),
+                            default => ''
+                        }
+                    )
             ])
             ->filters([
+                Filter::make('main_asset')
+                    ->label('Hanya Asset Utama')
+                    ->toggle()
+                    ->default('true')
+                    ->query(function (Builder $query): Builder {
+                        return $query->where('jenis', 'main');
+                    }),
+
+                // TODO: Pencarian Main Asset dan tampilkan beserta komponen nya
+                // SelectFilter::make('asset_and_component')
+                //     ->label('Asset dan komponennya')
+                //     ->searchable()
+                //     ->options(function () {
+                //         return Barang::pluck('nama', 'id')->toArray();
+                //     })
+                //     ->query(function (Builder $query, $state) {
+                //         if (!$state) {
+                //             return $query;
+                //         }
+                //         $query->where(function (Builder $query) use ($state) {
+                //             $query->where('barang_id', $state)
+                //                 ->orWhere('main_asset_id', function ($subQuery) use ($state) {});
+
+                //             // $query data get data again where main_asset_id = $query->id;
+                //             // ->where('main_asset_id', $state);
+                //         });
+                //     }),
+                // ->getOptionLabelFromRecordUsing(
+                //     fn($record) => 'Asset Nama ' . $record->nama
+                // ),
+
+                SelectFilter::make('main_asset_id')
+                    ->label('Asset')
+                    ->searchable()
+                    ->relationship('barang', 'nama')
+                    ->getOptionLabelFromRecordUsing(
+                        fn($record) => 'Asset : ' . $record->nama
+                    ),
+
                 SelectFilter::make('ruangan_id')
                     ->label('Ruangan')
                     ->searchable()
@@ -84,44 +165,78 @@ class TableAsset extends Component implements HasTable, HasForms
                         fn($record) => !$record->kode
                     ),
 
-                // edit asset, dan edit spesiikasi asset
-                Action::make('edit')
-                    ->iconButton()
-                    ->icon('tabler-edit')
-                    ->action(
-                        fn($record) => $this->modalAsset(
-                            modal: 'modal-asset-biodata',
-                            id: $record->getKey()
+
+                ActionGroup::make([
+                    Action::make('lihat')
+                        ->label('Detail Asset')
+                        ->icon('tabler-eye')
+                        ->action(
+                            fn($record) => $this->modalAsset(
+                                modal: 'modal-asset-details',
+                                id: $record->getKey()
+                            )
                         )
-                    ),
-
-                // input maintenance
-                Action::make('maintenance')
-                    ->iconButton()
-                    ->icon('tabler-device-imac-cog')
-                    ->color('danger')
-                    ->action(
-                        fn($record) => $this->modalAsset(
-                            modal: 'modal-catat-maintenance',
-                            id: $record->getKey()
-                        )
-                    ),
-
-                // logs
-                Action::make('logs')
-                    ->iconButton()
-                    ->icon('tabler-history')
-                    ->color('danger')
-                    ->action(
-                        fn($record) => $this->modalAsset(
-                            modal: 'modal-logs-asset',
-                            id: $record->getKey()
-                        )
-                    ),
+                        ->visible(
+                            fn($record) => $record->kode
+                        ),
 
 
+                    // edit asset, dan edit spesiikasi asset
+                    Action::make('Spesifikasi')
+                        ->icon('tabler-device-desktop-question')
+                        ->action(
+                            fn($record) => $this->modalAsset(
+                                modal: 'modal-asset-specs',
+                                id: $record->getKey()
+                            )
+                        ),
+
+                    // input maintenance
+                    Action::make('maintenance')
+                        ->icon('tabler-device-desktop-cog')
+                        ->label('Maintenance')
+                        ->action(
+                            fn($record) => $this->modalAsset(
+                                modal: 'modal-maintenance-asset',
+                                id: $record->getKey()
+                            )
+                        ),
+                    // ->url(fn($record): string => route('umum.asset.maintenance', $record->getKey())),
+
+                    Action::make('mutasi')
+                        ->icon('tabler-device-desktop-share')
+                        ->label('Mutasi Asset')
+                        ->action(
+                            fn($record) => $this->modalAsset(
+                                modal: 'modal-mutasi-asset',
+                                id: $record->getKey()
+                            )
+                        ),
+
+                    Action::make('label')
+                        ->label('Cetak Label')
+                        ->icon('tabler-tags')
+                        ->action(function ($record) {
+                            $this->selectedId = $record->getKey();
+                            $this->dispatch('print-label');
+                        }),
+
+                    // logs
+                    Action::make('logs')
+                        ->icon('tabler-history')
+                        ->action(
+                            fn($record) => $this->modalAsset(
+                                modal: 'modal-logs-asset',
+                                id: $record->getKey()
+                            )
+                        ),
+                ])->visible(
+                    fn($record) => $record->kode
+                ),
             ]);
     }
+
+    private function getQuery() {}
 
     function modalAsset($modal, $id)
     {

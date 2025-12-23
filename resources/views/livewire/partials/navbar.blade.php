@@ -81,7 +81,7 @@
                 <x-tabler-mail class="size-7" />
                 Pesan
             </x-slot:title>
-            <div class="no-scrollbar relative h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
+            <div class="scrollbar-hidden relative h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
                 <livewire:Profile.Pesan.ListPesan :key="auth()->user()->id" />
             </div>
             <div class="absolute bottom-4 flex w-full gap-2">

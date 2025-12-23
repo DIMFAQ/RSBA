@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit.prevent='submit' class="flex flex-col gap-2">
+    <form wire:submit.prevent='submit' class="flex flex-col gap-2" autocomplete="off">
         <div class="rounded-md border border-gray-200 p-2">
             <span class="text-lg font-bold text-indigo-500">{{ $assetBarang->barang->nama }}</span>
             <div class="flex flex-row gap-3 text-sm text-gray-400">
@@ -9,15 +9,14 @@
             </div>
         </div>
         <div class="flex flex-col gap-2">
-            <x-ts:select.styled wire:model.live.debounce='main' :request="route('api.asset.main_item')" select="label:label|value:value" placeholder="Pilih Induk Item" unfiltered />
+            <x-ts:select.styled wire:model.live.debounce='form.main' :request="route('api.asset.main_item', ['in' => $assetBarang->ruangan_id])" select="label:label|value:value" placeholder="Pilih Asset Utama" hint="Kosongkan jika ini adalah asset utama." />
 
 
-            <x-ts:date wire:model.defer='tgl_catat' placeholder="Tgl Pencatatan" />
+            <x-ts:date wire:model.defer='form.tgl_catat' placeholder="Tgl Pencatatan" />
 
-            <x-ts:select.styled wire:model.defer='status' :options="$statusOptions" />
+            <x-ts:select.styled wire:model.defer='form.status' :options="$statusOptions" placeholder="Kondisi Saat Dicatat" />
 
-            <x-ts:input wire:model.defer='keterangan' placeholder="Keterangan" />
-
+            <x-ts:input wire:model.defer='form.keterangan' placeholder="Keterangan" />
 
         </div>
         <div class="mt-4 flex justify-end gap-2">

@@ -39,4 +39,10 @@ class Barang extends Model
     {
         return $this->hasMany(AssetBarang::class, 'barang_id', 'id');
     }
+
+    public function latestStok()
+    {
+        return $this->hasOne(Stok::class)->latestOfMany();
+        // Or: return $this->hasOne(Stok::class)->latest();
+    }
 }

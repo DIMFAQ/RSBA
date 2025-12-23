@@ -61,7 +61,7 @@
 
         {{-- update data --}}
         {{-- this section can scrollable --}}
-        <div class="no-scrollbar flex max-h-screen w-full flex-col space-y-3 overflow-y-auto lg:max-h-[calc(100vh-20px)] lg:w-3/4">
+        <div class="scrollbar-hidden flex max-h-screen w-full flex-col space-y-3 overflow-y-auto lg:max-h-[calc(100vh-20px)] lg:w-3/4">
 
             <x-ts:card minimize>
                 <x-slot:header>

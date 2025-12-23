@@ -3,13 +3,14 @@
 namespace App\Livewire\Pembelian;
 
 use Livewire\Component;
+use App\Models\Gudang\Stok;
 use Livewire\Attributes\Lazy;
 use App\Models\Gudang\Pembelian;
 use App\Models\Gudang\Penerimaan;
-use App\Models\Gudang\PenerimaanDetail;
-use App\Models\Gudang\Stok;
+use App\Models\Gudang\StokMutasi;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
+use App\Models\Gudang\PenerimaanDetail;
 
 #[Lazy]
 class TerimaBarang extends Component
@@ -49,6 +50,7 @@ class TerimaBarang extends Component
             'jumlahDiterima' => 0,
             'hargaSatuan' => 0,
             'batch' => null,
+            'waranty_date' => null,
             'subtotal' => 0,
             'remainingQuantity' => $item->jumlah - $item->terimas?->sum('jumlah'),
         ])->toArray();
@@ -59,7 +61,6 @@ class TerimaBarang extends Component
     {
         $this->validate();
 
-        // dd($this->terimaBarang);
         DB::beginTransaction();
         try {
 
@@ -93,7 +94,9 @@ class TerimaBarang extends Component
 
             // insert into penerimaan detil
             if ($dataDetilPenerimaan->isNotEmpty()) {
-                PenerimaanDetail::insert($dataDetilPenerimaan->toArray());
+                $penerimaanDetails = $dataDetilPenerimaan->map(function ($data): PenerimaanDetail {
+                    return PenerimaanDetail::create($data);
+                });
             }
 
 
@@ -120,7 +123,18 @@ class TerimaBarang extends Component
                 );
 
             if ($dataStok->isNotEmpty()) {
-                Stok::insert($dataStok->toArray());
+                $stoks = $dataStok->map(function ($data): Stok {
+                    return Stok::create($data);
+                });
+
+                // TODO create mutasi penerimaan pembelian
+                // foreach ($stoks as $stok) {
+                //     $this->createMutasi(
+                //         stok: $stoks,
+                //         jumlah: $stok->stok,
+                //         penerimaanDetails: $penerimaanDetails
+                //     );
+                // }
             }
 
 
@@ -144,9 +158,45 @@ class TerimaBarang extends Component
             DB::rollBack();
 
             $this->toast()
-                ->error('Failed', 'Error : ' . $e->getMessage())
+                ->error('Failed', "Line : {$e->getLine()}; Error : {$e->getMessage()}")
                 ->send();
         }
+    }
+
+
+    private function createMutasi(object $stok, int $jumlah, object $penerimaanDetails): ?StokMutasi
+    {
+
+        $stokSebelum = 0;
+        $stokSesudah = $stokSebelum + $jumlah;
+        $keterangan = sprintf(
+            "Penerimaan: {id: %s, oleh: %s}\n" .
+                "Stok: {id: %d, awal: %s, akhir: %s }\n",
+            $penerimaanDetails->id,
+            $penerimaanDetails->penerimaan->user->karyawan?->nama,
+            $stok->id,
+            $stokSebelum,
+            $stokSesudah
+        );
+
+        $mutasi =  StokMutasi::create([
+            'stok_id' => $stok->id,
+            'barang_id' => $stok->barang_id,
+            'jenis_mutasi' => 'PEMBELIAN',
+            'jumlah' => abs($jumlah),
+            'multiplier' => 1,
+            'stok_sebelum' => $stokSebelum,
+            'stok_sesudah' => $stokSesudah,
+            'keterangan' => $keterangan,
+            'referensi_type' => PenerimaanDetail::class,
+            'referensi_id' => $penerimaanDetails->id,
+            'created_by' => auth()->user()->id,
+            'is_posted' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $mutasi;
     }
 
 

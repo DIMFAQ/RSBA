@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Master\Barang;
+use App\Models\Assets\AssetBarang;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class AssetController extends Controller
 {
-    function mainItem(Request $request): JsonResponse
+    function mainItem($in, Request $request): JsonResponse
     {
         $search = $request->input('search');
 
-        $data = Barang::with(['barang'])
+        $data = AssetBarang::with(['barang'])
             ->select('id', 'kode', 'barang_id')
-            ->whereNotNull('kode')
+            ->whereNotNull(['kode'])
+            ->where('main_asset_id', null)
+            ->where('ruangan_id', $in)
             ->when($search, function ($query) use ($search) {
                 $query->where('kode', 'like', '%' . $search . '%')
                     ->orWhereHas('barang', function ($q) use ($search) {
@@ -27,7 +29,7 @@ class AssetController extends Controller
             ->map(
                 fn($item) => [
                     'value' => $item->id,
-                    'label' => $item->kode,
+                    'label' => $item?->kode,
                     'description' => "Barang: {$item->barang->nama}",
                 ]
             );

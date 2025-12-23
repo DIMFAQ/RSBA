@@ -36,7 +36,7 @@
                 <livewire:Partials.Sidebar key="sidebar">
 
                     <!-- Main content -->
-                    <div id="main-content" class="no-scrollbar max-h-screen flex-1 overflow-y-auto p-6 transition-all duration-200">
+                    <div id="main-content" class="scrollbar-hidden max-h-screen flex-1 overflow-y-auto p-6 transition-all duration-200">
 
                         {{-- NAVBAR --}}
                         <div class="h-16 rounded-md bg-white shadow-md">

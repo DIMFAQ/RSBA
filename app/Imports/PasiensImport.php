@@ -5,10 +5,11 @@ namespace App\Imports;
 use App\Models\JmPasien;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class PasiensImport implements ToModel, WithHeadingRow, WithChunkReading
+class PasiensImport implements ToModel, WithHeadingRow, WithBatchInserts, WithChunkReading
 {
     /**
      *  To handle importing data in batches of 50 rows, 
@@ -16,7 +17,7 @@ class PasiensImport implements ToModel, WithHeadingRow, WithChunkReading
      * 
      */
     protected $batchData = [];
-    protected $batchSize = 50;
+    // protected $batchSize = 50;
 
 
     /**
@@ -29,10 +30,12 @@ class PasiensImport implements ToModel, WithHeadingRow, WithChunkReading
         // collecting row
         $this->batchData[] = $this->prepareRowData($row);
 
+        return null;
+
         //batch size reached, proses batch
-        if (count($this->batchData) >= $this->batchSize) {
-            $this->insertBatch();
-        }
+        // if (count($this->batchData) >= $this->batchSize) {
+        //     $this->insertBatch();
+        // }
     }
 
     /**
@@ -80,14 +83,16 @@ class PasiensImport implements ToModel, WithHeadingRow, WithChunkReading
     // Insert batch into database
     protected function insertBatch()
     {
+        if (empty($this->batchData)) {
+            return;
+        }
+
         DB::transaction(
             function () {
-
                 // each data $batchData
                 foreach ($this->batchData as $row) {
                     JmPasien::updateOrCreate(
-                        $row['where'] //kondisi
-                        ,
+                        $row['where'], //kondisi
                         $row['data'] //data to insert or update
                     );
                 }
@@ -98,13 +103,28 @@ class PasiensImport implements ToModel, WithHeadingRow, WithChunkReading
         $this->batchData = [];
     }
 
+    /**
+     * Called when chunk reading is completed
+     */
+    public function onChunk($chunk)
+    {
+        // Process the collected batch data for this chunk
+        $this->insertBatch();
+    }
+
 
     /**
      * Specify chunk size for reading.
      */
     public function chunkSize(): int
     {
-        return $this->batchSize;
+        // return $this->batchSize;
+        return 1000;
+    }
+
+    public function batchSize(): int
+    {
+        return 1000;
     }
 
 
@@ -114,7 +134,7 @@ class PasiensImport implements ToModel, WithHeadingRow, WithChunkReading
     function __destruct()
     {
         // Process remaining rows in batch
-        if (!empty($this->batchSize)) {
+        if (!empty($this->batchData)) {
             $this->insertBatch();
         }
     }

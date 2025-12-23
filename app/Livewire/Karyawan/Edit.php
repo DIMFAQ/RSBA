@@ -20,7 +20,6 @@ class Edit extends Component
     public function mount($id)
     {
         $this->karyawan = Karyawan::findOrFail($id);
-        $this->dispatch('update-title', title: $this->karyawan->nama);
     }
 
     function directback()

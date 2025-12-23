@@ -37,7 +37,10 @@ class TableCuti extends Component implements HasTable, HasForms
                     ->label('Lama Cuti')
                     ->formatStateUsing(fn(SuratCuti $record) => $record->lama_cuti . " Hari")
                     ->action(
-                        fn(SuratCuti $record, $livewire) => $livewire->detilTanggal(modal: 'detil-surat-cuti', id: $record->getKey())
+                        fn(SuratCuti $record, $livewire) => $livewire->modal(
+                            modal: 'detil-surat-cuti',
+                            id: $record->getKey()
+                        )
                     ),
                 TextColumn::make('tgl_mulai')
                     ->label('Tgl Mulai'),
@@ -83,17 +86,20 @@ class TableCuti extends Component implements HasTable, HasForms
                     ->iconButton()
                     ->icon('tabler-printer'),
 
-                Action::make('setujui')
-                    ->label('Setujui')
+                Action::make('approval')
                     ->iconButton()
-                    ->icon('tabler-checklist')
-                    ->color('secondary')
-                    ->tooltip('Setujui')
-                    ->url(fn(SuratCuti $record): string => route('kepegawaian.surat.cuti.approval', $record->getKey()))
+                    ->icon('tabler-file-check')
+                    ->color('success')
+                    ->action(
+                        fn(SuratCuti $record, $livewire) => $livewire->modal(
+                            modal: 'modal-approval-cuti',
+                            id: $record->getKey()
+                        )
+                    )
             ]);
     }
 
-    private function detilTanggal($modal, $id)
+    public function modal($modal, $id)
     {
         $this->surat = SuratCuti::findOrFail($id);
         $this->dispatch('open-modal', id: $modal);
