@@ -26,6 +26,9 @@
 
             <x-ts:button sm outline icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-new-penilaian'})">Element Penilaian</x-ts:button>
 
+            <x-ts:button sm outline icon="tabler.file-type-zip" loading="downloadZip()" wire:click="downloadZip()">Download</x-ts:button>
+
+
 
             <x-filament::modal id="modal-new-bab" width="2xl">
                 <x-slot:heading>Bab Standar</x-slot:heading>
@@ -119,11 +122,11 @@
 
                             <div class="flex flex-col gap-2 text-wrap text-sm text-gray-700">
                                 @if ($item->deskripsi)
-                                    <p><span class="font-medium">Deskripsi:</span> {{ $item->deskripsi }}</p>
+                                    <p><span class="font-medium">Deskripsi:</span> {!! str($item->deskripsi)->sanitizeHtml() !!}</p>
                                 @endif
 
                                 @if ($item->maksud_tujuan)
-                                    <p>{{ $item->maksud_tujuan }}</p>
+                                    <p>{!! str($item->maksud_tujuan)->sanitizeHtml() !!}</p>
                                 @endif
                             </div>
 

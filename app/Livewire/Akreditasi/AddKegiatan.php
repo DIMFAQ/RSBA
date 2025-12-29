@@ -133,8 +133,6 @@ class AddKegiatan extends Component
                                 ]
                             );
                             $newElement->akre_bab_id = $newBab->id;
-
-                            // TODO Replicate except [nilai, tdd, catatan,validate_by,is_correction]
                             $newElement->save();
 
                             foreach ($element->files as $file) {

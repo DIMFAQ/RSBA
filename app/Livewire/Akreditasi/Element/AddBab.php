@@ -2,17 +2,21 @@
 
 namespace App\Livewire\Akreditasi\Element;
 
-use App\Models\Akreditasi\AkreBabElement;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
+use App\Models\Akreditasi\AkreBabElement;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 
 #[Lazy]
-class AddBab extends Component
+class AddBab extends Component implements HasForms
 {
     use Interactions;
+    use InteractsWithForms;
 
     public ?int $chapter_id;
     public ?string $jenisPenomoran = 'alfabet';
@@ -101,6 +105,7 @@ class AddBab extends Component
     public function bab(): array
     {
         return AkreBabElement::where('bab', 'bab')
+            ->where('chapter_id', $this->chapter_id)
             ->get()
             ->map(function ($item) {
                 return [
@@ -116,6 +121,51 @@ class AddBab extends Component
     {
         $this->chapter_id = $chapterId;
     }
+
+    // filament schema for text-rich-editor
+    public function getFormSchema(): array
+    {
+        return [
+            RichEditor::make('deskripsi')
+                ->required()
+                ->hiddenLabel()
+                ->placeholder('Deskripsi Bab')
+                ->toolbarButtons([
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'bulletList',
+                    'orderedList',
+                    'link',
+                    'quote',
+                    'undo',
+                    'redo'
+                ])
+                ->disableGrammarly()
+                ->columnSpanFull(),
+
+            RichEditor::make('maksud_tujuan')
+                ->required()
+                ->hiddenLabel()
+                ->placeholder('Maksud & Tujuan Bab.')
+                ->toolbarButtons([
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'bulletList',
+                    'orderedList',
+                    'link',
+                    'quote',
+                    'undo',
+                    'redo'
+                ])
+                ->disableGrammarly()
+                ->columnSpanFull(),
+        ];
+    }
+
 
     public function render()
     {

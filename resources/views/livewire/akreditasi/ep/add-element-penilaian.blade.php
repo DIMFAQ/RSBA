@@ -14,7 +14,12 @@
             <x-ts:select.styled wire:model.defer='methode' searchable multiple :options="$this->methode()" select="label:label|value:value" placeholder="Methode">
             </x-ts:select.styled>
 
-            <x-ts:textarea wire:model.defer='kelengkapan' placeholder="Kelengkapan Bukti"></x-ts:textarea>
+
+            <div>
+                {{ $this->form }}
+            </div>
+
+            {{-- <x-ts:textarea wire:model.defer='kelengkapan' placeholder="Kelengkapan Bukti"></x-ts:textarea> --}}
 
             <x-ts:number wire:model.defer='target_nilai' min="0" max="10" step="5" placeholder="Target Nilai"></x-ts:number>
 

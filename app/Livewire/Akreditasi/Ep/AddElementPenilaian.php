@@ -8,12 +8,16 @@ use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\DB;
 use App\Models\Akreditasi\AkreBabElement;
 use App\Models\Akreditasi\AkreElement;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
-class AddElementPenilaian extends Component
+class AddElementPenilaian extends Component implements HasForms
 {
     use Interactions;
+    use InteractsWithForms;
 
     public ?int $bab_id;
     public ?array $methode = [];
@@ -149,6 +153,32 @@ class AddElementPenilaian extends Component
         }
 
         return implode('', $chars);
+    }
+
+
+    public function getFormSchema(): array
+    {
+        return [
+            RichEditor::make('kelengkapan')
+                ->required()
+                ->hiddenLabel()
+                ->placeholder('Kelengkapan Bukti')
+                ->toolbarButtons([
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'bulletList',
+                    'orderedList',
+                    'link',
+                    'quote',
+                    'undo',
+                    'redo'
+                ])
+                ->disableGrammarly()
+                ->columnSpanFull()
+
+        ];
     }
 
     public function render()

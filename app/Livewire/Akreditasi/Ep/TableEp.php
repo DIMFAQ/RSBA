@@ -106,6 +106,7 @@ class TableEp extends Component implements HasTable, HasForms
 
                                 Textarea::make('catatan')
                                     ->label('Catatan')
+                                    ->placeholder('Catatan')
                                     ->rows(3)
                             ])
                             ->fillForm(fn($record) => [

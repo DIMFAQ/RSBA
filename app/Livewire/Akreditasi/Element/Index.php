@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Akreditasi\Element;
 
-use App\Models\Akreditasi\AkreBabElement;
-use App\Models\Akreditasi\AkreChapter;
-use Livewire\Attributes\Computed;
-use Livewire\Attributes\Lazy;
+use ZipArchive;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Computed;
+use App\Models\Akreditasi\AkreChapter;
+use App\Models\Akreditasi\AkreKegiatan;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Akreditasi\AkreBabElement;
 
 #[Lazy]
 class Index extends Component
@@ -58,6 +61,76 @@ class Index extends Component
             $this->expandedItems[] = $itemId;
         }
         // dd($itemId, $this->expandedItems);
+    }
+
+
+    // download document per chapter
+    public function downloadZip()
+    {
+        // $zip = new ZipArchive;
+        // $filename = $this->chapter->singkatan . time() . '.zip';
+        // $zipPath = storage_path('app/temp/' . $filename);
+
+        // if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+
+        //     // $folderKegiatan = AkreChapter::with('kegiatan')
+        //     //     ->where('id', $this->chapter->id);
+
+        //     $folderKegiatan = AkreChapter::join('akre_kegiatan', 'akre_chapter.kegiatan_id', '=', 'akre_kegiatan.id')
+        //         ->where('akre_chapter.id', $this->chapter->id)
+        //         ->select('akre_kegiatan.folder_path')
+        //         ->first();
+
+
+        //     $files = Storage::files($folderKegiatan);
+
+
+        // }
+        $chapter =  AkreChapter::join('akre_kegiatan', 'akre_chapter.kegiatan_id', '=', 'akre_kegiatan.id')
+            ->where('akre_chapter.id', $this->chapter->id)
+            ->select(
+                'akre_kegiatan.standard',
+                'akre_kegiatan.tanggal',
+                'akre_kegiatan.folder_path',
+                'akre_chapter.singkatan'
+            )
+            ->first();
+
+        $basePath = $chapter->folder_path;
+        $chapterName = $chapter->singkatan;
+
+        if (!Storage::disk('public')->exists($basePath)) {
+            abort(404, "Folder Not Found");
+        }
+
+        // 
+        $zipFileName = str_replace(' ', '_', $chapterName) .
+            '_' . str_replace(' ', '_', $chapter->standard) .
+            '_' . str_replace('-', '_', $chapter->tanggal) .
+            '.zip';
+
+        return response()->streamDownload(
+            function () use ($basePath) {
+
+                $zip = new ZipArchive;
+                $tempFile = tempnam(sys_get_temp_dir(), 'zip');
+
+                if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                    $files = Storage::disk('public')->allFiles($basePath);
+
+                    foreach ($files as $file) {
+                        $relativePath = str_replace($basePath . '/', '', $file);
+                        $zip->addFile(Storage::disk('public')->path($file), $relativePath);
+                    }
+
+                    $zip->close();
+                }
+
+                readfile($tempFile);
+                unlink($tempFile);
+            },
+            $zipFileName
+        );
     }
 
     public function render()
