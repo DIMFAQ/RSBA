@@ -2,21 +2,22 @@
 
 namespace App\Livewire\Akreditasi\Ep;
 
+use Filament\Forms\Set;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
+use TallStackUi\Traits\Interactions;
 use Filament\Forms\Components\Select;
 use App\Models\Akreditasi\AkreElement;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Get;
 use Filament\Tables\Concerns\InteractsWithTable;
-use TallStackUi\Traits\Interactions;
-
-use function Symfony\Component\Translation\t;
 
 class TableEp extends Component implements HasTable, HasForms
 {
@@ -60,20 +61,38 @@ class TableEp extends Component implements HasTable, HasForms
                 TextColumn::make('nilai')
                     ->label('Nilai')
                     ->badge()
+                    ->state(function ($record) {
+                        if ($record->tdd) {
+                            return 'TDD';
+                        }
+                        return $record->nilai ?? 'Belum Dinilai';
+                    })
+                    ->color(function ($record) {
+                        if ($record->tdd) {
+                            return 'primary';
+                        }
 
-                    ->color(
-                        fn($state) => match ($state) {
-                            $state === null => 'gray',
-                            0 => 'red',
+                        return match ($record->nilai) {
+                            null => 'gray',
+                            0 => 'danger',
                             5 => 'warning',
                             10 => 'success',
                             default => 'gray'
-                        }
-                    )
+                        };
+                    })
                     ->default('Belum Dinilai')
                     ->action(
-                        Action::make('audit')
+                        Action::make('penilaian')
                             ->form([
+                                Checkbox::make('tdd')
+                                    ->label('Tidak Dapat Dinilai (TDD)')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Set $set) {
+                                        if ($state) {
+                                            $set('nilai', null);
+                                        }
+                                    }),
+
                                 Select::make('nilai')
                                     ->label('Nilai')
                                     ->options([
@@ -81,7 +100,9 @@ class TableEp extends Component implements HasTable, HasForms
                                         5 => '5 - Sebagian',
                                         10 => '10 - Lengkap'
                                     ])
-                                    ->required(),
+                                    ->required(fn(Get $get) => !$get('tdd'))
+                                    ->disabled(fn(Get $get) => $get('tdd'))
+                                    ->dehydrated(),
 
                                 Textarea::make('catatan')
                                     ->label('Catatan')

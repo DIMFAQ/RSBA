@@ -12,8 +12,8 @@
 
             <div class="flex w-full flex-col gap-2">
                 <div class="flex gap-4">
-                    <x-ts:radio wire:model.defer='bab' id="bab" value="true" label="Bab" />
-                    <x-ts:radio wire:model.defer='bab' id="bab" value="false" label="Sub Bab" />
+                    <x-ts:radio wire:model.defer='bab' id="bab" value="bab" label="Bab" />
+                    <x-ts:radio wire:model.defer='bab' id="bab" value="sub" label="Sub Bab" />
                 </div>
 
                 <x-ts:select.styled wire:model.defer='parent' searchable :options="$this->bab()" select="label:nama|value:value" placeholder="Pilih Bab Utama">

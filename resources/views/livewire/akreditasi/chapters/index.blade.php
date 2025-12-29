@@ -8,8 +8,11 @@
     </div>
 
     {{-- Grafik Capaian --}}
-    <div class="flex flex-row bg-white px-4 py-2">
-
+    <div class="flex flex-col bg-white px-4 py-2">
+        <span class="text-indigo-500">Stats</span>
+        <div class="w-full">
+            <livewire:Akreditasi.Chapters.Stat :key="'stats-chapters'" />
+        </div>
     </div>
 
 

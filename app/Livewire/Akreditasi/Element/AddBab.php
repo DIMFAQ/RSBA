@@ -16,9 +16,9 @@ class AddBab extends Component
 
     public ?int $chapter_id;
     public ?string $jenisPenomoran = 'alfabet';
-    public ?int $parent;
+    public ?int $parent = null;
     public ?string $nama, $deskripsi, $maksud_tujuan;
-    public bool $bab;
+    public ?string $bab = 'bab';
 
     public function rules(): array
     {
@@ -41,7 +41,7 @@ class AddBab extends Component
                 'nama' => $this->nama,
                 'deskripsi' => $this->deskripsi,
                 'maksud_tujuan' => $this->maksud_tujuan,
-                'bab' => $this->bab ? 'bab' : 'sub',
+                'bab' => $this->bab,
                 'parent_id' => $this->parent,
             ];
 
