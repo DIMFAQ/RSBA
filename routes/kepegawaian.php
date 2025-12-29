@@ -68,3 +68,15 @@ Route::prefix('laporan')
     ->group(function () {
         Route::get('/', App\Livewire\Laporan\Kepegawaian\Index::class)->name('index');
     });
+
+Route::prefix('akreditasi')
+    ->name('akreditasi.')
+    ->group(
+        function () {
+            Route::get('/', App\Livewire\Akreditasi\Index::class)->name('index');
+
+            Route::get('/{uuid}', App\Livewire\Akreditasi\Chapters\Index::class)->name('chapters');
+
+            Route::get('/chapter/{chapter:id}/elements', App\Livewire\Akreditasi\Element\Index::class)->name('chapter.elements');
+        }
+    );
