@@ -32,12 +32,12 @@
 
             <x-filament::modal id="modal-new-bab" width="2xl">
                 <x-slot:heading>Bab Standar</x-slot:heading>
-                <livewire:Akreditasi.Element.AddBab :chapterId="$chapter->id" />
+                <livewire:Akreditasi.Element.AddBab :chapterId="$chapter->id" :key="'add-bab' . $chapter->id" />
             </x-filament::modal>
 
             <x-filament::modal id="modal-new-penilaian" width="4xl">
                 <x-slot:heading>Element Penilaian Bab</x-slot:heading>
-                <livewire:Akreditasi.Ep.AddElementPenilaian />
+                <livewire:Akreditasi.Ep.AddElementPenilaian :chapterId="$chapter->id" :key="'add-ep' . $chapter->id" />
             </x-filament::modal>
 
         </div>
@@ -46,7 +46,7 @@
 
     {{-- Bab Standar --}}
     <div class="flex flex-col gap-6 rounded-md bg-white p-4">
-        @foreach ($this->babs as $item)
+        @forelse ($this->babs as $item)
             @switch($item->bab)
                 @case('bab')
                     {{-- Header Bab --}}
@@ -56,24 +56,15 @@
                 @break
 
                 @case('sub')
-                    {{-- Sub Bab --}}
                     <div class="ms-4 flex flex-row gap-2">
                         {{-- Status & Nilai Container --}}
                         <div class="flex w-32 flex-col gap-2">
                             @php
-                                $colorBerkas = $item->elements_with_files_count === $item->elements_count ? 'green' : 'red';
-
-                                $totalTarget = $item->elements->sum('target_nilai');
-                                $totalNilai = $item->elements->sum('nilai');
-                                $persentase = $totalTarget > 0 ? ($totalNilai / $totalTarget) * 100 : 0;
-
-                                if ($persentase < 50) {
-                                    $colorNilai = 'red'; // Merah - Rendah
-                                } elseif ($persentase >= 50 && $persentase < 100) {
-                                    $colorNilai = 'yellow';
-                                } else {
-                                    $colorNilai = 'green';
-                                }
+                                $colorBerkas = $this->getBerkasColor($item);
+                                $colorNilai = $this->getNilaiColor($item);
+                                $persentaseNilai = $this->getPersentaseNilai($item);
+                                $totalTarget = $item->elements_sum_target_nilai ?? 0;
+                                $totalNilai = $item->elements_sum_nilai ?? 0;
                             @endphp
 
                             {{-- Status Element By Chapter --}}
@@ -122,11 +113,22 @@
 
                             <div class="flex flex-col gap-2 text-wrap text-sm text-gray-700">
                                 @if ($item->deskripsi)
-                                    <p><span class="font-medium">Deskripsi:</span> {!! str($item->deskripsi)->sanitizeHtml() !!}</p>
+                                    <div class="text-xs">
+                                        <p>
+                                            <span class="font-medium">Deskripsi:</span>
+                                            <span>
+                                                {!! str($item->deskripsi)->sanitizeHtml() !!}
+                                            </span>
+                                        </p>
+                                    </div>
                                 @endif
 
                                 @if ($item->maksud_tujuan)
-                                    <p>{!! str($item->maksud_tujuan)->sanitizeHtml() !!}</p>
+                                    <div class="text-xs">
+                                        <p>
+                                            {!! str($item->maksud_tujuan)->sanitizeHtml() !!}
+                                        </p>
+                                    </div>
                                 @endif
                             </div>
 
@@ -157,22 +159,33 @@
                         </div>
                     </div>
                 @break
-
-                @default
             @endswitch
-        @endforeach
+
+            @empty
+                <div class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-12">
+                    <svg class="mb-4 h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="text-lg font-medium text-gray-600">Belum ada data Bab & Sub Bab</p>
+                    <p class="mt-1 text-sm text-gray-500">Silakan tambahkan data terlebih dahulu</p>
+                </div>
+            @endforelse
+        </div>
+        <div class="w-full">
+            {{ $this->babs->links() }}
+        </div>
+
+
+        {{-- modal --}}
+        <x-filament::modal id="modal-upload-berkas" width="w-full">
+            <x-slot:heading>Element Penilaian <span class="text-indigo-500" x-text="selectedBabNama"></span> </x-slot:heading>
+
+            <livewire:Akreditasi.Ep.listEp :babId="$babIdSelected" :key="'element-list' . $babIdSelected" />
+        </x-filament::modal>
+
+
+        <x-filament::modal id="modal-penilaian">
+            <x-slot:heading>Penilaian</x-slot:heading>
+        </x-filament::modal>
     </div>
-
-
-    {{-- modal --}}
-    <x-filament::modal id="modal-upload-berkas" width="w-full">
-        <x-slot:heading>Element Penilaian <span class="text-indigo-500" x-text="selectedBabNama"></span> </x-slot:heading>
-
-        <livewire:Akreditasi.Ep.listEp :babId="$babIdSelected" :key="'element-list' . $babIdSelected" />
-    </x-filament::modal>
-
-
-    <x-filament::modal id="modal-penilaian">
-        <x-slot:heading>Penilaian</x-slot:heading>
-    </x-filament::modal>
-</div>

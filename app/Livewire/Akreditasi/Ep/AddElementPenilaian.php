@@ -19,17 +19,23 @@ class AddElementPenilaian extends Component implements HasForms
     use Interactions;
     use InteractsWithForms;
 
+    public ?int $chapter_id;
     public ?int $bab_id;
     public ?array $methode = [];
     public ?string $jenisPenomoran = 'alfabet';
     public ?string $element, $kelengkapan;
     public ?int $target_nilai = 10;
 
+    public function mount(?int $chapterId)
+    {
+        $this->chapter_id = $chapterId;
+    }
 
     #[Computed]
     public function bab(): array
     {
         return AkreBabElement::where('bab', 'sub')
+            ->where('chapter_id', $this->chapter_id)
             ->get()
             ->map(function ($item) {
                 return [

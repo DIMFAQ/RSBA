@@ -36,7 +36,9 @@ class Index extends Component
     #[Computed]
     public function chapters()
     {
-        return AkreChapter::where('kegiatan_id', $this->kegiatanId)->get();
+        return AkreChapter::where('kegiatan_id', $this->kegiatanId)
+            ->orderBy('singkatan')
+            ->get();
     }
 
     public function updatedSelectedChapter($value)
