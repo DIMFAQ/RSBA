@@ -30,6 +30,7 @@ class AddBab extends Component implements HasForms
             'nama' => 'required',
             'deskripsi' => 'required',
             'maksud_tujuan' => 'required',
+            'parent' => $this->bab === 'sub' ? 'required' : ''
         ];
     }
 
@@ -48,6 +49,8 @@ class AddBab extends Component implements HasForms
                 'bab' => $this->bab,
                 'parent_id' => $this->parent,
             ];
+
+            dd($data);
 
             AkreBabElement::create($data);
 
@@ -69,6 +72,8 @@ class AddBab extends Component implements HasForms
     {
         // Ambil nomor terakhir berdasarkan jenis penomoran
         $recordTerakhir = AkreBabElement::where('chapter_id', $this->chapter_id)
+            ->where('bab', $this->bab)
+            ->where('parent_id', $this->parent)
             ->latest('id')
             ->first();
 

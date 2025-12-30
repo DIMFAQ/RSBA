@@ -4,7 +4,7 @@
 
             <div x-data="{ showParent: false }" class="flex w-full flex-col gap-2 rounded-md border border-gray-200 p-2">
                 <div class="flex gap-4">
-                    <x-ts:radio wire:model.defer='bab' id="bab" value="bab" label="Bab" x-on:click="showParent=false" />
+                    <x-ts:radio wire:model.defer='bab' id="bab" value="bab" label="Bab" x-on:click="showParent=false;$wire.set('parent',null)" />
                     <x-ts:radio wire:model.defer='bab' id="bab" value="sub" label="Sub Bab" x-on:click="showParent=true; $wire.set('parent',null)" />
                 </div>
 

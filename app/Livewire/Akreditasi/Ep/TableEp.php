@@ -44,6 +44,7 @@ class TableEp extends Component implements HasTable, HasForms
             ->columns([
                 TextColumn::make('element')
                     ->label('Element Penilaian')
+                    ->extraAttributes(['class' => 'text-xs'])
                     ->prefix(
                         fn($record) => $record->nomor . ") "
                     )
@@ -51,15 +52,19 @@ class TableEp extends Component implements HasTable, HasForms
                     ->searchable(),
 
                 TextColumn::make('methode')
+                    ->extraAttributes(['class' => 'text-xs'])
                     ->label('Methode')
                     ->badge(),
 
                 TextColumn::make('kelengkapan')
                     ->label('Kelengkapan Penilaian')
+                    ->extraAttributes(['class' => 'text-xs'])
+                    ->html()
                     ->wrap(),
 
                 TextColumn::make('nilai')
                     ->label('Nilai')
+                    ->extraAttributes(['class' => 'text-xs'])
                     ->badge()
                     ->state(function ($record) {
                         if ($record->tdd) {
@@ -123,11 +128,13 @@ class TableEp extends Component implements HasTable, HasForms
                     ),
 
                 TextColumn::make('catatan')
+                    ->extraAttributes(['class' => 'text-xs'])
                     ->label('Catatan'),
 
                 // Custom column untuk detail
                 ViewColumn::make('details')
                     ->label('Documents')
+                    ->extraAttributes(['class' => 'text-xs'])
                     ->view('livewire.akreditasi.ep.list-documents'),
             ])
             ->actions([
@@ -146,7 +153,8 @@ class TableEp extends Component implements HasTable, HasForms
                             !auth()->user()->can('assesor-akreditasi')
 
                     )
-            ]);
+            ])
+            ->paginated(false);;
     }
 
     public function modal($modal, $id)
