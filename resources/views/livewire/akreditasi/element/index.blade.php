@@ -26,6 +26,8 @@
 
             <x-ts:button sm outline icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-new-penilaian'})">Element Penilaian</x-ts:button>
 
+            {{-- <x-ts:button sm outline icon="tabler.users" x-on:click="$dispatch('open-modal',{id:'modal-new-'})">Anggota</x-ts:button> --}}
+
             <x-ts:button sm outline icon="tabler.file-type-zip" loading="downloadZip()" wire:click="downloadZip()">Download</x-ts:button>
 
 
@@ -97,7 +99,7 @@
                                 <div class="text-{{ $colorNilai }}-400 flex flex-col text-left text-xs italic">
                                     <span>Penilaian</span>
                                     <span>Target : </span>
-                                    <span>Dinilai : 1 dari 3 </span>
+                                    <span>Dinilai : </span>
                                 </div>
                                 <div class="mt-2 text-center">
                                     <button class="text-xs text-gray-300">Detail</button>

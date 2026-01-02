@@ -6,7 +6,6 @@ use App\Models\Akreditasi\AkreChapter;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
-use Illuminate\Support\Facades\Route;
 use App\Models\Akreditasi\AkreKegiatan;
 use Livewire\Attributes\Computed;
 

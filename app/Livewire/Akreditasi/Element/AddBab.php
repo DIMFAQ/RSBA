@@ -50,8 +50,6 @@ class AddBab extends Component implements HasForms
                 'parent_id' => $this->parent,
             ];
 
-            dd($data);
-
             AkreBabElement::create($data);
 
             DB::commit();

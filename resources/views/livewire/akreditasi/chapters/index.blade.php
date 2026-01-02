@@ -1,20 +1,11 @@
 <div class="flex flex-col gap-2">
-    <div class="flex flex-row rounded-lg bg-white px-4 py-2">
-        <div class="ml-auto flex items-center justify-end gap-2">
-            <x-ts:button sm icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-add-chapter'})">
-                Tambah
-            </x-ts:button>
-        </div>
+    {{-- <div class="flex flex-row rounded-lg bg-white px-4 py-2"> --}}
+    <div class="ml-auto flex items-center justify-end gap-2">
+        <x-ts:button sm icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-add-chapter'})">
+            Tambah
+        </x-ts:button>
     </div>
-
-    {{-- Grafik Capaian --}}
-    <div class="flex flex-col bg-white px-4 py-2">
-        <span class="text-indigo-500">Stats</span>
-        <div class="w-full">
-            <livewire:Akreditasi.Chapters.Stat :key="'stats-chapters'" />
-        </div>
-    </div>
-
+    {{-- </div> --}}
 
     {{-- Layout Chapters --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -43,6 +34,11 @@
                         Ketua : {{ $item->user?->karyawan?->nama ?? 'Belum Ditentukan' }}
                     </p>
                 @endif
+
+                <div>
+                    {{-- stats --}}
+                    <livewire:Akreditasi.Chapters.Stat :chapterId="$item->id" :key="'stats-chapters' . $item->id" />
+                </div>
             </div>
         @endforeach
 
