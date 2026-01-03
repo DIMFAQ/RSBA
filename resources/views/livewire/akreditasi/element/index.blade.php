@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-2" x-data="{ selectedBabNama: null }">
+<div class="flex flex-col gap-2">
 
     <div class="flex flex-row justify-between rounded-lg bg-white px-4 py-2">
 
@@ -60,51 +60,8 @@
                 @case('sub')
                     <div class="ms-4 flex flex-row gap-2">
                         {{-- Status & Nilai Container --}}
-                        <div class="flex w-32 flex-col gap-2">
-                            @php
-                                $colorBerkas = $this->getBerkasColor($item);
-                                $colorNilai = $this->getNilaiColor($item);
-                                $persentaseNilai = $this->getPersentaseNilai($item);
-                                $totalTarget = $item->elements_sum_target_nilai ?? 0;
-                                $totalNilai = $item->elements_sum_nilai ?? 0;
-                            @endphp
-
-                            {{-- Status Element By Chapter --}}
-                            <div x-on:click="
-                            $wire.set('babIdSelected',{{ $item->id }}); 
-                            $dispatch('open-modal',{id:'modal-upload-berkas'}); 
-                            selectedBabNama= `{{ $item->nama }}`"
-                                class="border-{{ $colorBerkas }}-300 bg-{{ $colorBerkas }}-50 hover:border-{{ $colorBerkas }}-400 hover:bg-{{ $colorBerkas }}-300 flex flex-1 cursor-pointer flex-col rounded-md border p-2 shadow-md hover:shadow-2xl">
-
-                                <div class="flex flex-1 items-center justify-center">
-                                    <span class="text-{{ $colorBerkas }}-500 text-xl font-medium uppercase">{{ $item->elements_with_files_count }} / {{ $item->elements_count }}</span>
-                                </div>
-                                <div class="text-{{ $colorBerkas }}-400 flex flex-col text-left text-xs italic">
-                                    <span>Berkas</span>
-                                    <span>Element : </span>
-                                    <span>Terupload : </span>
-                                </div>
-                                <div class="mt-2 text-center">
-                                    <button class="text-xs italic text-gray-300">
-                                        Detail
-                                    </button>
-                                </div>
-                            </div>
-
-                            {{-- Validasi Assesor --}}
-                            <div class="border-{{ $colorNilai }}-300 bg-{{ $colorNilai }}-50 flex flex-1 flex-col rounded-md border p-2 shadow-md">
-                                <div class="flex flex-1 items-center justify-center">
-                                    <span class="text-{{ $colorNilai }}-500 text-xl font-medium uppercase">{{ $item->elements->sum('nilai') }}</span>
-                                </div>
-                                <div class="text-{{ $colorNilai }}-400 flex flex-col text-left text-xs italic">
-                                    <span>Penilaian</span>
-                                    <span>Target : </span>
-                                    <span>Dinilai : </span>
-                                </div>
-                                <div class="mt-2 text-center">
-                                    <button class="text-xs text-gray-300">Detail</button>
-                                </div>
-                            </div>
+                        <div class="flex w-32 flex-col">
+                            <livewire:Akreditasi.Element.Stats :babId="$item->id" :key="'stats-bab-' . $item->id">
                         </div>
 
                         {{-- Konten Sub Bab --}}
@@ -181,13 +138,7 @@
 
         {{-- modal --}}
         <x-filament::modal id="modal-upload-berkas" width="w-full">
-            <x-slot:heading>Element Penilaian <span class="text-indigo-500" x-text="selectedBabNama"></span> </x-slot:heading>
-
+            <x-slot:heading>Element </x-slot:heading>
             <livewire:Akreditasi.Ep.listEp :babId="$babIdSelected" :key="'element-list' . $babIdSelected" />
-        </x-filament::modal>
-
-
-        <x-filament::modal id="modal-penilaian">
-            <x-slot:heading>Penilaian</x-slot:heading>
         </x-filament::modal>
     </div>

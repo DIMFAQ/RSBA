@@ -12,10 +12,12 @@ use Filament\Tables\Actions\Action;
 use App\Models\Akreditasi\AkreFiles;
 use TallStackUi\Traits\Interactions;
 use App\Models\Akreditasi\AkreElement;
+
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
@@ -76,10 +78,24 @@ class TableDocuments extends Component implements HasTable, HasForms
 
             ])
             ->actions([
-                Action::make('delete')
+                DeleteAction::make()
                     ->iconButton()
-                    ->icon('tabler-trash')
-                    ->color('danger')
+                    ->modalHeading('Hapus File')
+                    ->modalDescription('Are you sure? This will also delete associated files.')
+                    ->modalSubmitActionLabel('Ya, Hapus')
+                    ->before(function ($record) {
+                        // Delete thumbnail
+                        if ($record->path) {
+                            Storage::disk('public')->delete($record->path);
+                        }
+                    })
+                    ->after(function () {
+                        $this->dispatch('deleted-files_element')->to('akreditasi.element.stats');
+
+                        $this->toast()
+                            ->success('Berhasil', 'File berhasil dihapus.')
+                            ->send();
+                    })
             ])
 
         ;
@@ -133,6 +149,9 @@ class TableDocuments extends Component implements HasTable, HasForms
                 'uploaded_by' => auth()->user()->id,
             ]);
             DB::commit();
+
+            $this->dispatch('uploaded-files-element')->to('akreditasi.element.stats');
+
             $this->toast()
                 ->success('Berhasil', 'File berhasil ditambahkan.')
                 ->send();

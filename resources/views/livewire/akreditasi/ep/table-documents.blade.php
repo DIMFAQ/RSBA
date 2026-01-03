@@ -60,7 +60,7 @@
     </div>
 
 
-    <x-filament::modal id="modal-document-view" width="w-full">
+    <x-filament::modal id="modal-document-view" width="screen">
         <x-slot:heading>Document </x-slot:heading>
 
         <livewire:Akreditasi.Ep.Document :docSelectedId="$selectedDocId" :key="'view-doc-' . $selectedDocId" />

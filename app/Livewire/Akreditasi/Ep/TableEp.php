@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Akreditasi\Ep;
 
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use App\Models\Akreditasi\AkreElement;
 use Filament\Forms\Contracts\HasForms;
@@ -16,7 +18,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Get;
 use Filament\Tables\Concerns\InteractsWithTable;
 
 class TableEp extends Component implements HasTable, HasForms
@@ -88,6 +89,7 @@ class TableEp extends Component implements HasTable, HasForms
                     ->default('Belum Dinilai')
                     ->action(
                         Action::make('penilaian')
+                            ->modalHeading('Penilaian Element')
                             ->form([
                                 Checkbox::make('tdd')
                                     ->label('Tidak Dapat Dinilai (TDD)')
@@ -112,19 +114,46 @@ class TableEp extends Component implements HasTable, HasForms
                                 Textarea::make('catatan')
                                     ->label('Catatan')
                                     ->placeholder('Catatan')
-                                    ->rows(3)
+                                    ->helperText(
+                                        fn(Get $get) => $get('validated_by')
+                                            ? "{$get('updated_at')}, Oleh: {$get('validated_by')}"
+                                            : null
+                                    )
+                                    ->rows(3),
+
                             ])
                             ->fillForm(fn($record) => [
                                 'nilai' => $record->nilai,
-                                'catatan' => $record->catatan
+                                'catatan' => $record->catatan,
+                                'validated_by' => $record->validator,
+                                'updated_at' => $record->updated_at
                             ])
                             ->action(function ($record, array $data) {
-                                $record->update($data);
+                                $record->update([
+                                    'nilai' => $data['nilai'],
+                                    'tdd' => $data['tdd'],
+                                    'catatan' => $data['catatan'],
+                                    'validated_by' => auth()->user()->id,
+                                ]);
+
+                                $this->dispatch('updated-nilai-element')->to('akreditasi.element.stats');
+
                                 $this->toast()
                                     ->success('Berhasil', 'Penilaian berhasil disimpan.')
                                     ->send();
                             })
-                            ->visible(fn() => auth()->user()->can('assesor-akreditasi'))
+                            ->modalFooterActions(fn() => [
+                                Action::make('submit')
+                                    ->label('Simpan')
+                                    ->submit('submit')
+                                    ->visible(fn() => auth()->user()->can('assesor-akreditasi')),
+                                Action::make('cancel')
+                                    ->label('Tutup')
+                                    ->close()
+                                    ->color('gray')
+                                    ->visible(fn() => auth()->user()->can('assesor-akreditasi')),
+                            ])
+                            ->modalFooterActionsAlignment('right')
                     ),
 
                 TextColumn::make('catatan')

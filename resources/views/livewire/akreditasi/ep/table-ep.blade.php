@@ -2,7 +2,7 @@
     {{ $this->table }}
 
 
-    <x-filament::modal id="modal-view-document-ep" width="w-full">
+    <x-filament::modal id="modal-view-document-ep" width="screen">
         <x-slot:heading>Document</x-slot:heading>
 
         <livewire:Akreditasi.Ep.Document :$docSelectedId :key="'view-doc' . $docSelectedId" />
