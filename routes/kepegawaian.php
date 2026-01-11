@@ -78,5 +78,31 @@ Route::prefix('akreditasi')
             Route::get('/{uuid}', App\Livewire\Akreditasi\Chapters\Index::class)->name('chapters');
 
             Route::get('/chapter/{chapter:id}/elements', App\Livewire\Akreditasi\Element\Index::class)->name('chapter.elements');
+
+            // download Akreditasi controller
+            Route::prefix('download')
+                ->name('download.')
+                ->group(function () {
+                    // Single file download
+                    Route::get('/file/{document}', [App\Http\Controllers\AkreDownloadDocsController::class, 'downloadFile'])
+                        ->name('download.file');
+
+                    // Element download
+                    Route::get('/element/{element}', [App\Http\Controllers\AkreDownloadDocsController::class, 'downloadElement'])
+                        ->name('download.element');
+
+                    // Sub Bab download
+                    Route::get('/sub-bab/{subBab}', [App\Http\Controllers\AkreDownloadDocsController::class, 'downloadSubBab'])
+                        ->name('download.subbab');
+
+                    // Bab download
+                    Route::get('/bab/{bab}', [App\Http\Controllers\AkreDownloadDocsController::class, 'downloadBab'])
+                        ->name('download.bab');
+
+                    // Chapter download
+                    Route::get('/chapter/{chapter}', [App\Http\Controllers\AkreDownloadDocsController::class, 'downloadChapter'])
+                        ->name('download.chapter');
+                });
         }
+
     );

@@ -11,13 +11,15 @@ use App\Models\Akreditasi\AkreChapter;
 use App\Models\Akreditasi\AkreKegiatan;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Akreditasi\AkreBabElement;
+use TallStackUi\Traits\Interactions;
 
 #[Lazy]
 class Index extends Component
 {
+    use Interactions;
     use WithPagination;
 
-    public ?int $babIdSelected;
+    // public ?int $babIdSelected;
 
     public ?AkreChapter $chapter;
 
@@ -101,14 +103,14 @@ class Index extends Component
                     $query->select('id', 'akre_bab_id', 'target_nilai', 'nilai', 'element')
                         ->orderBy('nomor');
                 },
-                'elements.files' => function ($query) {
-                    $query->select('id', 'element_id', 'path', 'filename');
+                'elements.documents' => function ($query) {
+                    $query->select('akre_documents.id', 'akre_element_documents.element_id', 'akre_documents.path', 'akre_documents.filename');
                 }
             ])
             ->withCount([
                 'elements',
                 'elements as elements_with_files_count' => function ($query) {
-                    $query->whereHas('files');
+                    $query->whereHas('documents');
                 }
             ])
             ->withSum('elements', 'nilai')
@@ -124,8 +126,13 @@ class Index extends Component
                 $query->select('id', 'akre_bab_id', 'target_nilai', 'nilai', 'element')
                     ->orderBy('nomor');
             },
-            'elements.files' => function ($query) {
-                $query->select('id', 'element_id', 'path', 'filename');
+            'elements.documents' => function ($query) {
+                $query->select(
+                    'akre_documents.id',
+                    'akre_element_documents.element_id',
+                    'akre_documents.path',
+                    'akre_documents.filename'
+                );
             }
         ]);
 
@@ -216,7 +223,6 @@ class Index extends Component
             // Add to array (expand)
             $this->expandedItems[] = $itemId;
         }
-        // dd($itemId, $this->expandedItems);
     }
 
 

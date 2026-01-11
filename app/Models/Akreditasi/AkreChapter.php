@@ -26,4 +26,39 @@ class AkreChapter extends Model
     {
         return $this->hasMany(AkreBabElement::class, 'chapter_id', 'id');
     }
+
+    // Get all documents in this chapter
+    // public function getAllDocuments()
+    // {
+    //     return AkreDocuments::whereHas('elements.bab', function ($query) {
+    //         $query->where('chapter_id', $this->id)
+    //             ->orWhereHas('parent', function ($q) {
+    //                 $q->where('chapter_id', $this->id);
+    //             });
+    //     })->distinct()->get();
+    // }
+
+    public function getAllDocuments()
+    {
+        $documents = collect();
+
+        foreach ($this->babs as $bab) {
+
+            // Documents dari bab ini
+            $bab->elements->each(function ($element) use (&$documents) {
+                $documents = $documents->merge($element->documents);
+            });
+
+            // Documents from sub-babs (children)
+            $bab->children->each(function ($sub) use (&$documents) {
+                $sub->elements->each(
+                    function ($element) use (&$documents) {
+                        $documents = $documents->merge($element->documents);
+                    }
+                );
+            });
+        }
+
+        return $documents->unique('id')->values();
+    }
 }

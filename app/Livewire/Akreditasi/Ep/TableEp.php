@@ -8,7 +8,6 @@ use Livewire\Component;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use App\Models\Akreditasi\AkreElement;
 use Filament\Forms\Contracts\HasForms;
@@ -19,6 +18,7 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Livewire\Attributes\On;
 
 class TableEp extends Component implements HasTable, HasForms
 {
@@ -26,21 +26,30 @@ class TableEp extends Component implements HasTable, HasForms
     use InteractsWithTable, InteractsWithForms;
 
     public ?int $akre_bab_id;
+    public $modalPreffix = '';
 
     public ?int $docSelectedId;
 
     public ?int $elementSelectedId;
 
-    public function mount($akre_bab_id)
+    public function mount($akre_bab_id, $modalPreffix)
     {
         $this->akre_bab_id = $akre_bab_id;
+        $this->modalPreffix = $modalPreffix;
+    }
+
+    #[On('uploaded-files-element')]
+    #[On('deleted-files_element')]
+    public function refreshTable()
+    {
+        $this->resetTable();
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                AkreElement::with('files')->where('akre_bab_id', $this->akre_bab_id)
+                AkreElement::with('documents')->where('akre_bab_id', $this->akre_bab_id)
             )
             ->columns([
                 TextColumn::make('element')
@@ -189,13 +198,13 @@ class TableEp extends Component implements HasTable, HasForms
     public function modal($modal, $id)
     {
         $this->elementSelectedId = $id;
-        $this->dispatch('open-modal', id: $modal);
+        $this->dispatch('open-modal', id: "{$modal}-{$this->modalPreffix}");
     }
 
     public function modalViewDocument($id, $modal)
     {
         $this->docSelectedId = $id;
-        $this->dispatch('open-modal', id: $modal);
+        $this->dispatch('open-modal', id: "{$modal}-{$this->modalPreffix}");
     }
 
     public function render()

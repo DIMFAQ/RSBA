@@ -36,4 +36,89 @@ class AkreElement extends Model
     {
         return $this->validate_user?->karyawan?->nama ?? 'n/a';
     }
+
+    // TODO Review ini kebawah, hapus yang tidak digunakan
+    /**
+     * Documents relationship menggunakan custom pivot
+     */
+    public function documents()
+    {
+        return $this->belongsToMany(
+            AkreDocuments::class,
+            'akre_element_documents',
+            'element_id',
+            'document_id'
+        )
+            ->using(AkreElementDocuments::class) // Gunakan custom pivot model
+            ->withPivot(['source_element_id', 'is_original', 'source_deleted', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get only original documents (uploaded by this element)
+     */
+    public function originalDocuments()
+    {
+        return $this->belongsToMany(
+            AkreDocuments::class,
+            'akre_element_documents',
+            'element_id',
+            'document_id'
+        )
+            ->using(AkreElementDocuments::class)
+            ->wherePivot('is_original', true)
+            ->withPivot(['source_element_id', 'is_original', 'source_deleted', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get only shared documents (attached from other elements)
+     */
+    public function sharedDocuments()
+    {
+        return $this->belongsToMany(
+            AkreDocuments::class,
+            'akre_element_documents',
+            'element_id',
+            'document_id'
+        )
+            ->using(AkreElementDocuments::class)
+            ->wherePivot('is_original', false)
+            ->withPivot(['source_element_id', 'is_original', 'source_deleted', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get documents where source has been deleted
+     */
+    public function deletedSourceDocuments()
+    {
+        return $this->belongsToMany(
+            AkreDocuments::class,
+            'akre_element_documents',
+            'element_id',
+            'document_id'
+        )
+            ->using(AkreElementDocuments::class)
+            ->wherePivot('source_deleted', true)
+            ->withPivot(['source_element_id', 'is_original', 'source_deleted', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get active documents only
+     */
+    public function activeDocuments()
+    {
+        return $this->belongsToMany(
+            AkreDocuments::class,
+            'akre_element_documents',
+            'element_id',
+            'document_id'
+        )
+            ->using(AkreElementDocuments::class)
+            ->where('akre_documents.is_deleted', false)
+            ->withPivot(['source_element_id', 'is_original', 'source_deleted', 'created_at', 'updated_at'])
+            ->withTimestamps();
+    }
 }

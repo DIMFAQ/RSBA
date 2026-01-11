@@ -26,7 +26,7 @@ class Stat extends Component
             ->withCount([
                 'elements', // total_ep
                 'elements as total_ep_memiliki_file' => function ($query) {
-                    $query->whereHas('files');
+                    $query->whereHas('documents');
                 }
             ])
             ->withSum('elements', 'target_nilai') // total_target_nilai

@@ -5,7 +5,8 @@
     @endphp
 
     {{-- Status Element By Chapter --}}
-    <div x-on:click="$wire.$parent.set('babIdSelected',{{ $stats['id'] }}); $dispatch('open-modal',{id:'modal-upload-berkas'}); "
+    {{-- x-on:click="$wire.$parent.set('babIdSelected',{{ $stats['id'] }}); $dispatch('open-modal',{id:'modal-upload-berkas'}); " --}}
+    <div
         class="border-{{ $stats['color_berkas'] }}-300 bg-{{ $stats['color_berkas'] }}-50 hover:border-{{ $stats['color_berkas'] }}-500 hover:bg-{{ $stats['color_berkas'] }}-300 flex flex-1 cursor-pointer flex-col rounded-md border p-2 shadow-md hover:-translate-y-1 hover:shadow-lg">
 
         <div class="flex flex-1 items-center justify-center">

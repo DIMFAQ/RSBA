@@ -62,3 +62,16 @@ Route::prefix('users')
         Route::get('avatar/{userId}', [App\Http\Controllers\ProfileImageCacheController::class, 'show'])
             ->name('avatar');
     });
+
+
+Route::prefix('akreditasi')
+    ->name('api.akreditasi.')
+    ->group(function () {
+        Route::get('chapters/{kegiatan?}', [App\Http\Controllers\AkreditasiController::class, 'chapters'])->name('chapters');
+
+        Route::get('babs/{type?}/{chapter?}', [App\Http\Controllers\AkreditasiController::class, 'babs'])->name('babs');
+
+        Route::get('elements/{sub?}', [App\Http\Controllers\AkreditasiController::class, 'elements'])->name('elements');
+
+        Route::get('documents/{element?}', [App\Http\Controllers\AkreditasiController::class, 'documents'])->name('documents');
+    });

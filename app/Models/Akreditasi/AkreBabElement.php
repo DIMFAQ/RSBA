@@ -68,4 +68,22 @@ class AkreBabElement extends Model
     {
         return $this->bab === 'sub';
     }
+
+    // In AkreBab Model
+    public function getAllDocuments()
+    {
+        $documents = collect();
+
+        // Documents from this bab's elements
+        $documents = $documents->merge(
+            $this->elements->pluck('documents')->flatten()
+        );
+
+        // Documents from children (sub-babs)
+        $documents = $documents->merge(
+            $this->children->pluck('elements')->flatten()->pluck('documents')->flatten()
+        );
+
+        return $documents->unique('id')->values();
+    }
 }

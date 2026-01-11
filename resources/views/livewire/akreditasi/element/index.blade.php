@@ -28,8 +28,9 @@
 
             {{-- <x-ts:button sm outline icon="tabler.users" x-on:click="$dispatch('open-modal',{id:'modal-new-'})">Anggota</x-ts:button> --}}
 
-            <x-ts:button sm outline icon="tabler.file-type-zip" loading="downloadZip()" wire:click="downloadZip()">Download</x-ts:button>
+            {{-- <x-ts:button sm outline icon="tabler.file-type-zip" loading="downloadZip()" wire:click="downloadZip()">Download</x-ts:button> --}}
 
+            <x-ts:button sm outline icon="tabler.file-type-zip" href="{{ route('kepegawaian.akreditasi.download.download.chapter', $chapter->id) }}">Download</x-ts:button>
 
 
             <x-filament::modal id="modal-new-bab" width="2xl">
@@ -94,7 +95,7 @@
 
                             @if (in_array($item->id, $expandedItems ?? []))
                                 <div class="mt-4 space-y-3 border-t border-gray-200 pt-4">
-                                    <livewire:Akreditasi.Ep.ListEp :babId="$item->id" :key="'table-ep-' . $item->id" />
+                                    <livewire:Akreditasi.Ep.ListEp :babId="$item->id" :modalPreffix="'bab-' . $item->id" :key="'table-ep-' . $item->id" />
                                 </div>
                             @endif
 
@@ -102,7 +103,7 @@
                             <div class="mt-3 flex justify-center border-t border-gray-100 pt-3">
 
                                 <button type="button" wire:click="toggleDetail({{ $item->id }})"
-                                    class="group flex w-full items-center justify-center gap-2 rounded-lg bg-white p-2 shadow-sm transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-50 hover:shadow-md active:scale-95">
+                                    class="Ftransition-all group flex w-full items-center justify-center gap-2 rounded-lg bg-white p-2 shadow-sm duration-300 hover:border-indigo-400 hover:bg-indigo-50 hover:shadow-md active:scale-95">
 
                                     <span class="text-sm text-gray-500 transition-colors duration-300">
                                         {{ in_array($item->id, $expandedItems ?? []) ? 'Sembunyikan' : 'Tampilkan Detail' }}
@@ -134,11 +135,4 @@
         <div class="w-full">
             {{ $this->babs->links() }}
         </div>
-
-
-        {{-- modal --}}
-        <x-filament::modal id="modal-upload-berkas" width="w-full">
-            <x-slot:heading>Element </x-slot:heading>
-            <livewire:Akreditasi.Ep.listEp :babId="$babIdSelected" :key="'element-list' . $babIdSelected" />
-        </x-filament::modal>
     </div>

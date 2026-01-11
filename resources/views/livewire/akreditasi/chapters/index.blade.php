@@ -52,11 +52,11 @@
     </x-filament::modal>
 
 
-    <x-filament::modal id="modal-element-chapter" width="screen" :close-by-clicking-away="false" :autofocus="false">
+    {{-- <x-filament::modal id="modal-element-chapter" width="screen" :close-by-clicking-away="false" :autofocus="false">
         <x-slot:heading>Element Penilaian
             <span class="text-indigo-500">{{ $namaSelectedChapter }}</span>
         </x-slot:heading>
 
         <livewire:Akreditasi.Element.Index :chapterId="$selectedChapter" :key="'elements' . $selectedChapter" />
-    </x-filament::modal>
+    </x-filament::modal> --}}
 </div>

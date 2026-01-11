@@ -35,14 +35,14 @@ class Stats extends Component
                 'elements' => function ($query) {
                     $query->select('id', 'akre_bab_id', 'target_nilai', 'nilai', 'tdd');
                 },
-                'elements.files' => function ($query) {
-                    $query->select('id', 'element_id');
+                'elements.documents' => function ($query) {
+                    $query->select('akre_element_documents.id', 'akre_element_documents.element_id');
                 }
             ])
             ->withCount([
                 'elements',
                 'elements as elements_with_files_count' => function ($query) {
-                    $query->whereHas('files');
+                    $query->whereHas('documents');
                 },
             ])
             ->withSum('elements', 'tdd')
