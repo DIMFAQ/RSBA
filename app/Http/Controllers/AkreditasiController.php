@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Akreditasi\AkreChapter;
 use App\Models\Akreditasi\AkreBabElement;
+use App\Models\Akreditasi\AkreElement;
 
 class AkreditasiController extends Controller
 {
@@ -26,9 +27,9 @@ class AkreditasiController extends Controller
         return response()->json($chapters);
     }
 
-    public function babs($type = null, $chapter_id): JsonResponse
+    public function babs($type = null, $chapter_id, Request $request): JsonResponse
     {
-        $search = '';
+        $search = $request->input('search');
 
         $babs = AkreBabElement::where('chapter_id', $chapter_id)
             ->when(
@@ -50,7 +51,7 @@ class AkreditasiController extends Controller
                 return [
                     'id' => $item->id,
                     'nama' => $item->nama,
-                    'description' => Str::limit($item->deskripsi, 25, '...')
+                    'description' => Str::limit($item->deskripsi, 50, '...')
                 ];
             });
 
@@ -59,9 +60,25 @@ class AkreditasiController extends Controller
 
     public function elements($sub, Request $request): JsonResponse
     {
-        $elements = '';
+        $search = $request->input('search');
+        $element = AkreElement::where('akre_bab_id', $sub)
+            ->limit(10)
+            ->when(
+                $search,
+                function ($query, $search) {
+                    $query->where('element', 'like', "%$search%");
+                }
+            )
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'label' => "EP " . Str::upper($item->nomor),
+                    'description' => Str::limit($item->element, 50, '...')
+                ];
+            });
 
-        return response()->json($elements);
+        return response()->json($element);
     }
 
     public function documents($element, Request $request): JsonResponse

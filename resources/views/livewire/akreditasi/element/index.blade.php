@@ -18,6 +18,18 @@
                 </button> --}}
 
             </div>
+
+            {{-- Pencarian Files --}}
+            <x-ts:button sm outline color="" icon="tabler.search" x-on:click="$dispatch('open-modal',{id:'modal-akre-arsip-files'})">
+                Files
+            </x-ts:button>
+
+            <x-filament::modal id="modal-akre-arsip-files" width="w-full">
+                <x-slot:heading>
+                    Pencarian Files
+                </x-slot:heading>
+                <livewire:Akreditasi.Documents.Pencarian :kegiatanId="$chapter->kegiatan_id" :chapterId="$chapter->id" :key="'pencarian-docs-' . $chapter->id" />
+            </x-filament::modal>
         </div>
 
         <div class="flex flex-row gap-2">
