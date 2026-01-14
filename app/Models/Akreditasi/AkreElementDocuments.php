@@ -2,7 +2,6 @@
 
 namespace App\Models\Akreditasi;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class AkreElementDocuments extends Pivot
@@ -41,7 +40,8 @@ class AkreElementDocuments extends Pivot
     // Get Source Element (Sumber)
     public function sourceElement()
     {
-        return $this->belongsTo(AkreElement::class, 'soruce_element_id', 'id');
+        return $this->belongsTo(AkreElement::class, 'source_element_id', 'id')
+            ->with(['bab.chapter']);;
     }
 
     // Scope: get original upload
@@ -91,19 +91,19 @@ class AkreElementDocuments extends Pivot
     /**
      * Get full source path (Chapter > Bab > Sub Bab > Element)
      */
-    public function getSourceFullPath()
+    public function getSourceFullPathAttribute(): ?string
     {
-        if (!$this->sourceElement) {
+        if (!$this->sourceElement?->bab?->chapter) {
             return null;
         }
 
-        $element = $this->sourceElement->load('bab.chapter');
+        // $element = $this->sourceElement->load('bab.chapter');
 
         return sprintf(
             '%s > %s > %s',
-            $element->bab->chapter->nama,
-            $element->bab->nama,
-            $element->element
+            $this->sourceElement->bab->chapter->singkatan,
+            $this->sourceElement->bab->nama,
+            $this->sourceElement->nomor
         );
     }
 

@@ -15,6 +15,6 @@
     </div>
 
     <div>
-        <livewire:Akreditasi.Documents.TablePencarian :$chapter_id :$sub_id :$element_id :key="'table-pencarian-' . $chapter_id . $sub_id . $element_id" />
+        <livewire:Akreditasi.Documents.TablePencarian :$kegiatan_id :$chapter_id :$sub_id :$element_id :key="'table-pencarian-' . $chapter_id . $sub_id . $element_id" />
     </div>
 </div>

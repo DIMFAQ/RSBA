@@ -47,7 +47,13 @@ class TableKegiatan extends Component implements HasTable, HasForms
                             ['uuid' => $record->uuid]
                         )
                     )
-            ]);
+            ])
+            ->recordUrl(
+                fn($record) => route(
+                    'kepegawaian.akreditasi.chapters',
+                    ['uuid' => $record->uuid]
+                )
+            );
     }
 
     public function render()

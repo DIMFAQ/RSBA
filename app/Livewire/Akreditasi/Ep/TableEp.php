@@ -167,7 +167,8 @@ class TableEp extends Component implements HasTable, HasForms
 
                 TextColumn::make('catatan')
                     ->extraAttributes(['class' => 'text-xs'])
-                    ->label('Catatan'),
+                    ->label('Catatan')
+                    ->wrap(),
 
                 // Custom column untuk detail
                 ViewColumn::make('details')

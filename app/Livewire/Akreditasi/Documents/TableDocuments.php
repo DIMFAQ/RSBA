@@ -2,41 +2,64 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
+use App\Models\Akreditasi\AkreDocuments;
+use App\Models\Akreditasi\AkreElement;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Locked;
+use Livewire\WithoutUrlPagination;
+use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
-use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Actions\DeleteAction;
 use App\Models\Akreditasi\AkreElementDocuments;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
+use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Distributions\F;
 
 class TableDocuments extends Component implements HasTable, HasForms
 {
     use WithFileUploads;
     use Interactions;
     use InteractsWithTable, InteractsWithForms;
+    use WithoutUrlPagination;
 
-    // #[Locked]
+    #[Locked]
     public ?int $element_id;
 
+    #[Locked]
+    public ?int $kegiatan_id;
+
+    #[Locked]
     public ?int $selectedDocId;
 
     public function mount($elementId)
     {
         $this->element_id = $elementId;
+
+        $kegiatan =  AkreElement::join('akre_bab_elements', 'akre_elements.akre_bab_id', '=', 'akre_bab_elements.id')
+            ->join('akre_chapter', 'akre_bab_elements.chapter_id', '=', 'akre_chapter.id')
+            ->join('akre_kegiatan', 'akre_chapter.kegiatan_id', '=', 'akre_kegiatan.id')
+            ->where('akre_elements.id', $elementId)
+            ->select('akre_kegiatan.id')
+            ->first();
+
+        if ($kegiatan) {
+            $this->kegiatan_id = $kegiatan->id;
+        }
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                AkreElementDocuments::with('document')
+                AkreElementDocuments::with([
+                    'sourceElement'
+                ])
                     ->where('element_id', $this->element_id)
             )
             ->columns([
@@ -47,21 +70,72 @@ class TableDocuments extends Component implements HasTable, HasForms
                         id: $record->document->id
                     )),
 
-                TextColumn::make('document.user_upload')
-                    ->label('User Upload'),
+                TextColumn::make('upload')
+                    ->label('Upload By')
+                    ->getStateUsing(function ($record) {
+                        $formattedDate = $record->document->created_at->format('Y-m-d H:i:s');
+                        return
+                            "<div class='flex flex-col'>
+                                <span class='text-sm'>{$record->document->user_upload}</span>
+                                <span class='text-xs text-gray-500 italic'>{$formattedDate}</span>
+                            </div>";
+                    })
+                    ->html()
+                    ->sortable(query: function ($query, string $direction): void {
+                        $query->orderBy('created_at', $direction);
+                    }),
 
-                TextColumn::make('document.created_at')
-                    ->label('Tanggal Upload'),
-
-                TextColumn::make('is_original')
-                    ->label('Document Asli')
+                TextColumn::make('source_element_id')
+                    ->label('Sumber Document')
                     ->formatStateUsing(
                         function ($record) {
-                            $record->is_original ?? $record->source_full_path;
+                            // Dapatkan sumber documents atau document asli
+                            $sumber = $record->sourceElement;
+
+                            if (!$sumber) {
+                                return $record->source_deleted
+                                    ? "<span class='text-red-500'>Sumber Dihapus</span>"
+                                    : "<span class='text-gray-500'>Tidak ada sumber</span>";
+                            }
+
+                            $deletedLabel = $record->source_deleted
+                                ? "<span class='inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600'>Dihapus</span>"
+                                : "";
+
+                            // return "<div >
+                            // {$sumber->bab->chapter->singkatan}
+                            // <span class='text-xs text-gray-400'>></span>
+                            // {$sumber->bab->nama}
+                            // <span class='text-xs text-gray-400'>></span>
+                            // {$sumber->nomor}<br>
+                            // {$deletedLabel}
+                            // </div>";
+
+                            return "<div class='flex flex-col'>
+                                <span class='text-sm'>
+                                {$sumber->bab->chapter->singkatan}
+                                <span class='text-xs text-gray-400'>></span>
+                                {$sumber->bab->nama}
+                                <span class='text-xs text-gray-400'>></span>
+                                {$sumber->nomor}
+                                </span>
+                                <span class='text-xs italic'>{$deletedLabel}</span>
+                            </div>";
                         }
                     )
+                    ->wrap()
+                    ->html()
             ])
             ->actions([
+                Action::make('attach')
+                    ->iconButton()
+                    ->icon('tabler-file-export')
+                    ->action(
+                        fn($record, $livewire) => $livewire->modalAttach(
+                            id: $record->document_id
+                        )
+                    ),
+
                 DeleteAction::make()
                     ->iconButton()
                     ->modalHeading('Hapus File')
@@ -88,6 +162,9 @@ class TableDocuments extends Component implements HasTable, HasForms
                             ->success('Berhasil', 'File berhasil dihapus.')
                             ->send();
                     })
+                    ->visible(
+                        fn() => auth()->user()->hasRole('Super-Admin') or auth()->user()->can('sekretariat-akreditasi')
+                    )
             ])
 
         ;
@@ -103,6 +180,12 @@ class TableDocuments extends Component implements HasTable, HasForms
     {
         $this->selectedDocId = $id;
         $this->dispatch('open-modal', id: "modal-document-view");
+    }
+
+    public function modalAttach($id)
+    {
+        $this->selectedDocId = $id;
+        $this->dispatch('open-modal', id: 'modal-attach-file');
     }
 
     public function render()

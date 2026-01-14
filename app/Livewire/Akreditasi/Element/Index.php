@@ -8,9 +8,9 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Computed;
 use App\Models\Akreditasi\AkreChapter;
-use App\Models\Akreditasi\AkreKegiatan;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Akreditasi\AkreBabElement;
+use Livewire\WithoutUrlPagination;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
@@ -18,8 +18,7 @@ class Index extends Component
 {
     use Interactions;
     use WithPagination;
-
-    // public ?int $babIdSelected;
+    use WithoutUrlPagination;
 
     public ?AkreChapter $chapter;
 
@@ -27,61 +26,6 @@ class Index extends Component
     {
         $this->chapter = $chapter;
     }
-
-    // #[Computed]
-    // public function babs()
-    // {
-    //     $items =  AkreBabElement::query()
-    //         // Eager load relasi untuk menghindari N+1 problem
-    //         ->with([
-    //             'elements' => function ($query) {
-    //                 $query->select('id', 'akre_bab_id', 'target_nilai', 'nilai', 'element')
-    //                     ->orderBy('nomor');
-    //             },
-    //             'elements.files' => function ($query) {
-    //                 $query->select('id', 'element_id', 'path', 'filename');
-    //             }
-    //         ])
-    //         // Count elements
-    //         ->withCount([
-    //             'elements',
-    //             'elements as elements_with_files_count' => function ($query) {
-    //                 $query->whereHas('files');
-    //             }
-    //         ])
-    //         // Sum nilai untuk menghitung total
-    //         ->withSum('elements', 'nilai')
-    //         ->withSum('elements', 'target_nilai')
-    //         // Filter by chapter
-    //         ->where('chapter_id', $this->chapter->id)
-    //         // ->orderByRaw('CAST(SUBSTRING_INDEX(no, ".", 1) AS UNSIGNED), CAST(SUBSTRING_INDEX(no, ".", -1) AS UNSIGNED)')
-    //         // Order by nomor bab
-    //         // ->orderBy('no')
-    //         // Paginate
-    //         ->paginate(10);
-
-
-
-    //     // Organisir data: Bab diikuti langsung dengan Sub Bab nya
-    //     $organized = collect();
-
-    //     foreach ($items as $item) {
-    //         if ($item->bab === 'bab') {
-    //             // Tambahkan bab
-    //             $organized->push($item);
-
-    //             // Tambahkan semua sub bab yang parent_id nya sama dengan bab ini
-    //             $subBabs = $items->where('parent_id', $item->id)
-    //                 ->sortBy('no');
-
-    //             foreach ($subBabs as $subBab) {
-    //                 $organized->push($subBab);
-    //             }
-    //         }
-    //     }
-
-    //     return $organized;
-    // }
 
     #[Computed]
     public function babs()
@@ -189,20 +133,6 @@ class Index extends Component
         return $totalTarget > 0 ? round(($totalNilai / $totalTarget) * 100, 1) : 0;
     }
 
-    // #[Computed]
-    // public function babs()
-    // {
-    //     return AkreBabElement::with(['elements.files'])
-    //         ->withCount([
-    //             'elements',
-    //             'elements as elements_with_files_count' => function ($query) {
-    //                 $query->whereHas('files');
-    //             }
-    //         ])
-    //         ->where('chapter_id', $this->chapter->id)
-    //         ->paginate(10);
-    // }
-
     public function placeholder()
     {
         // Ambil parameter dari route
@@ -229,25 +159,6 @@ class Index extends Component
     // download document per chapter
     public function downloadZip()
     {
-        // $zip = new ZipArchive;
-        // $filename = $this->chapter->singkatan . time() . '.zip';
-        // $zipPath = storage_path('app/temp/' . $filename);
-
-        // if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
-
-        //     // $folderKegiatan = AkreChapter::with('kegiatan')
-        //     //     ->where('id', $this->chapter->id);
-
-        //     $folderKegiatan = AkreChapter::join('akre_kegiatan', 'akre_chapter.kegiatan_id', '=', 'akre_kegiatan.id')
-        //         ->where('akre_chapter.id', $this->chapter->id)
-        //         ->select('akre_kegiatan.folder_path')
-        //         ->first();
-
-
-        //     $files = Storage::files($folderKegiatan);
-
-
-        // }
         $chapter =  AkreChapter::join('akre_kegiatan', 'akre_chapter.kegiatan_id', '=', 'akre_kegiatan.id')
             ->where('akre_chapter.id', $this->chapter->id)
             ->select(

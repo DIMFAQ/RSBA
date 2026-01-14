@@ -13,8 +13,15 @@ class AkreditasiController extends Controller
 {
     public function chapters($kegiatan, Request $request): JsonResponse
     {
+        $search = $request->input('search');
+
         $chapters = AkreChapter::where('kegiatan_id', $kegiatan)
-            ->limit(5)
+            ->when(
+                $search,
+                function ($query, $search) {
+                    $query->where('singkatan', 'like', "%$search%");
+                }
+            )
             ->get()
             ->map(function ($item) {
                 return [

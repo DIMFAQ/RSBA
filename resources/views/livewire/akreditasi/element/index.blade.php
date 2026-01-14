@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-2">
 
-    <div class="flex flex-row justify-between rounded-lg bg-white px-4 py-2">
+    <div class="flex flex-col justify-between gap-2 rounded-lg bg-white px-4 py-2 lg:flex-row">
 
         {{-- search input --}}
         <div class="relative flex w-3/4 flex-row items-center gap-2 lg:w-1/3">
@@ -24,38 +24,39 @@
                 Files
             </x-ts:button>
 
-            <x-filament::modal id="modal-akre-arsip-files" width="w-full">
+            <x-filament::modal id="modal-akre-arsip-files" width="w-full" :close-by-escaping="false" :close-by-clicking-away="false" slide-over>
                 <x-slot:heading>
                     Pencarian Files
                 </x-slot:heading>
                 <livewire:Akreditasi.Documents.Pencarian :kegiatanId="$chapter->kegiatan_id" :chapterId="$chapter->id" :key="'pencarian-docs-' . $chapter->id" />
             </x-filament::modal>
         </div>
+        @can('sekretariat-akreditasi')
+            <div class="flex flex-row gap-2">
 
-        <div class="flex flex-row gap-2">
+                <x-ts:button sm outline icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-new-bab'})">Bab</x-ts:button>
 
-            <x-ts:button sm outline icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-new-bab'})">Bab</x-ts:button>
+                <x-ts:button sm outline icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-new-penilaian'})">Element Penilaian</x-ts:button>
 
-            <x-ts:button sm outline icon="tabler.plus" x-on:click="$dispatch('open-modal',{id:'modal-new-penilaian'})">Element Penilaian</x-ts:button>
+                {{-- <x-ts:button sm outline icon="tabler.users" x-on:click="$dispatch('open-modal',{id:'modal-new-'})">Anggota</x-ts:button> --}}
 
-            {{-- <x-ts:button sm outline icon="tabler.users" x-on:click="$dispatch('open-modal',{id:'modal-new-'})">Anggota</x-ts:button> --}}
+                {{-- <x-ts:button sm outline icon="tabler.file-type-zip" loading="downloadZip()" wire:click="downloadZip()">Download</x-ts:button> --}}
 
-            {{-- <x-ts:button sm outline icon="tabler.file-type-zip" loading="downloadZip()" wire:click="downloadZip()">Download</x-ts:button> --}}
-
-            <x-ts:button sm outline icon="tabler.file-type-zip" href="{{ route('kepegawaian.akreditasi.download.download.chapter', $chapter->id) }}">Download</x-ts:button>
+                <x-ts:button sm outline icon="tabler.file-type-zip" href="{{ route('kepegawaian.akreditasi.download.download.chapter', $chapter->id) }}">Download</x-ts:button>
 
 
-            <x-filament::modal id="modal-new-bab" width="2xl">
-                <x-slot:heading>Bab Standar</x-slot:heading>
-                <livewire:Akreditasi.Element.AddBab :chapterId="$chapter->id" :key="'add-bab' . $chapter->id" />
-            </x-filament::modal>
+                <x-filament::modal id="modal-new-bab" width="2xl">
+                    <x-slot:heading>Bab Standar</x-slot:heading>
+                    <livewire:Akreditasi.Element.AddBab :chapterId="$chapter->id" :key="'add-bab' . $chapter->id" />
+                </x-filament::modal>
 
-            <x-filament::modal id="modal-new-penilaian" width="4xl">
-                <x-slot:heading>Element Penilaian Bab</x-slot:heading>
-                <livewire:Akreditasi.Ep.AddElementPenilaian :chapterId="$chapter->id" :key="'add-ep' . $chapter->id" />
-            </x-filament::modal>
+                <x-filament::modal id="modal-new-penilaian" width="4xl">
+                    <x-slot:heading>Element Penilaian Bab</x-slot:heading>
+                    <livewire:Akreditasi.Ep.AddElementPenilaian :chapterId="$chapter->id" :key="'add-ep' . $chapter->id" />
+                </x-filament::modal>
 
-        </div>
+            </div>
+        @endcan
     </div>
 
 
@@ -71,9 +72,9 @@
                 @break
 
                 @case('sub')
-                    <div class="ms-4 flex flex-row gap-2">
+                    <div class="ms-4 flex flex-col gap-2 lg:flex-row">
                         {{-- Status & Nilai Container --}}
-                        <div class="flex w-32 flex-col">
+                        <div class="flex w-full flex-col lg:w-32">
                             <livewire:Akreditasi.Element.Stats :babId="$item->id" :key="'stats-bab-' . $item->id">
                         </div>
 

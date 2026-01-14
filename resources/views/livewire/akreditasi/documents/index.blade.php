@@ -3,7 +3,7 @@
         {{-- Button Switch --}}
         <div class="flex flex-row gap-4">
             <x-ts:radio @click="open = 'new_file'" id="new" wire:model='file_is' value="new" label="Tambah File" />
-            <x-ts:radio @click="open = 'linked_file'" id="linked" wire:model='file_is' value="linked" label="Linked File" />
+            {{-- <x-ts:radio @click="open = 'linked_file'" id="linked" wire:model='file_is' value="linked" label="Linked File" /> --}}
         </div>
 
         {{-- Expandable Form --}}

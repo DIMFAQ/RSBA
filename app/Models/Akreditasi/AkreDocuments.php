@@ -72,7 +72,26 @@ class AkreDocuments extends Model
         )
             ->using(AkreElementDocuments::class)
             ->wherePivot('is_original', true)
+            ->withPivot(['source_element_id', 'is_original', 'source_deleted']);
+    }
+
+    public function originalElementWithSource()
+    {
+        return $this->belongsToMany(
+            AkreElement::class,
+            'akre_element_documents',
+            'document_id',
+            'element_id'
+        )
+            ->using(AkreElementDocuments::class)
+            ->wherePivot('is_original', true)
             ->withPivot(['source_element_id', 'is_original', 'source_deleted'])
-            ->first();
+            ->with(['bab.chapter']); // Eager load bab dan chapter
+    }
+
+
+    public function getOriginalElementDocumentAttribute()
+    {
+        return $this->originalElement()->first();
     }
 }

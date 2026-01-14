@@ -29,7 +29,8 @@ class PermissionSeeder extends Seeder
             // umum
             'approval-maintenance',
             'finish-opname-gudang',
-            'assesor-akreditasi'
+            'assesor-akreditasi',
+            'sekretariat-akreditasi'
         ];
 
         foreach ($permissions as $permission) {

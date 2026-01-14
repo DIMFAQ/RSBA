@@ -2,8 +2,8 @@
     {{ $this->table }}
 
 
-    <x-filament::modal id="modal-view-document-ep-{{ $modalPreffix }}" width="screen">
-        <x-slot:heading>Document</x-slot:heading>
+    <x-filament::modal id="modal-view-document-ep-{{ $modalPreffix }}" width="screen" :close-by-escaping="true" :close-button="true">
+        <x-slot:heading></x-slot:heading>
 
         <livewire:Akreditasi.Documents.View :$docSelectedId :key="'view-doc-on-table-ep' . $docSelectedId" />
     </x-filament::modal>

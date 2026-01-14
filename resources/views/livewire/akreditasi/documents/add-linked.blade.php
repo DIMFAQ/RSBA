@@ -5,22 +5,33 @@
             <x-ts:input wire:model='nama' label="Nama File" placeholder="Nama File" />
 
             <div class="grid w-full grid-cols-3 gap-2">
-                {{-- <x-ts:input wire:model='nama' label="Chapter" placeholder="Chapter" /> --}}
-                <x-ts:select.styled x-on:select="$wire.set('chapter_id',$event.detail.select.id)" searchable :request="route('api.akreditasi.chapters', ['kegiatan' => $kegiatan_id])" select="label:singkatan|value:id" placeholder="Chapter"
-                    wire:key='chapter-select-{{ $kegiatan_id }}' />
+                <div wire:key="chapter-select-{{ $kegiatan_id }}">
+                    <x-ts:select.styled wire:model.blur="chapter_id" searchable :request="route('api.akreditasi.chapters', ['kegiatan' => $kegiatan_id])" select="label:singkatan|value:id" placeholder="Chapter" />
+                </div>
 
+                <div wire:key='sub-select-{{ $chapter_id }}'>
+                    <x-ts:select.styled wire:model.blur="sub_id" searchable :request="route('api.akreditasi.babs', ['type' => 'sub', 'chapter' => $chapter_id])" select="label:nama|value:id" :disabled="!$chapter_id" placeholder="Bab / Sub" />
+                </div>
 
-                <x-ts:select.styled wire:model.blur="sub_id" searchable :request="route('api.akreditasi.babs', ['type' => 'sub', 'chapter' => $chapter_id])" select="label:nama|value:id" :disabled="!$chapter_id" placeholder="Chapter"
-                    wire:key='sub-select-{{ $chapter_id }}' />
-
-                <x-ts:select.styled wire:model.blur="element_id_link" searchable :request="route('api.akreditasi.elements', ['sub' => $sub_id])" select="label:singkatan|value:id" :disabled="!$sub_id" placeholder="Chapter"
-                    wire:key="element-select-{{ $sub_id }}" />
-
+                <div wire:key="element-select-{{ $sub_id }}">
+                    <x-ts:select.styled wire:model.blur="element_id_link" searchable :request="route('api.akreditasi.elements', ['sub' => $sub_id])" select="label:label|value:id" :disabled="!$sub_id" placeholder="Element" />
+                </div>
             </div>
             <div class="flex flex-col">
-                <span class="text-xs italic">List Document</span>
-                <div>
-
+                <span class="text-xs italic text-gray-600">List Document</span>
+                <div class="flex flex-col gap-2">
+                    <div class="flex cursor-pointer justify-between rounded-md border border-gray-200 p-1">
+                        <x-ts:checkbox label="Docuument 1" />
+                        <span class="text-xs text-gray-300 hover:italic hover:text-indigo-500">
+                            view >
+                        </span>
+                    </div>
+                    <div class="flex cursor-pointer justify-between rounded-md border border-gray-200 p-1">
+                        <x-ts:checkbox label="Docuument 2" />
+                        <span class="text-xs text-gray-300 hover:italic hover:text-indigo-500">
+                            view >
+                        </span>
+                    </div>
                 </div>
             </div>
 
