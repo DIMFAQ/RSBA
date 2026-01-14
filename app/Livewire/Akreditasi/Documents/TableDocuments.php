@@ -149,11 +149,13 @@ class TableDocuments extends Component implements HasTable, HasForms
                             );
 
                         // Soft delete the document
-                        $record->document->update([
-                            'is_deleted' => true,
-                            'deleted_at' => now(),
-                            'deleted_by' => auth()->id(),
-                        ]);
+                        if ($record->is_original) {
+                            $record->document->update([
+                                'is_deleted' => true,
+                                'deleted_at' => now(),
+                                'deleted_by' => auth()->id(),
+                            ]);
+                        }
                     })
                     ->after(function () {
                         $this->dispatch('deleted-files_element');

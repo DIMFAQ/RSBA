@@ -37,7 +37,6 @@ class AkreElement extends Model
         return $this->validate_user?->karyawan?->nama ?? 'n/a';
     }
 
-    // TODO Review ini kebawah, hapus yang tidak digunakan
     /**
      * Documents relationship menggunakan custom pivot
      */

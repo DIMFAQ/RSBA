@@ -42,7 +42,6 @@ class AkreDocuments extends Model
     }
 
 
-    // TODO Review ini kebawah
     /**
      * Elements relationship menggunakan custom pivot
      */
