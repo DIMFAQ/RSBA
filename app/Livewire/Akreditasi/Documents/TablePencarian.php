@@ -2,17 +2,13 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
-use App\Models\User;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Locked;
-use Illuminate\Support\Facades\DB;
 use Livewire\WithoutUrlPagination;
 use Filament\Tables\Actions\Action;
-use Illuminate\Support\Facades\Log;
 use TallStackUi\Traits\Interactions;
-use App\Models\Akreditasi\AkreElement;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -21,7 +17,6 @@ use App\Models\Akreditasi\AkreDocuments;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\Akreditasi\AkreElementDocuments;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
@@ -71,7 +66,8 @@ class TablePencarian extends Component implements HasTable, HasForms
                     ->limit(35)
                     ->searchable()
                     ->sortable()
-                    ->wrap(),
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('chapters')
                     ->label('Chapter')
@@ -96,65 +92,6 @@ class TablePencarian extends Component implements HasTable, HasForms
                     ->wrap()
                     ->html(),
 
-
-                // FIXME tampilkan sumber element upload dan status exist atau hapus
-                // TextColumn::make('original_element')
-                //     ->label('Sumber Document')
-                //     ->getStateUsing(function ($record) {
-                //         if (!$record->originalElementWithSource || $record->originalElementWithSource->isEmpty()) {
-                //             return "<span class='text-gray-500'>Tidak ada sumber</span>";
-                //             Log::info('sumber', ['status' => 'Tidak Ada']);
-                //         }
-
-                //         // Ambil original element pertama
-                //         $originalElement = $record->originalElementWithSource->first();
-
-                //         Log::info('sumber', [
-                //             'original' => $originalElement,
-                //         ]);
-
-                //         // Cek pivot data
-                //         $sourceDeleted = $originalElement->pivot->source_deleted;
-                //         $sourceElementId = $originalElement->pivot->source_element_id;
-                //         Log::info('sumber', [
-                //             'status' => $sourceDeleted,
-                //             'sourceElementId' => $sourceElementId
-                //         ]);
-
-                //         // Jika source_element_id kosong/null
-                //         if (!$sourceElementId) {
-                //             return $sourceDeleted
-                //                 ? "<span class='text-red-500'>Sumber Dihapus</span>"
-                //                 : "<span class='text-gray-500'>Tidak ada sumber</span>";
-                //         }
-
-                //         // Ambil source element
-                //         $sumber = AkreElement::with('bab.chapter')
-                //             ->find($sourceElementId);
-
-                //         if (!$sumber) {
-                //             return $sourceDeleted
-                //                 ? "<span class='text-red-500'>Sumber Dihapus</span>"
-                //                 : "<span class='text-gray-500'>Sumber tidak ditemukan</span>";
-                //         }
-
-                //         $deletedLabel = $sourceDeleted
-                //             ? "<span class='inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600'>Dihapus</span>"
-                //             : "";
-
-                //         return "<div class='flex flex-col'>
-                //         <span class='text-sm'>
-                //         {$sumber->bab->chapter->singkatan}
-                //         <span class='text-xs text-gray-400'>></span>
-                //         {$sumber->bab->nama}
-                //         <span class='text-xs text-gray-400'>></span>
-                //         {$sumber->nomor}
-                //         </span>
-                //         <span class='text-xs italic'>{$deletedLabel}</span>
-                //     </div>";
-                //     })
-                //     ->html(),
-
                 TextColumn::make('original_element_document')
                     ->label('Sumber Document')
                     ->getStateUsing(function ($record) {
@@ -171,7 +108,7 @@ class TablePencarian extends Component implements HasTable, HasForms
                     ->label('Tipe File')
                     ->badge()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('upload')
                     ->label('Upload By')

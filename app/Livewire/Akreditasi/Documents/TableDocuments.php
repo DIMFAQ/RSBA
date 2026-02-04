@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
-use App\Models\Akreditasi\AkreDocuments;
 use App\Models\Akreditasi\AkreElement;
 use Livewire\Component;
 use Filament\Tables\Table;
@@ -19,7 +18,6 @@ use Filament\Tables\Actions\DeleteAction;
 use App\Models\Akreditasi\AkreElementDocuments;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Distributions\F;
 
 class TableDocuments extends Component implements HasTable, HasForms
 {

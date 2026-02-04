@@ -113,7 +113,8 @@ class Add extends Component
                 return;
             }
 
-            $filename = $this->pdf_file->getClientOriginalName();
+            // $filename = $this->pdf_file->getClientOriginalName();
+            $filename = $this->pdf_file->hashName();
 
             $kegiatan = AkreElement::join('akre_bab_elements', 'akre_elements.akre_bab_id', '=', 'akre_bab_elements.id')
                 ->join('akre_chapter', 'akre_bab_elements.chapter_id', '=', 'akre_chapter.id')
