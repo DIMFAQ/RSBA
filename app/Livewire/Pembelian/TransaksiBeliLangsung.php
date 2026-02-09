@@ -5,9 +5,10 @@ namespace App\Livewire\Pembelian;
 use Carbon\Carbon;
 use Livewire\Component;
 use App\Models\Gudang\Stok;
-use Livewire\Attributes\On;
+use Illuminate\Support\Arr;
 use App\Models\Master\Barang;
 use Livewire\Attributes\Lazy;
+use Livewire\WithFileUploads;
 use App\Models\Gudang\Pembelian;
 use App\Models\Gudang\Penerimaan;
 use Illuminate\Support\Facades\DB;
@@ -15,14 +16,18 @@ use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Gudang\PembelianDetail;
 use App\Models\Gudang\PenerimaanDetail;
-use App\Models\Gudang\PembelianRequestDetails;
 use App\Traits\BlocksTransactionDuringOpname;
+use App\Models\Gudang\PembelianRequestDetails;
+use App\Models\Gudang\StokMutasi;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 
 #[Lazy]
 class TransaksiBeliLangsung extends Component
 {
     use BlocksTransactionDuringOpname;
     use Interactions;
+    use WithFileUploads;
 
     public $createTerm = '';
     public $cartItems = [];
@@ -49,9 +54,56 @@ class TransaksiBeliLangsung extends Component
     {
         return [
             'cartItems.required' => 'Minimal ada satu item pembelian.',
-            'cartItems.min' => 'Minimal ada satu item pembelian.'
+            'cartItems.min' => 'Minimal ada satu item pembelian.',
+            'lampirans.*' => 'file|mimes:png,jpg,jpeg,pdf|max:5120',
         ];
     }
+
+
+    // Multi file uplods
+    public $lampirans = [];
+    public $backup = [];
+
+
+    public function updatingLampirans(): void
+    {
+        $this->backup = $this->lampirans;
+    }
+
+    public function updatedLampirans(): void
+    {
+        if (!$this->lampirans) {
+            return;
+        }
+        $file  = Arr::flatten(array_merge($this->backup, [$this->lampirans]));
+        $this->lampirans = collect($file)
+            ->unique(
+                fn(UploadedFile $item) => $item->getClientOriginalName()
+            )
+            ->toArray();
+    }
+
+    public function deleteUpload(array $content): void
+    {
+
+        if (!$this->lampirans) {
+            return;
+        }
+
+        $files = Arr::wrap($this->lampirans);
+        $file = collect($files)->filter(fn(UploadedFile $item) => $item->getFilename() === $content['temporary_name'])->first();
+
+        // 1. Here we delete the file. Even if we have a error here, we simply
+        // ignore it because as long as the file is not persisted, it is
+        // temporary and will be deleted at some point if there is a failure here.
+        rescue(fn() => $file->delete(), report: false);
+
+        $collect = collect($files)->filter(fn(UploadedFile $item) => $item->getFilename() !== $content['temporary_name']);
+
+        // 2. We guarantee restore of remaining files regardless of upload
+        $this->lampirans = is_array($this->lampirans) ? $collect->toArray() : $collect->first();
+    }
+
 
     public function mount()
     {
@@ -70,7 +122,7 @@ class TransaksiBeliLangsung extends Component
     {
         $pengajuan = PembelianRequestDetails::with(['barang', 'barang.satuan'])
             ->whereIn('id', $selectedIds)
-            ->selectRaw('barang_id, SUM(jml_disetujui) as total_jml_disetujui') 
+            ->selectRaw('barang_id, SUM(jml_disetujui) as total_jml_disetujui')
             ->groupBy('barang_id')
             ->get()
             ->map(function ($item): array {
@@ -124,7 +176,7 @@ class TransaksiBeliLangsung extends Component
     //     $this->cartItems = array_values($this->cartItems);
     // }
 
-    function submit()
+    function submit01()
     {
         /**
          * No 
@@ -139,9 +191,33 @@ class TransaksiBeliLangsung extends Component
 
         DB::beginTransaction();
         try {
-            // calc total
-            $totalBeli = collect($this->cartItems)
-                ->sum(fn($cart) => $cart['jumlah'] * $cart['harga']);
+            // calc sub total
+            $subtotal = collect($this->cartItems)
+                ->sum(
+                    fn($cart) => $cart['jumlah'] * $cart['harga']
+                );
+
+            //total ppn
+            $totalPpn = collect($this->cartItems)
+                ->sum(
+                    fn($cart) => $cart['ppnAmount']
+                );
+
+            // total diskon
+            $totalDiskon = collect($this->cartItems)
+                ->sum(
+                    fn($cart) => $cart['diskon']
+                );
+
+            // harus bayar
+            $harus_bayar = ($subtotal - $totalDiskon) + $totalPpn;
+
+
+            $lampirans = collect($this->lampirans)->map(
+                function ($file) {
+                    return $file->store('pembelian/langsung', 'public');
+                }
+            )->toArray();
 
             // mapping data pembelian
             $pembelian = Pembelian::create([
@@ -151,7 +227,12 @@ class TransaksiBeliLangsung extends Component
                 'jenis' => 'langsung',
                 'status_pembayaran' => $this->status_pembayaran,
                 'tgl_pembayaran' => $this->tgl_pembayaran,
-                'total' => $totalBeli,
+                'subtotal' => $subtotal,
+                'total_diskon' => $totalDiskon,
+                'total_ppn' => $totalPpn,
+                'total' => $harus_bayar,
+                'lampirans' => $lampirans,
+                'created_by' => Auth::id(),
                 'status' => 'selesai'
             ]);
 
@@ -173,7 +254,10 @@ class TransaksiBeliLangsung extends Component
                             'barang_id' => $item['id'],
                             'jumlah' => $item['jumlah'] ?? 0,
                             'batch' => $item['batch'],
+                            'warranty' => $item['waranty_date'],
                             'harga_satuan' => $item['harga'],
+                            'diskon' => $item['diskon'],
+                            'ppn' => $item['ppn']
                         ];
                     }
                 )->toArray();
@@ -219,8 +303,31 @@ class TransaksiBeliLangsung extends Component
                 )->toArray();
             Stok::insert($stokData);
 
-
-            // TODO Mutasi Stok Pemebelian Langsung
+            // Mutasi Stok
+            $mutasiData = collect($pembelianDets)
+                ->map(
+                    function ($detail): array {
+                        return [
+                            "stok_id",
+                            "barang_id",
+                            "jenis_mutasi" => 'PEMBELIAN',
+                            "jumlah",
+                            "multiplier",
+                            "stok_sebelum" => 0,
+                            "stok_sesudah",
+                            "keterangan",
+                            "referensi_type",
+                            "referensi_id",
+                            "created_by",
+                            "is_posted",
+                            "is_reversed",
+                            "reversed_of_id",
+                            "created_at",
+                            "updated_at"
+                        ];
+                    }
+                )->toArray();
+            // StokMutasi::insert($mutasiData);
 
             DB::commit();
 
@@ -235,6 +342,149 @@ class TransaksiBeliLangsung extends Component
                 ->success('Berhasil', 'Pembelian berhasil disimpan.')
                 ->send();
         } catch (\Throwable $e) {
+            DB::rollBack();
+
+            $this->toast()
+                ->error('Failed', 'Error:' . $e->getMessage())
+                ->send();
+        }
+    }
+
+    public function submit()
+    {
+        /**
+         * No 
+         * {PD}{0001}{1224}
+         * PD = Pembelian Direct
+         * 0001 = number [reset setiap tahun], max nomor setiap tahun 9999
+         * 1224 = bulantahun
+         */
+
+        $this->validate();
+
+        DB::beginTransaction();
+        try {
+
+            // calc sub total
+            $subtotal = collect($this->cartItems)
+                ->sum(
+                    fn($cart) => $cart['jumlah'] * $cart['harga']
+                );
+
+            //total ppn
+            $totalPpn = collect($this->cartItems)
+                ->sum(
+                    fn($cart) => $cart['ppnAmount']
+                );
+
+            // total diskon
+            $totalDiskon = collect($this->cartItems)
+                ->sum(
+                    fn($cart) => $cart['diskon']
+                );
+
+            // harus bayar
+            $harus_bayar = ($subtotal - $totalDiskon) + $totalPpn;
+
+
+            $lampirans = collect($this->lampirans)->map(
+                function ($file) {
+                    return $file->store('pembelian/langsung', 'public');
+                }
+            )->toArray();
+
+
+            //Saving Data
+            // 01. Header Pembelian
+            $pembelian = Pembelian::create([
+                'no' => $this->generateNumberPembelian(),
+                'tgl' => $this->tgl_pembelian,
+                'supplier_id' => $this->supplier,
+                'jenis' => 'langsung',
+                'status_pembayaran' => $this->status_pembayaran,
+                'tgl_pembayaran' => $this->tgl_pembayaran,
+                'subtotal' => $subtotal,
+                'total_diskon' => $totalDiskon,
+                'total_ppn' => $totalPpn,
+                'total' => $harus_bayar,
+                'lampirans' => $lampirans,
+                'created_by' => Auth::id(),
+                'status' => 'selesai'
+            ]);
+
+            // 02. Header Penerimaan
+            $penerimaan = Penerimaan::create([
+                'tanggal' => $this->tgl_pembelian,
+                'no_faktur' => $this->no_faktur,
+                'keterangan' => $this->keterangan ?? '-',
+                'penerima' => auth()->user()->id
+            ]);
+
+            // 03. Detail
+            foreach ($this->cartItems as $item) {
+                // 03.01 Pembelian Detail
+                $dets = PembelianDetail::create([
+                    'pembelian_id' => $pembelian->id,
+                    'barang_id' => $item['id'],
+                    'jumlah' => $item['jumlah'] ?? 0,
+                    'batch' => $item['batch'] ?? null,
+                    'warranty' => $item['waranty_date'] ?? null,
+                    'harga_satuan' => $item['harga'] ?? 0,
+                    'diskon' => $item['diskon'] ?? 0,
+                    'ppn' => $item['ppn'] ?? 0
+                ]);
+
+                // 03.02 Penerimaan Detail
+                $terimaDets = PenerimaanDetail::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'pembelian_det_id' => $dets->id,
+                    'jumlah' => $dets->jumlah,
+                ]);
+
+                // 03.03 Stok In
+                $stok = Stok::create([
+                    'penerimaan_det_id' => $terimaDets->id,
+                    'barang_id' => $dets->barang_id,
+                    'stok' => $dets->jumlah,
+                    'batch' => $dets->batch,
+                    'harga_satuan' => $dets->harga_satuan,
+                ]);
+
+                // 03.04 Mutasi Stok
+                StokMutasi::insert(
+                    [
+                        "stok_id" => $stok->id,
+                        "barang_id" => $dets->barang_id,
+                        "jenis_mutasi" => 'PEMBELIAN',
+                        "jumlah" => $dets->jumlah,
+                        "multiplier" => 1,
+                        "stok_sebelum" => 0,
+                        "stok_sesudah" => $dets->jumlah,
+                        "keterangan" => 'Pembelian No. ' . $pembelian->no,
+                        "referensi_type" => Pembelian::class,
+                        "referensi_id" => $pembelian->id,
+                        "created_by" => auth()->id(),
+                        "is_posted" => 1,
+                        "is_reversed" => 0,
+                        "created_at" => now(),
+                        "updated_at" => now()
+                    ]
+                );
+            }
+            DB::commit();
+
+            $this->dispatch('new-transaksi-langsung-created');
+
+            // Clear Cache
+            $cacheKey = session()->get('current_pengajuan_cache_key');
+            Cache::forget($cacheKey);
+            session()->forget('current_pengajuan_cache_key');
+
+            $this->toast()
+                ->success('Berhasil', 'Pembelian berhasil disimpan.')
+                ->send();
+        } catch (\Throwable $e) {
+            // Rollback
             DB::rollBack();
 
             $this->toast()

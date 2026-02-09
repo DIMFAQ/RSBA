@@ -16,7 +16,7 @@ use App\Traits\BlocksTransactionDuringOpname;
 use Illuminate\Support\Facades\Cache;
 
 #[Lazy]
-class TransaksiBeliPO extends Component
+class TransaksiBeliPo extends Component
 {
     use BlocksTransactionDuringOpname;
     use Interactions;
@@ -45,6 +45,7 @@ class TransaksiBeliPO extends Component
 
     public function mount()
     {
+        $this->tgl_pembelian = date('Y-m-d');
 
         $cacheKey = session()->get('current_pengajuan_cache_key');
         $selectedIds = Cache::get($cacheKey);
@@ -55,7 +56,7 @@ class TransaksiBeliPO extends Component
 
     function getBarang($id): ?object
     {
-        $barang = Barang::with('satuan')
+        $barang = Barang::with(['satuan', 'latestStok'])
             ->where('id', $id)
             ->orWhere('sku', $id)
             ->first();
@@ -67,6 +68,7 @@ class TransaksiBeliPO extends Component
                 'sku' => $barang->sku,
                 'nama' => $barang->nama,
                 'satuan' => $barang->satuan->nama,
+                'latest_harga' => $barang->latestStok->harga_satuan ?? 0
             ];
             return $items;
         }

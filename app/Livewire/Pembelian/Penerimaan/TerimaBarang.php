@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Pembelian;
+namespace App\Livewire\Pembelian\Penerimaan;
 
 use Livewire\Component;
 use App\Models\Gudang\Stok;
@@ -204,6 +204,6 @@ class TerimaBarang extends Component
 
     public function render()
     {
-        return view('livewire.pembelian.terima-barang');
+        return view('livewire.pembelian.penerimaan.terima-barang');
     }
 }

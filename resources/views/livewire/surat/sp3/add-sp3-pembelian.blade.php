@@ -22,7 +22,7 @@
             @enderror
         </div>
 
-        <div x-data="listSp3" class="mt-2 flex flex-col border-t-2 border-dashed py-4">
+        <div x-data="listSp3" class="mt-2 flex flex-col space-y-2 border-t-2 border-dashed py-4">
             <span class="text-xs italic text-gray-500">Rincian Pembayaran</span>
             <template x-for="(item, index) in itemsSp3" :key="index">
                 <div class="flex w-full flex-row items-center gap-2">
@@ -55,7 +55,7 @@
 
 
         <div class="ml-auto flex justify-end gap-2">
-            <x-ts:button outline x-on:click="$dispatch('close-modal',{id:'modal-add-sp3'})">Tutup</x-ts:button>
+            <x-ts:button outline x-on:click="$dispatch('close-modal',{id:'modal-create-sp3'})">Tutup</x-ts:button>
             <x-ts:button type="submit" icon="tabler.checks">Simpan</x-ts:button>
         </div>
 
@@ -67,8 +67,12 @@
     <script>
         Alpine.data('listSp3', () => {
             return {
-                totalPembayaran: $wire.entangle('totalPembayaran'),
+                // totalPembayaran: $wire.entangle('totalPembayaran'),
                 itemsSp3: $wire.entangle('listSp3'),
+
+                init() {
+                    this.recalculateTotal();
+                },
 
                 addingItem() {
                     const newItem = {

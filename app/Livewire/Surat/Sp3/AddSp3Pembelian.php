@@ -9,6 +9,7 @@ use App\Models\Surat\SuratSp3;
 use App\Models\Gudang\Pembelian;
 use Illuminate\Support\Facades\DB;
 use App\Models\Surat\SuratSp3Detail;
+use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
@@ -56,22 +57,9 @@ class AddSp3Pembelian extends Component
             $this->rekanan = $this->pembelian->supplier->nama;
             $this->keterangan = "Pembayaran ke {$this->rekanan} untuk pembelian nomor transaksi {$this->pembelian->no}";
 
-            $this->listSp3 = $this->pembelian->details->map(function ($item) {
-                $subtotal = $item->jumlah * $item->harga_satuan;
-                return [
-                    'nominal' => $subtotal,
-                    'keterangan' => "{$item->barang->nama} @{$item->jumlah} x " . number_format($item->harga_satuan, 0, ',', '.'),
-                ];
-            })->toArray();
 
-            $this->totalPembayaran = $this->pembelian->details
-                ->map(function ($item) {
-                    $subtotal = 0;
-                    $subtotal += ($item->jumlah * $item->harga_satuan);
-
-                    return $subtotal;
-                });
-
+            // generate list rincian sp3
+            $this->generateListSp3();
 
             $this->tgl = date('Y-m-d');
             $this->mengetahuiOptions = Jabatan::where('bagian_id', 1)->get()
@@ -82,6 +70,52 @@ class AddSp3Pembelian extends Component
                     ];
                 });
         }
+    }
+
+
+    #[Computed]
+    public function generateListSp3()
+    {
+        $totalPpn = 0;
+        $itemPpn = 0;
+
+        $list = $this->pembelian->details->map(function ($item) use (&$totalPpn, &$itemPpn) {
+
+            $qty    = $item->jumlah ?? 0;
+            $harga  = $item->harga_satuan ?? 0;
+            $diskon = $item->diskon ?? 0;
+            $ppn = $item->ppn ?? 0;
+
+            // hitung DPP
+            $bruto = $qty * $harga;
+            $dpp   = $bruto - $diskon;
+
+            // hitung PPN
+            $ppnNominal = $dpp * ($ppn / 100);
+
+            $totalPpn += $ppnNominal;
+            if (($item->ppn ?? 0) > 0) {
+                $itemPpn++;
+            }
+
+            return [
+                'nominal' => $dpp,
+                'keterangan' => "{$item->barang?->nama} @{$qty} x " .
+                    number_format($harga, 0, ',', '.') .
+                    " {diskon: " . number_format($diskon, 0, ',', '.') .
+                    ", ppn: {$ppn}%}",
+            ];
+        })->toArray();
+
+        // tambah 1 baris total PPN
+        if ($totalPpn > 0) {
+            $list[] = [
+                'nominal' => $totalPpn,
+                'keterangan' => "PPN @$itemPpn item",
+            ];
+        }
+
+        $this->listSp3 = $list;
     }
 
     function updatedJabatan($value)
@@ -142,6 +176,10 @@ class AddSp3Pembelian extends Component
                 )->toArray();
             // insert into database
             SuratSp3Detail::insert($itemsDetail);
+
+            // update sp3_id on pembelian
+            $this->pembelian->sp3_id = $suratSp3->id;
+            $this->pembelian->save();
             DB::commit();
             $this->dispatch('created-sp3');
 

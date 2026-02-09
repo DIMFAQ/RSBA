@@ -40,7 +40,7 @@ class Index extends Component
         }
 
 
-        $this->authorize('view-disitribusi');
+        $this->authorize('view-distribusi');
         return view('livewire.distribusi.index');
     }
 }

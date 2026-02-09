@@ -19,6 +19,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Livewire\Attributes\On;
 
 class TablePembelian extends Component implements HasTable, HasForms
 {
@@ -88,6 +89,16 @@ class TablePembelian extends Component implements HasTable, HasForms
 
             ])
             ->filters([
+                // Filter PO atau Langsungs
+                SelectFilter::make('jenis')
+                    ->options(
+                        fn() => [
+                            'langsung' => 'Langsung',
+                            'pre_order' => 'Pre Order'
+                        ]
+                    )->searchable(),
+
+
                 // filter supplier
                 SelectFilter::make('supplier_id')
                     ->label('Supplier')
@@ -153,7 +164,7 @@ class TablePembelian extends Component implements HasTable, HasForms
                     ->color('success')
                     ->visible(
                         function ($record) {
-                            if ($record->status === 'selesai') {
+                            if ($record->status === 'selesai' && $record->sp3_id === null) {
                                 return true;
                             }
                         }
@@ -164,6 +175,19 @@ class TablePembelian extends Component implements HasTable, HasForms
                             id: $record->getKey()
                         )
                     ),
+
+                Action::make('print-po')
+                    ->iconButton()
+                    ->icon('tabler-printer')
+                    ->action(
+                        function ($record, $livewire) {
+                            $livewire->selectedId = $record->getKey();
+                            $livewire->dispatch('trigger-print');
+                        }
+                    )
+                    ->visible(
+                        fn($record) => $record->jenis === "Pre Order"
+                    )
             ]);
     }
 
@@ -171,6 +195,13 @@ class TablePembelian extends Component implements HasTable, HasForms
     {
         $this->selectedId = $id;
         $this->dispatch('open-modal', id: $modal);
+    }
+
+    #[On('new-transaksi-langsung-created')]
+    #[On('new-transaksi-po-created')]
+    public function refreshTable()
+    {
+        $this->resetTable();
     }
 
     public function render()

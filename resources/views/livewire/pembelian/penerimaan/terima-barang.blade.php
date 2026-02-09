@@ -98,9 +98,8 @@
                             <th class="p-2">Telah Diterima</th>
                             <th class="p-2">Diterima Skr</th>
                             <th class="p-2">Harga Satuan</th>
-                            <th class="p-2">Serial / Batch</th>
-                            <th class="p-2">Exp / Warranty</th>
                             <th class="p-2">Sub Total</th>
+                            <th></th>
                         </tr>
                     </thead>
 
@@ -139,26 +138,57 @@
                                     </td>
 
                                     {{-- Serial / Batch --}}
-                                    <td class="p-2">
+                                    {{-- <td class="p-2">
                                         <input type="text" class="max-w-42 h-8 rounded-lg border border-gray-100" placeholder="{{ $item->barang->bhp ? 'Batch' : 'Serial Numbers' }}" />
 
                                         @error('any')
                                             <span class="text-xs text-red-500">{{ $message }}</span>
                                         @enderror
-                                    </td>
+                                    </td> --}}
 
                                     {{-- Exp / Garansi --}}
-                                    <td class="p-2">
+                                    {{-- <td class="p-2">
                                         <x-ts:date class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="{{ $item->barang->bhp ? 'Expired' : 'Garansi' }}" />
 
                                         @error('any')
                                             <span class="text-xs text-red-500">{{ $message }}</span>
                                         @enderror
-                                    </td>
+                                    </td> --}}
 
                                     {{-- sub total --}}
                                     <td class="p-2">
                                         <span x-text="formatCurrency(subtotals[{{ $index }}].subtotal || 0)"></span>
+                                    </td>
+
+                                    <td x-data="{ open: false, style: '' }">
+                                        {{-- tombol action garansi dan batch --}}
+                                        <x-tabler-label title="Batch / Serial" class="h-5 w-auto cursor-pointer text-indigo-500" role="button"
+                                            x-on:click="let r = $el.getBoundingClientRect(); style = 'top:'+(r.bottom+6)+'px; left:'+(r.left-180)+'px'; open = !open;" />
+
+                                        <!-- Tooltip Batch dan Garansi -->
+                                        <div x-show="open" x-transition.scale.origin.top @click.outside="open = false" class="fixed right-0 z-50 w-56 rounded-lg border bg-white p-3 shadow-lg"
+                                            :style="style">
+
+                                            <!-- arrow -->
+                                            <div class="absolute -top-1 right-4 h-2 w-2 rotate-45 border-l border-t bg-white"></div>
+
+                                            <div class="space-y-2">
+                                                <div>
+                                                    <label class="text-[11px] text-gray-500">
+                                                        Batch / Serial
+                                                    </label>
+                                                    <input type="text" x-model="item.batch" class="h-7 w-full rounded-lg border border-gray-100 text-xs"
+                                                        x-bind:placeholder="item.bhp ? 'Batch' : 'Serial Numbers'" />
+                                                </div>
+
+                                                <div>
+                                                    <label class="text-[11px] text-gray-500" x-text="item.bhp ? 'Exp Date' : 'Warranty'">
+                                                    </label>
+                                                    <input type="date" x-model="item.waranty_date" class="h-7 w-full rounded-lg border border-gray-100 text-xs"
+                                                        x-bind:placeholder="item.bhp ? 'Exp Date' : 'Waranty Date'" />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                 @else
                                     <td colspan="4" class="p-2">
@@ -179,12 +209,13 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-b text-center text-lg uppercase text-gray-600">
-                            <td colspan="10" class="px-4 py-2">
+                            <td colspan="8" class="px-4 py-2">
                                 Total
                             </td>
                             <td class="px-4 py-2 font-bold">
                                 <span x-text="formatCurrency(totalHarga)"></span>
                             </td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>

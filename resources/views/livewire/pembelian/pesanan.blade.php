@@ -2,7 +2,7 @@
     {{-- form --}}
     <form wire:submit.prevent='submit' class="flex flex-col gap-6">
         {{-- input --}}
-        <div class="flex w-full flex-row gap-2 rounded-lg border-gray-200 bg-gray-50 p-2 shadow">
+        <div class="flex w-full flex-row gap-2 rounded-lg border-gray-200 bg-gray-50 p-2 text-center shadow">
 
             <div class="w-full lg:w-1/4">
                 <x-ts:select.styled wire:model='supplier' placeholder="Supplier" :request="route('api.supplier')" select="label:nama|value:id">
@@ -22,12 +22,12 @@
         </div>
 
         {{-- list barang --}}
-        <div x-data="listPembelian" class="fle flex-col gap-2">
+        <div x-data="listPembelian" class="flex flex-col gap-2">
 
             {{-- cart --}}
             <div class="relative rounded-lg border border-indigo-200">
                 <span class="absolute -left-0 -top-3 rounded-full border border-indigo-200 bg-indigo-50 px-2 text-xs font-thin italic text-indigo-500">
-                    List Barang Yang Dibeli
+                    List Barang Dipesan
                 </span>
 
                 <div class="my-2 flex flex-col gap-1 p-4">
@@ -82,6 +82,9 @@
                                 <th class="p-2">Satuan</th>
                                 <th class="p-2">Jumlah</th>
                                 <th class="p-2">Harga / Estimasi Harga</th>
+                                <th class="p-2">Diskon</th>
+                                <th class="p-2">PPN</th>
+                                <th class="p-2">Subtotal</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -96,13 +99,24 @@
                                     <td class="p-1" x-text="item.satuan"></td>
 
                                     <td class="p-1">
-                                        <input required type="number" x-model.number="item.jumlah" min="1" class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm"
-                                            placeholder="Jumlah" />
+                                        <input required type="number" x-model.number="item.jumlah" @keyup="updateItemSubTotal(index)" min="1"
+                                            class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm" placeholder="Jumlah" />
                                     </td>
                                     <td class="p-1">
-                                        <input required type="number" x-model.number="item.harga" class="max-w-42 h-8 rounded-lg border border-gray-100 text-sm" placeholder="Jumlah" />
+                                        <input required type="number" x-model.number="item.harga" @keyup="updateItemSubTotal(index)" class="max-w-42 h-8 rounded-lg border border-gray-100 text-sm"
+                                            placeholder="Harga" />
                                     </td>
-
+                                    <td class="p-1">
+                                        <input required type="number" x-model.number="item.diskon" @keyup="updateItemSubTotal(index)" class="h-8 max-w-32 rounded-lg border border-gray-100 text-sm"
+                                            placeholder="Diskon" />
+                                    </td>
+                                    <td class="p-1">
+                                        <input required type="number" x-model.number="item.ppn" @keyup="updateItemSubTotal(index)" class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm"
+                                            placeholder="%" />
+                                    </td>
+                                    <td class="p-1">
+                                        <span x-text="`Rp ${(item.jumlah * item.harga).toLocaleString()}`"></span>
+                                    </td>
                                     <td class="flex justify-end p-2">
                                         <x-ts:icon role="button" x-on:click="removeItemFromCart(index)" name="tabler.trash" class="h-5 w-auto text-red-500 hover:text-red-700" />
                                     </td>
@@ -117,6 +131,40 @@
 
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+
+            {{-- Summary --}}
+            <div class="grid w-full grid-cols-2 rounded-md border border-indigo-200 bg-indigo-100/75 px-4 py-2">
+                <div class="flex flex-col">
+                    <span class="text-xs font-thin italic text-gray-500">Item:</span>
+                    <span class="text-xl font-semibold text-indigo-500" x-text="totalItem"></span>
+                </div>
+
+                <div class="justity-end flex flex-col text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-600">Subtotal</span>
+                        <span class="text-gray-800" x-text="`Rp ${totalBeli.toLocaleString()}`"></span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-600">Diskon</span>
+                        <span class="text-red-500" x-text="`- Rp ${totalDiskon.toLocaleString()}`"></span>
+                    </div>
+
+                    <div class="flex justify-between border-t-2 border-dashed border-indigo-200 font-semibold">
+                        <span class="text-xs text-gray-600">Subtotal setelah diskon</span>
+                        <span class="text-gray-800" x-text="`Rp ${(totalBeli - totalDiskon).toLocaleString()}`"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-xs text-gray-600">PPN</span>
+                        <span class="text-gray-800" x-text="`Rp ${totalPpn.toLocaleString()}`"></span>
+                    </div>
+                    <div class="flex justify-between border-t-2 border-dashed border-indigo-200 pt-1">
+                        <span class="text-base font-bold text-indigo-700">Total Pembayaran</span>
+                        <span class="text-base font-bold text-indigo-600" x-text="`Rp ${((totalBeli - totalDiskon) + totalPpn).toLocaleString()}`"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,7 +199,7 @@
                             <x-ts:button outline sm color="red" x-on:click="popUpCancelConfirm = false">
                                 Tidak
                             </x-ts:button>
-                            <x-ts:button outline sm color="green" x-on:click="$dispatch('close-modal',{id:'modal-new-pembelian-pre-order'})">
+                            <x-ts:button outline sm color="green" x-on:click="$dispatch('close-modal',{id:'modal-new-pesanan'})">
                                 Ya, Batalkan
                             </x-ts:button>
                         </div>
@@ -164,6 +212,8 @@
 
             </div>
         </div>
+
+
     </form>
 
 
@@ -191,6 +241,11 @@
                 sku: '',
                 searchItem: '',
                 totalItem: 0,
+                totalBeli: 0,
+                totalDiskon: 0,
+                itemDiskon: 0,
+                totalPpn: 0,
+                itemPpn: 0,
                 cartItems: $wire.entangle('cartItems'),
 
                 addingCart(id) {
@@ -199,7 +254,9 @@
                             const existingItem = this.cartItems.find(item => item.id === barang.id);
 
                             if (existingItem) {
-                                existingItem.jumlah += 1;
+                                // Update jumlah item yang sudah ada
+                                this.cartItems[existingItemIndex].jumlah += 1;
+                                this.recalculateTotal();
                             } else {
                                 const newItem = {
                                     id: barang.id,
@@ -209,13 +266,22 @@
                                     satuan: barang.satuan,
                                     jumlah: 1,
                                     harga: barang.latest_harga,
+                                    diskon: 0,
+                                    ppn: 0,
+                                    ppnAmount: 0,
+                                    subtotal: 0,
                                     batch: '',
-                                    subTotal: 0
+
                                 };
                                 this.cartItems.push(newItem);
+                                this.recalculateTotal();
+
                                 this.sku = '';
                                 this.searchItem = '';
                                 this.totalItem = this.cartItems.length;
+
+                                // Calculate dengan index item baru (paling akhir)
+                                // this.calculateSubTotalIndex(this.cartItems.length - 1);
                             }
                         }).catch(error => {
                             console.error('Error retrieving barang data:', error)
@@ -226,9 +292,48 @@
                     }
                 },
 
-                removeItemFromCart(index) {
-                    this.cartItems.splice(index, 1);
+                updateItemSubTotal(index) {
+                    const item = this.cartItems[index];
+                    if (item) {
+                        item.subTotal = item.jumlah * item.harga;
+                        this.recalculateTotal();
+                    }
+                },
+
+
+                recalculateTotal() {
+                    // Update total item
                     this.totalItem = this.cartItems.length;
+
+                    // Hitung total beli dari semua item
+                    this.totalBeli = this.cartItems.reduce((total, item) => {
+                        return total + (item.subTotal || (item.jumlah * item.harga));
+                    }, 0);
+
+                    this.totalDiskon = this.cartItems.reduce((total, item) => {
+                        return total + (item.diskon);
+                    }, 0);
+
+                    this.totalPpn = this.cartItems.reduce((total, item) => {
+                        return total + ((item.ppn / 100) * (item.subTotal - item.diskon));
+                    }, 0);
+
+                    // item yang diskon
+                    this.itemDiskon = this.cartItems.filter(item => Number(item.diskon) > 0).length;
+
+                    // item yang ppn
+                    this.itemPpn = this.cartItems.filter(item => Number(item.ppn) > 0).length;
+
+                    const nettBayar = this.totalBeli - this.totalDiskon;
+
+
+                },
+
+                removeItemFromCart(index) {
+                    if (index >= 0 && index < this.cartItems.length) {
+                        this.cartItems.splice(index, 1);
+                        this.recalculateTotal(); // Recalculate setelah hapus
+                    }
                 },
             }
         });

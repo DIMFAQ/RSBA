@@ -1,4 +1,4 @@
-<div>
+<div style="width: 100%; margin: 0; padding: 15px; font-family: Arial, sans-serif;">
     <style>
         .bold {
             font-weight: bold;

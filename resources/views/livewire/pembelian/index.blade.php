@@ -1,5 +1,4 @@
-<div class="flex flex-col gap-2">
-
+<div x-data="pembelian" class="flex flex-col gap-2">
     <div x-data="{
         searchTerm: @entangle('search'),
     
@@ -38,93 +37,25 @@
                 </div>
             @endcan
 
+
             <div class="ml-auto flex justify-end gap-2">
-                <div x-data="{
-                    showOptionsBeli: false,
-                    selectedCaraBeli: null,
-                    validationErrors: {},
-                    validate() {
-                        // Reset previous errors
-                        this.validationErrors = {};
-                
-                        // Validation rules 
-                        // jika selectedCarBeli tidak ada, set error
-                        if (!this.selectedCaraBeli) {
-                            this.validationErrors.caraBeli = 'Cara pembelian harus dipilih.';
-                        }
-                
-                        // Return true if no errors, false otherwise
-                        return Object.keys(this.validationErrors).length === 0;
-                    },
-                    confirmSelectBeli() {
-                        // validation
-                        if (!this.validate()) {
-                            return;
-                        }
-                
-                        {{-- Setting modal id --}}
-                        const modalId = `modal-new-pembelian-${this.selectedCaraBeli}`;
-                
-                        // open modal filament
-                        this.$dispatch('open-modal', { id: modalId });
-                
-                        // Close options
-                        this.showOptionsBeli = false;
-                    }
-                }" class="relative flex flex-row gap-2">
 
-                    <x-ts:button sm outline color="violet" icon="tabler.send">
-                        Permintaan
+                <div class="flex gap-2">
+                    <x-ts:button x-show="history.length === 0" sm outline color="violet" x-on:click="$wire.set('state',Math.random().toString(36).substring(2, 5)); togglePanel('pesanan')"
+                        icon="tabler.file-plus">
+                        Pesanan
                     </x-ts:button>
 
-                    <x-ts:button sm icon="tabler.plus" x-on:click="showOptionsBeli = true">
-                        Pembelian
+                    <x-ts:button x-show="history.length === 0" sm outline icon="tabler.playlist-add" x-on:click="togglePanel('penerimaan')">
+                        Penerimaan
                     </x-ts:button>
-
-                    <!-- Tooltip Modal -->
-                    <div class="absolute right-0 z-50 mt-2 w-60 rounded-lg bg-white p-4 shadow-lg" x-show="showOptionsBeli" x-transition x-trap.noscroll="showOptionsBeli"
-                        x-on:click.away="showOptionsBeli = false" x-on:keydown.escape.window="showOptionsBeli = false">
-
-                        <!-- Tooltip Header -->
-                        <div class="mb-3 flex items-center justify-between">
-                            <span class="flex flex-row items-center gap-1 font-semibold text-indigo-500">
-                                <x-ts:icon name="tabler.shopping-cart-plus" class="h-4" />
-                                Cara Pembelian
-                            </span>
-                        </div>
-
-                        <!-- Options -->
-                        <div class="space-y-2">
-                            <!-- Options Beli -->
-                            <div class="flex flex-col gap-2">
-                                <template x-if="validationErrors.caraBeli">
-                                    <label class="text-xs text-red-500" x-text="validationErrors.caraBeli"></label>
-                                </template>
-
-                                <label role="button">
-                                    <input type="radio" x-model="selectedCaraBeli" value="langsung" x-on:change="validationErrors.caraBeli = null" />
-                                    Langsung
-                                </label>
-
-                                <label role="button">
-                                    <input type="radio" x-model="selectedCaraBeli" value="pre-order" x-on:change="validationErrors.caraBeli = null" />
-                                    Pre Order
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="mt-4 flex justify-end gap-2">
-                            <x-ts:button sm x-on:click="confirmSelectBeli()" icon="tabler.corner-down-right-double">
-                                Lanjutkan
-                            </x-ts:button>
-                        </div>
-                    </div>
-                    {{-- end Tooltip Modal --}}
-
                 </div>
-                {{-- end parent & alpine init --}}
 
+                <span role="button" x-show="history.length > 0" x-on:click="goBack()" class="flex flex-row items-center px-2 py-1 text-red-500 hover:rounded-lg hover:bg-red-200/25">
+                    <x-ts:icon name="tabler.chevron-left" class="h-5 w-5" />
+                    Kembali
+                </span>
+                {{-- <x-ts:button x-show="history.length > 0" x-on:click="goBack()" sm outline color="red" class="">Kembali</x-ts:button> --}}
             </div>
         </div>
 
@@ -164,16 +95,19 @@
         </div>
     </div>
 
-    <div class="w-full rounded-md border-2 border-white p-1" x-data="{ showStats: false, refreshKey: Date.now() }">
-        <x-ts:toggle sm @click='showStats = !showStats; refreshKey = Date.now()' label="Stats" />
 
-        <div x-show="showStats">
-            <livewire:pembelian.stats x-bind:key="'stats-' + refreshKey" />
-        </div>
-    </div>
 
     {{-- Table List Pembelian --}}
-    <div class="w-full">
+    <div x-show="panelActive === 'main'" class="w-full">
+        <div class="w-full rounded-md border-2 border-white p-1" x-data="{ showStats: false, refreshKey: Date.now() }">
+            <x-ts:toggle sm @click='showStats = !showStats; refreshKey = Date.now()' label="Stats" />
+
+            <div x-show="showStats">
+                <livewire:pembelian.stats x-bind:key="'stats'" />
+                {{-- x-bind:key="'stats-' + refreshKey" --}}
+            </div>
+        </div>
+
 
         <x-ts:tab :selected="$this->getRequestPembelianProperty() ? 'Permintaan' : 'Transaksi'" x-on:navigate="$wire.set('tab',$event.detail.select)">
 
@@ -183,7 +117,7 @@
                         <span class="block h-1 w-1 animate-pulse rounded-full bg-red-500 ring-2 ring-red-300"></span>
                     </x-slot:left>
 
-                    <livewire:Pembelian.Permintaan.ListPermintaanBarang :key="Str::random()" />
+                    <livewire:Pembelian.Permintaan.ListPermintaanBarang key="list-permintaan-barang" />
                 </x-ts:tab.items>
             @endif
 
@@ -192,7 +126,7 @@
                     <x-ts:icon name="tabler.invoice" class="h-5 w-5" />
                 </x-slot:left>
 
-                <livewire:Pembelian.TablePembelian :key="Str::random()" />
+                <livewire:Pembelian.TablePembelian key="table-pembelian" />
             </x-ts:tab.items>
 
             <x-ts:tab.items tab="Barang">
@@ -200,24 +134,50 @@
                     <x-ts:icon name="tabler.box" class="h-5 w-5" />
                 </x-slot:left>
 
-                <livewire:Pembelian.TablePembelianBarang :key="Str::random()" />
+                <livewire:Pembelian.TablePembelianBarang key="table-pembelian-by-barang" />
             </x-ts:tab.items>
         </x-ts:tab>
     </div>
 
 
-    {{-- modal tambah pembelian langsung --}}
-    <x-filament::modal id="modal-new-pembelian-langsung" width="w-full" :close-by-clicking-away="false" :autofocus="false" :close-by-escaping="false" :close-button="false" sticky-header>
-        <x-slot:heading>Pembelian Langsung</x-slot:heading>
+    <div class="w-full rounded-lg bg-white p-4">
+        <div x-show="panelActive === 'pesanan'" class="flex flex-col gap-3">
+            <h3 class="border-b-2 text-indigo-500">Pesanan</h3>
+            <div>
+                <livewire:Pembelian.Pesanan key="pesanan" />
+            </div>
+        </div>
+        <div x-show="panelActive === 'penerimaan'" class="flex flex-col gap-3">
+            <h3 class="border-b-2 text-indigo-500">Penerimaan</h3>
+            <div>
+                <livewire:Pembelian.Penerimaan.Options key="penerimaan" />
+            </div>
+        </div>
+    </div>
 
-        <livewire:Pembelian.TransaksiBeliLangsung :key="Str::random()" @close-modal="$refresh" @new-transaksi-langsung-created="$refresh; $dispatch('close-modal','modal-new-pembelian-langsung')" />
-    </x-filament::modal>
 
-
-    {{-- modal tambah pembelian pre order --}}
-    <x-filament::modal id="modal-new-pembelian-pre-order" width="w-full" :close-by-clicking-away="false" :autofocus="false" :close-by-escaping="false" :close-button="false" sticky-header>
-        <x-slot:heading>Pembelian Pre Order</x-slot:heading>
-
-        <livewire:Pembelian.TransaksiBeliPO :key="Str::random()" @close-modal="$refresh" @new-transaksi-po-created="$refresh; $dispatch('close-modal','modal-new-pembelian-pre-order')" />
-    </x-filament::modal>
 </div>
+
+@script
+    <script>
+        Alpine.data('pembelian', () => {
+            return {
+                panelActive: 'main',
+                history: [],
+
+                togglePanel(active) {
+                    this.history.push(this.panelActive);
+                    this.panelActive = active;
+                },
+
+                goBack() {
+                    if (this.history.length > 0) {
+                        this.panelActive = 'main';
+                        this.history = [];
+
+                    }
+                }
+            }
+        })
+    </script>
+@endscript

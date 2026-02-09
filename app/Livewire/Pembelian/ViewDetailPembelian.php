@@ -19,10 +19,10 @@ class ViewDetailPembelian extends Component
     {
         $this->pembelian = Pembelian::with([
             'supplier',
-            'pembelians',
-            'pembelians.barang.satuan',
-            'pembelians.terimas.stoks',
-            'pembelians.terimas.penerimaan.user'
+            'details',
+            'details.barang.satuan',
+            'details.terimas.stoks',
+            'details.terimas.penerimaan.user'
         ])->findOrFail($id);
     }
 

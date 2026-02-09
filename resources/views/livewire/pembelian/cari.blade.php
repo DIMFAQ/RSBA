@@ -15,6 +15,6 @@
     @if ($pembelian->status === 'selesai')
         <livewire:Pembelian.ViewDetailPembelian :id="$pembelian->id" :key="Str::random()" />
     @else
-        <livewire:Pembelian.TerimaBarang :$pembelian :key="Str::random()" @penerimaan-beli-saved="$refresh" />
+        <livewire:Pembelian.Penerimaan.TerimaBarang :$pembelian :key="Str::random()" @penerimaan-beli-saved="$refresh" />
     @endif
 </div>

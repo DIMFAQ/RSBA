@@ -34,7 +34,7 @@ Route::get('desa/{id?}', [WilayahController::class, 'desa'])->name('api.desa');
 // Master Data
 Route::get('ruangan', [RuanganController::class, 'list'])->name('api.ruangan');
 Route::get('supplier', [SupplierController::class, 'list'])->name('api.supplier');
-Route::get('ruangan', [RuanganController::class, 'list'])->name('api.ruangan');
+// Route::get('ruangan', [RuanganController::class, 'list'])->name('api.ruangan');
 
 Route::prefix('barang')
     ->name('api.barang.')

@@ -19,6 +19,8 @@ class Index extends Component
     use WithPagination;
     use BlocksTransactionDuringOpname;
 
+    public $state;
+
     public $tab;
     public bool $stats = false;
     public $search = '';

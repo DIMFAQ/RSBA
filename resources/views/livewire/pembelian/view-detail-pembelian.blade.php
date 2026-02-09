@@ -1,9 +1,9 @@
 <div class="flex flex-col gap-2">
-    <div class="grid grid-cols-2 mb-2 border border-gray-200 rounded p-3">
+    <div class="grid grid-cols-2 rounded-md border border-gray-200 p-3">
         <div class="flex flex-col">
-            <span class="text-xs  font-light font-gray-500">No. Transaksi</span>
-            <h1 class="text-gray-500 text-2xl font-bold uppercase">{{ $pembelian?->no ?? 'Tidak Ditemukan' }}</h1>
-            <span class="flex flex-row text-[0.45rem] gap-2 mt-2 ">
+            <span class="font-gray-500 text-xs font-light">No. Transaksi</span>
+            <h1 class="text-2xl font-bold uppercase text-gray-500">{{ $pembelian?->no ?? 'Tidak Ditemukan' }}</h1>
+            <span class="mt-2 flex flex-row gap-2 text-[0.45rem]">
                 @php
                     $status = $pembelian->status;
                     $statusBeli = fn(string $status): string => match ($status) {
@@ -42,23 +42,57 @@
                 <span class="w-[150px]">Jenis</span> :
                 {{ $pembelian->jenis }}
             </div>
+            <div class="flex items-center">
+                <span class="w-[150px]">Lampiran</span> :
+                @if (count($pembelian?->lampirans))
+                    <span x-on:click="$dispatch('open-modal',{id:'modal-view-lampiran-pembelian'})" class="rounded-md px-1 hover:cursor-pointer hover:bg-indigo-100 hover:text-indigo-500">
+                        {{ count($pembelian?->lampirans) }}
+                        File
+                    </span>
+                @else
+                    <span class="ml-2 italic text-gray-500">Tidak ada lampiran</span>
+                @endif
+
+            </div>
         </div>
+
+        {{-- modal view lampiran --}}
+        <x-filament::modal id="modal-view-lampiran-pembelian" width="w-full" :close-by-escaping="true" :close-button="true">
+            <x-slot:heading></x-slot:heading>
+            <livewire:Pembelian.ViewLampiran :lampirans="$pembelian->lampirans" />
+        </x-filament::modal>
+        {{-- end modal view lampiran --}}
     </div>
 
-    <div class="w-full">
+    <div class="scrollbar-hidden w-full overflow-x-auto rounded-md border border-gray-200 p-2">
 
         {{-- table --}}
-        <table class="min-w-full table-fixed border-collapses">
-            <thead class="bg-gray-300">
-                <tr class="text-left text-sm text-gray-500 uppercase font-semibold">
-                    <th class="py-2 px-4"></th>
-                    <th class="py-2 px-4">Barang</th>
-                    <th class="py-2 px-4">Satuan</th>
-                    <th class="py-2 px-4">Jumlah Pesan</th>
-                    <th class="py-2 px-4">Diterima</th>
-                    <th class="py-2 px-4">Tgl Diterima</th>
-                    <th class="py-2 px-4">Harga Satuan</th>
-                    <th class="py-2 px-4">Oleh</th>
+        <table class="border-collapses w-full min-w-full table-auto">
+            <colgroup>
+                <col style="width:5%">
+                <col style="width:15%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:11%">
+                <col style="width:10%">
+                <col style="width:10%">
+                <col style="width:12%">
+                <col style="width:13%">
+            </colgroup>
+
+            <thead class="border-b-2 border-double text-left text-xs font-thin capitalize text-gray-600">
+                <tr>
+                    <th class="p-2"></th>
+                    <th class="p-2">Barang</th>
+                    <th class="p-2">Satuan</th>
+                    <th class="p-2">Jumlah Pesan</th>
+                    <th class="p-2">Diterima</th>
+                    <th class="p-2">Tgl Diterima</th>
+                    <th class="p-2">Harga Satuan</th>
+                    <th class="p-2">Diskon</th>
+                    <th class="p-2">PPN</th>
+                    <th class="p-2">Oleh</th>
                 </tr>
             </thead>
 
@@ -79,27 +113,31 @@
                                 $iconColor = 'orange';
                             }
                         @endphp
-                        <tr class="text-sm font-semibold {{ $rowClass }}">
-                            <td class="py-2 px-4">
-                                <x-ts:icon :name="'tabler.' . $iconStatus" :color="$iconColor" />
+                        <tr class="{{ $rowClass }} text-sm">
+                            <td class="px-4 py-2 opacity-50">
+                                <x-ts:icon :name="'tabler.' . $iconStatus" :color="$iconColor" class="h-5 w-auto" />
                             </td>
-                            <td class="py-2 px-4">{{ $itemBeli->barang->nama }}</td>
-                            <td class="py-2 px-4">{{ $itemBeli->barang->satuan->nama }}</td>
-                            <td class="py-2 px-4">{{ $itemBeli->jumlah }}</td>
-                            <td colspan="4" class="py-2 px-4">{{ $itemBeli->terimas->sum('jumlah') }}</td>
+                            <td class="px-4 py-2">{{ $itemBeli->barang->nama }}</td>
+                            <td class="px-4 py-2">{{ $itemBeli->barang->satuan->nama }}</td>
+                            <td class="px-4 py-2">{{ $itemBeli->jumlah }}</td>
+                            <td colspan="6" class="px-4 py-2">{{ $itemBeli->terimas->sum('jumlah') }}</td>
                         </tr>
                         @forelse ($itemBeli->terimas as $terima)
-                            <tr class="text-sm @if ($loop->last) border-b-2 border-b-gray-400 @endif">
-                                <td colspan="4" class="py-1 px-4"></td>
-                                <td class="py-1 px-4">{{ $terima->jumlah }}</td>
-                                <td class="py-1 px-4">{{ $terima->created_at->format('d/m/Y') }}</td>
-                                <td class="py-1 px-4">{{ formatRupiah($terima->stoks->harga_satuan) }}</td>
-                                <td class="py-1 px-4">{{ $terima->penerimaan->user->karyawan->nama }}</td>
+                            <tr class="@if ($loop->last) border-b-2 border-b-gray-400 @endif text-sm">
+                                <td colspan="4" class="px-4 py-1"></td>
+                                <td class="px-4 py-1">{{ $terima->jumlah }}</td>
+                                <td class="px-4 py-1">{{ $terima->created_at->format('d/m/Y') }}</td>
+                                <td class="px-4 py-1">{{ formatRupiah($terima->stoks->harga_satuan, $withPrefix = false, $withDecimals = false) }}</td>
+                                <td class="px-4 py-1">{{ formatRupiah($terima->pembelianDet->diskon, $withPrefix = false, $withDecimals = false) }}</td>
+                                <td class="px-4 py-1"> ({{ $terima->pembelianDet->ppn }}%)
+                                    {{ formatRupiah(($terima->stoks->harga_satuan - $terima->pembelianDet->diskon) * ($terima->pembelianDet->ppn / 100), $withPrefix = false, $withDecimals = false) }}
+                                </td>
+                                <td class="px-4 py-1">{{ Str::limit($terima->penerimaan->user->karyawan->nama, 10, '...') }}</td>
                             </tr>
                         @empty
-                            <tr class="text-sm border-b-2 border-b-gray-400 ">
-                                <td colspan="4" class="py-1 px-4"></td>
-                                <td colspan="4" class="text-center justify-center">
+                            <tr class="border-b-2 border-b-gray-400 text-sm">
+                                <td colspan="4" class="px-4 py-1"></td>
+                                <td colspan="4" class="justify-center text-center">
                                     <span class="font-thin italic">Barang belum diterima.</span>
                                 </td>
                             </tr>
@@ -112,8 +150,37 @@
         {{-- end table --}}
 
     </div>
+    {{-- summary cart --}}
+    <div class="grid w-full rounded-md border border-gray-200 px-4 py-2">
+        <div class="col-span-2 flex w-full flex-col lg:col-span-1">
+            <div class="flex flex-col justify-end text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span class="text-gray-800">{{ formatRupiah($pembelian->subtotal) }}</span>
+                </div>
 
-    <div class="flex justify-end mt-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Diskon</span>
+                    <span class="text-red-500">{{ formatRupiah($pembelian->total_diskon) }}</span>
+                </div>
+
+                <div class="flex justify-between border-t-2 border-dashed border-gray-200 font-semibold">
+                    <span class="text-gray-600">Subtotal setelah diskon</span>
+                    <span class="text-gray-800">{{ formatRupiah($pembelian->subtotal - $pembelian->total_diskon) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">PPN</span>
+                    <span class="text-gray-800">{{ formatRupiah($pembelian->total_ppn) }}</span>
+                </div>
+                <div class="flex justify-between border-t-2 border-dashed border-indigo-200 pt-1">
+                    <span class="text-base font-bold text-indigo-700">Total Pembayaran</span>
+                    <span class="text-xl font-bold text-indigo-600">{{ formatRupiah($pembelian->total) }} </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 flex justify-end">
         <x-ts:button sm color="red" x-on:click="$dispatch('close-modal',{id:'modal-detail-pembelian'}), $dispatch('close-cari-pembelian',{value:''})">Tutup</x-ts:button>
     </div>
 
