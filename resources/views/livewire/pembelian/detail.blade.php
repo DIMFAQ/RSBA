@@ -1,5 +1,5 @@
-<div class="flex flex-col gap-2">
-    <div class="grid grid-cols-2 rounded-md border border-gray-200 p-3">
+<div id="modal-detail-pembelian" class="flex flex-col gap-2">
+    <div class="flex w-full flex-col rounded-md border border-gray-200 p-3 lg:grid lg:grid-cols-2">
         <div class="flex flex-col">
             <span class="font-gray-500 text-xs font-light">No. Transaksi</span>
             <h1 class="text-2xl font-bold uppercase text-gray-500">{{ $pembelian?->no ?? 'Tidak Ditemukan' }}</h1>
@@ -74,7 +74,6 @@
                 <col style="width:8%">
                 <col style="width:8%">
                 <col style="width:8%">
-                <col style="width:11%">
                 <col style="width:10%">
                 <col style="width:10%">
                 <col style="width:12%">
@@ -88,7 +87,6 @@
                     <th class="p-2">Satuan</th>
                     <th class="p-2">Jumlah Pesan</th>
                     <th class="p-2">Diterima</th>
-                    <th class="p-2">Tgl Diterima</th>
                     <th class="p-2">Harga Satuan</th>
                     <th class="p-2">Diskon</th>
                     <th class="p-2">PPN</th>
@@ -98,7 +96,7 @@
 
             <div class="overflow-y-auto">
                 <tbody>
-                    @foreach ($pembelian->pembelians as $itemBeli)
+                    @foreach ($pembelian->details as $itemBeli)
                         @php
                             $rowClass = 'bg-gray-200/25';
                             $iconStatus = 'checks';
@@ -114,36 +112,21 @@
                             }
                         @endphp
                         <tr class="{{ $rowClass }} text-sm">
-                            <td class="px-4 py-2 opacity-50">
+                            <td class="px-2 py-1 opacity-50">
                                 <x-ts:icon :name="'tabler.' . $iconStatus" :color="$iconColor" class="h-5 w-auto" />
                             </td>
-                            <td class="px-4 py-2">{{ $itemBeli->barang->nama }}</td>
-                            <td class="px-4 py-2">{{ $itemBeli->barang->satuan->nama }}</td>
-                            <td class="px-4 py-2">{{ $itemBeli->jumlah }}</td>
-                            <td colspan="6" class="px-4 py-2">{{ $itemBeli->terimas->sum('jumlah') }}</td>
+                            <td class="px-2 py-1">{{ $itemBeli->barang->nama }}</td>
+                            <td class="px-2 py-1">{{ $itemBeli->barang->satuan->nama }}</td>
+                            <td class="px-2 py-1">{{ $itemBeli->jumlah }}</td>
+                            <td class="px-2 py-1">{{ $itemBeli->terimas->sum('jumlah') }}</td>
+                            <td class="px-2 py-1">{{ formatRupiah($itemBeli->harga_satuan, $withPrefix = false, $withDecimals = false) }}</td>
+                            <td class="px-2 py-1">{{ formatRupiah($itemBeli->diskon, $withPrefix = false, $withDecimals = false) }}</td>
+                            <td class="px-2 py-1"> ({{ $itemBeli->ppn }}%)
+                                {{ formatRupiah(($itemBeli->harga_satuan * $itemBeli->jumlah - $itemBeli->diskon) * ($itemBeli->ppn / 100), $withPrefix = false, $withDecimals = false) }}
+                            </td>
+                            <td class="px-2 py-1">{{ Str::limit($itemBeli->terimas->last()?->penerimaan?->user?->karyawan?->nama, 10, '...') }} </td>
                         </tr>
-                        @forelse ($itemBeli->terimas as $terima)
-                            <tr class="@if ($loop->last) border-b-2 border-b-gray-400 @endif text-sm">
-                                <td colspan="4" class="px-4 py-1"></td>
-                                <td class="px-4 py-1">{{ $terima->jumlah }}</td>
-                                <td class="px-4 py-1">{{ $terima->created_at->format('d/m/Y') }}</td>
-                                <td class="px-4 py-1">{{ formatRupiah($terima->stoks->harga_satuan, $withPrefix = false, $withDecimals = false) }}</td>
-                                <td class="px-4 py-1">{{ formatRupiah($terima->pembelianDet->diskon, $withPrefix = false, $withDecimals = false) }}</td>
-                                <td class="px-4 py-1"> ({{ $terima->pembelianDet->ppn }}%)
-                                    {{ formatRupiah(($terima->stoks->harga_satuan * $terima->pembelianDet->jumlah - $terima->pembelianDet->diskon) * ($terima->pembelianDet->ppn / 100), $withPrefix = false, $withDecimals = false) }}
-                                </td>
-                                <td class="px-4 py-1">{{ Str::limit($terima->penerimaan->user->karyawan->nama, 10, '...') }}</td>
-                            </tr>
-                        @empty
-                            <tr class="border-b-2 border-b-gray-400 text-sm">
-                                <td colspan="4" class="px-4 py-1"></td>
-                                <td colspan="4" class="justify-center text-center">
-                                    <span class="font-thin italic">Barang belum diterima.</span>
-                                </td>
-                            </tr>
-                        @endforelse
                     @endforeach
-
                 </tbody>
             </div>
         </table>
@@ -180,8 +163,11 @@
         </div>
     </div>
 
-    <div class="mt-4 flex justify-end">
-        <x-ts:button sm color="red" x-on:click="$dispatch('close-modal',{id:'modal-detail-pembelian'}), $dispatch('close-cari-pembelian',{value:''})">Tutup</x-ts:button>
+    <div id="footer-detail-pembelian">
+
     </div>
+    {{-- <div class="mt-4 flex justify-end">
+        <x-ts:button sm color="red" x-on:click="$dispatch('tutup-detail-beli')">Tutup</x-ts:button>
+    </div> --}}
 
 </div>

@@ -311,7 +311,7 @@
                                     diskon: 0,
                                     ppn: 0,
                                     ppnAmount: 0,
-                                    batch: '',
+                                    batch: null,
                                     waranty_date: null,
                                     subTotal: 0
                                 };

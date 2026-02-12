@@ -8,7 +8,6 @@ use Livewire\Attributes\Lazy;
 use App\Models\Surat\SuratSp3;
 use App\Models\Master\Supplier;
 use Illuminate\Support\Facades\DB;
-use App\Models\Sdm\KaryawanJabatan;
 use App\Models\Surat\SuratSp3Detail;
 use TallStackUi\Traits\Interactions;
 
@@ -49,7 +48,11 @@ class Add extends Component
     public function mount()
     {
         $this->tgl = date('Y-m-d');
-        $this->mengetahuiOptions = Jabatan::where('bagian_id', 1)->get()
+        $this->mengetahuiOptions = Jabatan::with('bagian')
+            ->whereHas('bagian', function ($query) {
+                $query->where('group', 'manajemen');
+            })
+            ->get()
             ->map(function ($item) {
                 return [
                     'label' => $item->nama,

@@ -5,11 +5,14 @@ namespace App\Livewire\Pembelian;
 use Carbon\Carbon;
 use Livewire\Component;
 use Filament\Tables\Table;
+use Livewire\Attributes\On;
 use App\Models\Master\Supplier;
 use Livewire\Attributes\Locked;
 use App\Models\Gudang\Pembelian;
+use App\Models\Sdm\Karyawan;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Columns\TextColumn;
@@ -19,7 +22,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
-use Livewire\Attributes\On;
 
 class TablePembelian extends Component implements HasTable, HasForms
 {
@@ -27,6 +29,11 @@ class TablePembelian extends Component implements HasTable, HasForms
 
     #[Locked]
     public int $selectedId;
+
+    #[Locked]
+    public $mengetahui = null;
+    public $menyetujui = null;
+    public $verifikator = null;
 
     public static function table(Table $table): Table
     {
@@ -179,12 +186,55 @@ class TablePembelian extends Component implements HasTable, HasForms
                 Action::make('print-po')
                     ->iconButton()
                     ->icon('tabler-printer')
-                    ->action(
-                        function ($record, $livewire) {
-                            $livewire->selectedId = $record->getKey();
-                            $livewire->dispatch('trigger-print');
-                        }
-                    )
+                    ->form([
+
+                        Select::make('mengetahui')
+                            ->label('Mengetahui')
+                            ->options(Karyawan::pluck('nama', 'id')->toArray())
+                            ->searchable()
+                            ->preload(),
+
+                        Select::make('menyetujui')
+                            ->label('Menyetujui')
+                            ->options(Karyawan::pluck('nama', 'id')->toArray())
+                            ->searchable()
+                            ->preload(),
+
+
+                        Select::make('verifikator')
+                            ->label('Verifikator')
+                            ->options(Karyawan::pluck('nama', 'id')->toArray())
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->action(function ($record, array $data, Component $livewire) {
+                        $ids = [
+                            $data['mengetahui'],
+                            $data['menyetujui'],
+                            $data['verifikator'],
+                        ];
+
+                        $map = Karyawan::whereIn('id', $ids)
+                            ->pluck('nama', 'id');
+
+                        $livewire->mengetahui  = $map[$data['mengetahui']] ?? null;
+                        $livewire->menyetujui  = $map[$data['menyetujui']] ?? null;
+                        $livewire->verifikator = $map[$data['verifikator']] ?? null;
+
+                        $livewire->selectedId = $record->getKey();
+                        $livewire->dispatch('trigger-print');
+                    })
+                    ->modalFooterActions(fn() => [
+                        Action::make('submit')
+                            ->label('Print')
+                            ->submit('submit'),
+                        Action::make('cancel')
+                            ->label('Tutup')
+                            ->close()
+                            ->color('gray'),
+                    ])
+                    ->modalFooterActionsAlignment('right')
+
                     ->visible(
                         fn($record) => $record->jenis === "Pre Order"
                     )
@@ -198,7 +248,8 @@ class TablePembelian extends Component implements HasTable, HasForms
     }
 
     #[On('new-transaksi-langsung-created')]
-    #[On('new-transaksi-po-created')]
+    #[On('new-pesanan-created')]
+    #[On('penerimaan-beli-saved')]
     public function refreshTable()
     {
         $this->resetTable();

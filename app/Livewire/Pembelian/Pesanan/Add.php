@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Pembelian;
+namespace App\Livewire\Pembelian\Pesanan;
 
 use Carbon\Carbon;
 use Livewire\Component;
@@ -12,10 +12,11 @@ use TallStackUi\Traits\Interactions;
 use App\Models\Gudang\PembelianDetail;
 use App\Models\Gudang\PembelianRequestDetails;
 use App\Traits\BlocksTransactionDuringOpname;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 #[Lazy]
-class Pesanan extends Component
+class Add extends Component
 {
     use BlocksTransactionDuringOpname;
     use Interactions;
@@ -108,42 +109,62 @@ class Pesanan extends Component
          * 0001 = number [reset setiap tahun], max nomor setiap tahun 9999
          * 1224 = bulantahun
          */
-
-
         $this->validate();
 
         DB::beginTransaction();
         try {
-            $data = [
+
+            $carts = collect($this->cartItems);
+            //calc total
+            $subtotal = $carts->sum(
+                fn($cart) => $cart['jumlah'] * $cart['harga']
+            );
+
+            // total ppn
+            $totalPpn = $carts->sum(
+                fn($cart) => $cart['ppnAmount']
+            );
+
+            // total Diskon
+            $totalDiskon = $carts->sum(
+                fn($cart) => $cart['diskon']
+            );
+
+            // harus bayar
+            $harus_bayar = ($subtotal - $totalDiskon) + $totalPpn;
+
+            // 01. Header Pembelian PO
+            $pembelian = Pembelian::create([
                 'no' => $this->generateNumberPO(),
                 'tgl' => $this->tgl_pembelian,
                 'supplier_id' => $this->supplier,
                 'jenis' => 'pre_order',
-            ];
+                'subtotal' => $subtotal,
+                'total_diskon' => $totalDiskon,
+                'total_ppn' => $totalPpn,
+                'total' => $harus_bayar,
+                'created_by' => Auth::id(),
+            ]);
 
-            // dd($data);
-            $pembelian = Pembelian::create($data);
-
-            // detil pembelian
-            $items = collect($this->cartItems)->map(function ($item) use ($pembelian) {
-                // If item is an object, convert to array
-                $item = is_object($item) ? (array) $item : $item;
-
-                return [
+            // 02. Detail Pembelian
+            foreach ($this->cartItems as $item) {
+                $dataDetails = [
                     'pembelian_id' => $pembelian->id,
                     'barang_id' => $item['id'],
                     'jumlah' => $item['jumlah'] ?? 0,
+                    'harga_satuan' => $item['harga'] ?? 0,
+                    'diskon' => $item['diskon'] ?? 0,
+                    'ppn' => $item['ppn'] ?? 0
                 ];
-            });
-
-            PembelianDetail::insert($items->toArray());
+                PembelianDetail::insert($dataDetails);
+            }
 
             DB::commit();
 
-            $this->dispatch('new-transaksi-po-created');
+            $this->dispatch('new-pesanan-created');
 
             $this->toast()
-                ->success('Berhasil', 'Pembelian berhasil disimpan.')
+                ->success('Berhasil', 'Pesanan berhasil disimpan.')
                 ->send();
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -184,6 +205,6 @@ class Pesanan extends Component
             return view('components.opname-block');
         }
 
-        return view('livewire.pembelian.pesanan');
+        return view('livewire.pembelian.pesanan.add');
     }
 }

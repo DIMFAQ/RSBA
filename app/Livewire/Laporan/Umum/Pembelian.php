@@ -24,7 +24,7 @@ class Pembelian extends Component
         ['index' => 'supplier', 'label' => 'Supplier'],
         ['index' => 'jumlah', 'label' => 'Jumlah'],
         ['index' => 'harga', 'label' => 'Harga Satuan'],
-        ['index' => 'total', 'label' => 'Total'],
+        ['index' => 'subtotal', 'label' => 'Total'],
     ];
 
     #[Locked]
@@ -46,7 +46,7 @@ class Pembelian extends Component
         // periode to string $periode_awal and $periode_akhir
         [$periode_awal, $periode_akhir] = $periode;
 
-        $data = PenerimaanDetail::with('penerimaan', 'pembelianDet', 'pembelianDet.pembelian', 'pembelianDet.barang', 'stoks')
+        $data = PenerimaanDetail::with('penerimaan', 'pembelianDet', 'pembelianDet.pembelian', 'pembelianDet.barang')
             ->whereHas(
                 'penerimaan',
                 function ($query) use ($periode_awal, $periode_akhir) {
@@ -73,20 +73,25 @@ class Pembelian extends Component
             ->get();
 
         $this->rows = $data->map(function ($data) {
+            $total = ($data->pembelianDet->jumlah * $data->pembelianDet->harga_satuan);
+
             return [
-                'nama_barang' => $data->stoks->barang->nama,
+                'nama_barang' => $data->pembelianDet->barang->nama,
                 'no_faktur' => $data->penerimaan->no_faktur,
                 'tanggal' => $data->penerimaan->tanggal,
                 'supplier' => $data->pembelianDet->pembelian->supplier->nama,
                 'jumlah' => $data->jumlah,
-                'harga' => formatRupiah($data->stoks->harga_satuan, false, false),
-                'total' => formatRupiah(($data->stoks->stok * $data->stoks->harga_satuan), false, false)
+                'harga' => formatRupiah($data->pembelianDet->harga_satuan, false, false),
+                'subtotal' => formatRupiah($total, false, false),
+                'total' => $total
             ];
         })->toArray();
 
         // Total Table
-        $this->total = $data->map(function ($data) {
-            return $data->stoks->stok * $data->stoks->harga_satuan;
+        $this->total = collect(
+            $this->rows
+        )->map(function ($data) {
+            return $data['total'];
         })->sum();
     }
 

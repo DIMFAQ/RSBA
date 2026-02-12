@@ -6,7 +6,7 @@
     </div>
 
     <div class="w-full rounded-lg bg-white px-4 py-2">
-        <livewire:pembelian.permintaan.listPermintaan :key="Str::random()" />
+        <livewire:pembelian.permintaan.listPermintaan key="list-permintaan" />
     </div>
 
 

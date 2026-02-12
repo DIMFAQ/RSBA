@@ -56,7 +56,7 @@
             <div class="grid grid-cols-4 gap-2">
                 <x-ts:date wire:model.lazy='tgl_diterima' placeholder="Tgl Diterima" />
 
-                <x-ts:input wire:model.lazy='no_invoice' placeholder="No. Invoice / Faktur / No. Nota" />
+                <x-ts:input wire:model.lazy='no_invoice' :disabled="$penerimaan ? true : false" placeholder="No. Invoice / Faktur / No. Nota" />
 
                 <x-ts:input wire:model.lazy='keterangan' placeholder="Keterangan" />
 
@@ -65,15 +65,60 @@
             {{-- init data menggunakan alpine js --}}
             <div x-data="{
                 subtotals: @entangle('terimaBarang'),
-                totalHarga: @entangle('totalHargaTerimaBarang'),
+                totalItem: 0,
+                totalBeli: 0,
+                totalPpn: 0,
+                totalDiskon: 0,
+                itemDiskon: 0,
+                itemPpn: 0,
+            
                 calculateSubtotal(index) {
                     const item = this.subtotals[index];
-                    item.subtotal = (item.jumlahDiterima || 0) * (item.hargaSatuan || 0);
-                    this.updateTotalHarga();
+            
+                    // validasi jumlah diterima
+                    const maxDiterima = Number(item.remainingQuantity || 0);
+                    if (item.jumlahDiterima > maxDiterima) {
+                        item.jumlahDiterima = maxDiterima;
+                    }
+            
+                    if (item.jumlahDiterima < 0) {
+                        item.jumlahDiterima = 0;
+                    }
+            
+            
+                    let qtyDiterima = Number(item.jumlahDiterima || 0);
+                    let harga = Number(item.hargaSatuan || 0);
+                    let diskon = Number(item.diskon || 0);
+                    let ppn = Number(item.ppn || 0);
+            
+                    let hargaTotal = qtyDiterima * harga;
+                    let hargaNet = hargaTotal - diskon;
+                    let ppnAmount = hargaNet * (ppn / 100);
+            
+                    item.ppnAmount = ppnAmount;
+                    item.subtotal = hargaTotal;
+                    this.recalcSummary();
                 },
             
-                updateTotalHarga() {
-                    this.totalHarga = this.subtotals.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+                recalcSummary() {
+                    this.totalItem = 0;
+                    this.totalBeli = 0;
+                    this.totalDiskon = 0;
+                    this.totalPpn = 0;
+            
+                    this.subtotals.forEach(item => {
+                        let qty = Number(item.jumlahDiterima || 0);
+                        let diskon = Number(item.diskon || 0);
+            
+                        this.totalItem += qty;
+                        this.totalBeli += Number(item.subtotal || 0);
+                        this.totalDiskon += diskon;
+                        this.totalPpn += Number(item.ppnAmount || 0);
+                    });
+            
+                    this.totalHarga = this.totalBeli + this.totalPpn;
+                    this.itemDiskon = this.subtotals.filter(item => Number(item.diskon) > 0).length;
+                    this.itemPpn = this.subtotals.filter(item => Number(item.ppn) > 0).length;
                 },
             
                 formatCurrency(value) {
@@ -84,12 +129,27 @@
                         maximumFractionDigits: 0
                     }).format(value);
                 },
-            }" class="w-full overflow-auto">
+            }" class="w-full space-y-2 overflow-auto">
                 {{-- end init data --}}
 
-                <table class="border-collapses min-w-full table-fixed">
+                <table class="border-collapses w-full">
+                    <colgroup>
+                        <col style="width: 4%">
+                        <col style="width: 6%">
+                        <col style="width: 18%">
+                        <col style="width: 6%">
+                        <col style="width: 6%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 6%">
+                        <col style="width: 11%">
+                        <col style="width: 2%">
+                    </colgroup>
+
                     <thead>
-                        <tr class="border-b text-left text-sm text-gray-600">
+                        <tr class="border-b text-left text-xs font-thin text-gray-600">
                             <th class="p-2">No.</th>
                             <th class="p-2">Tipe</th>
                             <th class="p-2">Barang</th>
@@ -98,13 +158,15 @@
                             <th class="p-2">Telah Diterima</th>
                             <th class="p-2">Diterima Skr</th>
                             <th class="p-2">Harga Satuan</th>
-                            <th class="p-2">Sub Total</th>
-                            <th></th>
+                            <th class="p-2">Diskon <span class="block text-[10px] font-thin">(Total)</span></th>
+                            <th class="p-2">PPN</th>
+                            <th class="p-2">Sub Total <span class="block text-[10px] font-thin">(Qty - Diskon)</th>
+                            <th class="text-right"></th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($detailPesanan as $index => $item)
+                        @forelse ($pembelian->details as $index => $item)
                             <tr class="border-b border-dashed text-sm even:bg-gray-100/75 hover:bg-indigo-100" :key="{{ $index }}">
                                 <td class="p-2">{{ $loop->iteration }}</td>
                                 <td class="p-2">{{ $item->barang->bhp ? 'BHP' : 'Barang' }}</td>
@@ -113,14 +175,15 @@
                                 <td class="p-2">{{ $item->jumlah }}</td>
                                 <td class="p-2">{{ $item->terimas?->sum('jumlah') }}</td>
 
+                                {{-- optimize pakai alpine --}}
                                 @php
-                                    $sisaBlmDiterima = $item->jumlah - $item->terimas?->sum('jumlah');
+                                    $sisaBlmDiterima = (int) $item->jumlah - (int) $item->terimas?->sum('jumlah');
                                 @endphp
                                 @if ($sisaBlmDiterima > 0)
                                     {{-- Diterima --}}
                                     <td class="p-2">
                                         <input required type="number" x-model.number="subtotals[{{ $index }}].jumlahDiterima" x-on:input="calculateSubtotal({{ $index }})"
-                                            max="{{ $sisaBlmDiterima }}" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Diterima" />
+                                            min="0" max="{{ $sisaBlmDiterima }}" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Diterima" />
 
                                         @error('any')
                                             <span class="text-xs text-red-500">{{ $message }}</span>
@@ -129,38 +192,31 @@
 
                                     {{-- Harga Satuan --}}
                                     <td class="p-2">
-                                        <input required type="number" x-model.number="subtotals[{{ $index }}].hargaSatuan" x-on:input="calculateSubtotal({{ $index }})"
-                                            class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="Harga Satuan" />
+                                        <input required type="number" x-model.number="subtotals[{{ $index }}].hargaSatuan" x-on:input="calculateSubtotal({{ $index }})" min="0"
+                                            x-bind:disabled="subtotals[{{ $index }}].is_received ? true : false" class="h-8 max-w-32 rounded-lg border border-gray-100"
+                                            placeholder="Harga Satuan" />
 
                                         @error('any')
                                             <span class="text-xs text-red-500">{{ $message }}</span>
                                         @enderror
                                     </td>
 
-                                    {{-- Serial / Batch --}}
-                                    {{-- <td class="p-2">
-                                        <input type="text" class="max-w-42 h-8 rounded-lg border border-gray-100" placeholder="{{ $item->barang->bhp ? 'Batch' : 'Serial Numbers' }}" />
+                                    <td class="p-2">
+                                        <input required type="number" x-model.number="subtotals[{{ $index }}].diskon" x-on:input="calculateSubtotal({{ $index }})" min="0"
+                                            x-bind:disabled="subtotals[{{ $index }}].is_received ? true : false" class="h-8 max-w-24 rounded-lg border border-gray-100" placeholder="Diskon" />
+                                    </td>
 
-                                        @error('any')
-                                            <span class="text-xs text-red-500">{{ $message }}</span>
-                                        @enderror
-                                    </td> --}}
-
-                                    {{-- Exp / Garansi --}}
-                                    {{-- <td class="p-2">
-                                        <x-ts:date class="h-8 max-w-32 rounded-lg border border-gray-100" placeholder="{{ $item->barang->bhp ? 'Expired' : 'Garansi' }}" />
-
-                                        @error('any')
-                                            <span class="text-xs text-red-500">{{ $message }}</span>
-                                        @enderror
-                                    </td> --}}
+                                    <td class="p-2">
+                                        <input required type="number" x-model.number="subtotals[{{ $index }}].ppn" x-on:input="calculateSubtotal({{ $index }})" min="0"
+                                            x-bind:disabled="subtotals[{{ $index }}].is_received ? true : false" class="h-8 max-w-16 rounded-lg border border-gray-100" placeholder="%" />
+                                    </td>
 
                                     {{-- sub total --}}
                                     <td class="p-2">
                                         <span x-text="formatCurrency(subtotals[{{ $index }}].subtotal || 0)"></span>
                                     </td>
 
-                                    <td x-data="{ open: false, style: '' }">
+                                    <td x-data="{ open: false, style: '' }" class="text-right">
                                         {{-- tombol action garansi dan batch --}}
                                         <x-tabler-label title="Batch / Serial" class="h-5 w-auto cursor-pointer text-indigo-500" role="button"
                                             x-on:click="let r = $el.getBoundingClientRect(); style = 'top:'+(r.bottom+6)+'px; left:'+(r.left-180)+'px'; open = !open;" />
@@ -177,28 +233,29 @@
                                                     <label class="text-[11px] text-gray-500">
                                                         Batch / Serial
                                                     </label>
-                                                    <input type="text" x-model="item.batch" class="h-7 w-full rounded-lg border border-gray-100 text-xs"
-                                                        x-bind:placeholder="item.bhp ? 'Batch' : 'Serial Numbers'" />
+                                                    <input type="text" x-model="subtotals[{{ $index }}].batch" class="h-7 w-full rounded-lg border border-gray-100 text-xs"
+                                                        placeholder="Batch / Serial Numbers" />
                                                 </div>
 
                                                 <div>
-                                                    <label class="text-[11px] text-gray-500" x-text="item.bhp ? 'Exp Date' : 'Warranty'">
+                                                    <label class="text-[11px] text-gray-500">
+                                                        Exp Date / Warranty
                                                     </label>
-                                                    <input type="date" x-model="item.waranty_date" class="h-7 w-full rounded-lg border border-gray-100 text-xs"
-                                                        x-bind:placeholder="item.bhp ? 'Exp Date' : 'Waranty Date'" />
+                                                    <input type="date" x-model="subtotals[{{ $index }}].waranty_date" class="h-7 w-full rounded-lg border border-gray-100 text-xs"
+                                                        placeholder="Exp Date / Waranty Date" />
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                 @else
-                                    <td colspan="4" class="p-2">
+                                    <td colspan="6" class="p-2">
                                         <x-ts:badge color="teal">Sudah diterima</x-ts:badge>
                                     </td>
                                 @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-2 text-center text-gray-500">
+                                <td colspan="12" class="px-4 py-2 text-center text-gray-500">
                                     Tidak ada pesanan barang.
                                 </td>
                             </tr>
@@ -207,22 +264,49 @@
 
 
                     </tbody>
-                    <tfoot>
-                        <tr class="border-b text-center text-lg uppercase text-gray-600">
-                            <td colspan="8" class="px-4 py-2">
-                                Total
-                            </td>
-                            <td class="px-4 py-2 font-bold">
-                                <span x-text="formatCurrency(totalHarga)"></span>
-                            </td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
                 </table>
 
+                {{-- summary total --}}
+                <div class="grid w-full grid-cols-2 rounded-md border border-indigo-200 bg-indigo-100/75 px-4 py-2 lg:grid-cols-2">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-thin italic text-gray-500">Item:</span>
+                        <span class="text-xl font-semibold text-indigo-500" x-text="totalItem"></span>
+                    </div>
+
+                    <div class="col-span-2 flex w-full flex-col lg:col-span-1">
+                        <div class="flex flex-col justify-end text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="text-gray-800" x-text="`Rp ${totalBeli.toLocaleString()}`"></span>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Diskon</span>
+                                <span class="text-red-500" x-text="`(${itemDiskon})` +  ` Rp ${totalDiskon.toLocaleString()}`"></span>
+                            </div>
+
+                            <div class="flex justify-between border-t-2 border-dashed border-gray-200 font-semibold">
+                                <span class="text-gray-600">Subtotal setelah diskon</span>
+                                <span class="text-gray-800" x-text="`Rp ${(totalBeli - totalDiskon).toLocaleString()}`"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">PPN</span>
+                                <span class="text-gray-800" x-text="`(${itemPpn}) Rp ${totalPpn.toLocaleString()}`"></span>
+                            </div>
+                            <div class="flex justify-between border-t-2 border-dashed border-indigo-200 pt-1">
+                                <span class="text-base font-bold text-indigo-700">Total Pembayaran</span>
+                                <span class="text-xl font-bold text-indigo-600" x-text="`Rp ${((totalBeli - totalDiskon) + totalPpn).toLocaleString()}`"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
             <div class="ml-auto flex justify-end gap-2">
-                <x-ts:button type="button" sm color="red" x-on:click="$dispatch('close-cari-pembelian',{value:''})" loading="$parent.set('seacrh',null)">Batal</x-ts:button>
+
+                <x-ts:button type="button" sm color="red" x-on:click="$dispatch('tutup-modal-terima')">Batal</x-ts:button>
+                {{-- button cancel terima barang --}}
 
                 {{-- simpan action --}}
                 <div class="relative">
@@ -235,11 +319,11 @@
                         </x-ts:button>
 
                         <!-- Tooltip Modal -->
-                        <div class="absolute right-0 z-50 mt-2 max-w-fit rounded-lg bg-white p-4 shadow-lg" x-show="waitOrDone" x-transition x-trap.noscroll="waitOrDone"
+                        <div class="border-indgo-300 absolute right-0 z-50 mt-2 max-w-fit rounded-lg border bg-white p-4 shadow-lg" x-show="waitOrDone" x-transition x-trap.noscroll="waitOrDone"
                             x-on:click.away="waitOrDone = false" x-on:keydown.escape.window="waitOrDone = false">
 
                             <!-- Tooltip Header -->
-                            <div class="mb-3 flex items-center justify-between">
+                            <div class="mb-3 flex items-center justify-between text-sm">
                                 <span class="flex flex-row items-center gap-2 whitespace-nowrap font-medium text-indigo-500">
                                     <x-ts:icon name="tabler.shopping-cart-plus" class="h-5 w-5" />
                                     Konfirmasi Penerimaan Barang
@@ -251,17 +335,17 @@
 
                             <!-- Options -->
                             <div class="flex items-center justify-between gap-4">
-                                <span class="flex flex-row items-center gap-2 whitespace-nowrap text-sm font-light text-gray-500">
+                                <span class="flex flex-row items-center gap-2 whitespace-nowrap text-xs font-light text-gray-500">
                                     Masih menunggu pengiriman selanjutnya, atau selesaikan transaksi sekarang ?
                                 </span>
                             </div>
 
                             <!-- Actions -->
                             <div class="mt-4 flex justify-end gap-2">
-                                <x-ts:button outline sm icon="tabler.file-isr" wire:click="submit('sebagian')" loading="submit('sebagian')">
+                                <x-ts:button outline xs icon="tabler.file-isr" wire:click="submit('sebagian')" loading="submit('sebagian')">
                                     Simpan, Tunggu Berikutnya
                                 </x-ts:button>
-                                <x-ts:button outline sm color="green" icon="tabler.checks" wire:click="submit('selesai')" loading="submit('selesai')">
+                                <x-ts:button outline xs color="green" icon="tabler.checks" wire:click="submit('selesai')" loading="submit('selesai')">
                                     Simpan, Selesaikan Sekarang
                                 </x-ts:button>
                             </div>

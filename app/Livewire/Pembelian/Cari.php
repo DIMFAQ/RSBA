@@ -3,32 +3,54 @@
 namespace App\Livewire\Pembelian;
 
 use Livewire\Component;
-use App\Models\Gudang\Pembelian;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Lazy;
+use App\Models\Gudang\Pembelian;
 
 #[Lazy]
 class Cari extends Component
 {
-    public ?Pembelian $pembelian;
+    public ?Pembelian $pembelian = null;
 
-    function mount(?Pembelian $pembelian)
+    public string $modalPreffix;
+
+    public $search;
+
+    public function mount()
     {
-        $this->pembelian = $pembelian;
+        $this->modalPreffix = 'modal-search-' . Str::random(5);
     }
 
-    // function placeholder()
-    // {
-    //     $skeleton  = file_get_contents(resource_path('views/components/skeleton.blade.php'));
+    public function updatedSearch($value)
+    {
+        $this->pembelian = Pembelian::where('no', $value)->first();
 
-    //     return <<<HTML
-    //         <div class="relative bg-white rounded-md shadow-xl p-4 mt-1 border border-indigo-500 transition-transform transform">
+        if (!$this->pembelian) {
+            return;
+        }
 
-    //             <div class="absolute top-[-12px] left-[3%] transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-indigo-500"></div>
+        if ($this->pembelian->status === 'selesai') {
+            $this->dispatch('open-modal', id: $this->modalPreffix . '-detail');
+        } else {
+            $this->dispatch('open-modal', id: $this->modalPreffix . '-terima');
+        }
 
-    //             <div class="flex flex-col gap-3">$skeleton</div>
-    //         </div>
-    //     HTML;
-    // }
+        // reset modal open
+    }
+
+    function placeholder()
+    {
+        return <<<HTML
+        <div class="flex w-11/12 flex-col">
+            <div class="flex animate-pulse flex-col gap-3">
+            
+                <div class="space-y-3">
+                    <div class="h-5 w-8/12 rounded-full bg-neutral-300"></div> 
+                </div>
+            </div>
+        </div>
+        HTML;
+    }
 
     public function render()
     {

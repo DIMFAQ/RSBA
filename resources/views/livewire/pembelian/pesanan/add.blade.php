@@ -99,19 +99,19 @@
                                     <td class="p-1" x-text="item.satuan"></td>
 
                                     <td class="p-1">
-                                        <input required type="number" x-model.number="item.jumlah" @keyup="updateItemSubTotal(index)" min="1"
+                                        <input required type="number" x-model.number="item.jumlah" @keyup="updateItem(index)" min="1"
                                             class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm" placeholder="Jumlah" />
                                     </td>
                                     <td class="p-1">
-                                        <input required type="number" x-model.number="item.harga" @keyup="updateItemSubTotal(index)" class="max-w-42 h-8 rounded-lg border border-gray-100 text-sm"
+                                        <input required type="number" x-model.number="item.harga" @keyup="updateItem(index)" class="max-w-42 h-8 rounded-lg border border-gray-100 text-sm"
                                             placeholder="Harga" />
                                     </td>
                                     <td class="p-1">
-                                        <input required type="number" x-model.number="item.diskon" @keyup="updateItemSubTotal(index)" class="h-8 max-w-32 rounded-lg border border-gray-100 text-sm"
+                                        <input required type="number" x-model.number="item.diskon" @keyup="updateItem(index)" class="h-8 max-w-32 rounded-lg border border-gray-100 text-sm"
                                             placeholder="Diskon" />
                                     </td>
                                     <td class="p-1">
-                                        <input required type="number" x-model.number="item.ppn" @keyup="updateItemSubTotal(index)" class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm"
+                                        <input required type="number" x-model.number="item.ppn" @keyup="updateItem(index)" class="h-8 max-w-24 rounded-lg border border-gray-100 text-sm"
                                             placeholder="%" />
                                     </td>
                                     <td class="p-1">
@@ -150,7 +150,7 @@
 
                     <div class="flex justify-between">
                         <span class="text-xs text-gray-600">Diskon</span>
-                        <span class="text-red-500" x-text="`- Rp ${totalDiskon.toLocaleString()}`"></span>
+                        <span class="text-red-500" x-text="`(${itemDiskon})` +  ` Rp ${totalDiskon.toLocaleString()}`"></span>
                     </div>
 
                     <div class="flex justify-between border-t-2 border-dashed border-indigo-200 font-semibold">
@@ -159,7 +159,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-xs text-gray-600">PPN</span>
-                        <span class="text-gray-800" x-text="`Rp ${totalPpn.toLocaleString()}`"></span>
+                        <span class="text-gray-800" x-text="`(${itemPpn}) Rp ${totalPpn.toLocaleString()}`"></span>
                     </div>
                     <div class="flex justify-between border-t-2 border-dashed border-indigo-200 pt-1">
                         <span class="text-base font-bold text-indigo-700">Total Pembayaran</span>
@@ -265,23 +265,21 @@
                                     nama: barang.nama,
                                     satuan: barang.satuan,
                                     jumlah: 1,
-                                    harga: barang.latest_harga,
+                                    harga: parseInt(barang.latest_harga),
                                     diskon: 0,
                                     ppn: 0,
                                     ppnAmount: 0,
                                     subtotal: 0,
-                                    batch: '',
+                                    batch: null,
 
                                 };
                                 this.cartItems.push(newItem);
-                                this.recalculateTotal();
+                                // Calculate dengan index item baru (paling akhir)
+                                this.updateItem(this.cartItems.length - 1);
 
                                 this.sku = '';
                                 this.searchItem = '';
-                                this.totalItem = this.cartItems.length;
-
-                                // Calculate dengan index item baru (paling akhir)
-                                // this.calculateSubTotalIndex(this.cartItems.length - 1);
+                                // this.totalItem = this.cartItems.length;
                             }
                         }).catch(error => {
                             console.error('Error retrieving barang data:', error)
@@ -292,10 +290,12 @@
                     }
                 },
 
-                updateItemSubTotal(index) {
+                updateItem(index) {
                     const item = this.cartItems[index];
                     if (item) {
                         item.subTotal = item.jumlah * item.harga;
+                        item.ppnAmount = ((item.subTotal - item.diskon) * (item.ppn / 100))
+
                         this.recalculateTotal();
                     }
                 },

@@ -106,25 +106,31 @@
     {{-- Signature --}}
     <table style="width: 100%; font-size: 11px; margin-top: 28px;" cellpadding="5">
         <tr>
-            <td style="width: 33%; text-align: center;">
+            <td style="width: 25%; text-align: center;">
                 <p style="margin: 0; height: 50px;"><strong>Dibuat Oleh,</strong></p>
                 <p style="margin: 0; border-top: 1px solid #777; display: inline-block; padding-top: 5px;">
                     {{ $pembelian->user_created ?? '_______________' }}
                 </p>
             </td>
-            <td style="width: 34%; text-align: center;">
-                <p style="margin: 0; height: 50px;"><strong>Disetujui Oleh,</strong></p>
+            <td style="width: 25%; text-align: center;">
+                <p style="margin: 0; height: 50px;"><strong>Mengetahui,</strong></p>
                 <p style="margin: 0; border-top: 1px solid #777; display: inline-block; padding-top: 5px;">
-                    {{ $disetujui_oleh ?? '_______________' }}
+                    {{ $mengetahui ?? '_______________' }}
                 </p>
             </td>
-            <td style="width: 33%; text-align: center;">
-                <p style="margin: 0; height: 50px;"><strong>Diterima Oleh,</strong></p>
+            <td style="width: 25%; text-align: center;">
+                <p style="margin: 0; height: 50px;"><strong>Menyetujui,</strong></p>
 
                 <p style="margin: 0; border-top: 1px solid #777; display: inline-block; padding-top: 5px;">
-                    _______________
+                    {{ $menyetujui ?? '_______________' }}
                 </p>
-                <p style="margin: 5px 0 0 0; font-size: 9px;">(Supplier)</p>
+            </td>
+            <td style="width: 25%; text-align: center;">
+                <p style="margin: 0; height: 50px;"><strong>Verifikator,</strong></p>
+
+                <p style="margin: 0; border-top: 1px solid #777; display: inline-block; padding-top: 5px;">
+                    {{ $verifikator ?? '_______________' }}
+                </p>
             </td>
         </tr>
     </table>

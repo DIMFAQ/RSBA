@@ -3,10 +3,10 @@
 
 
     {{-- modal --}}
-    <x-filament::modal id="modal-detail-pembelian" width="7xl" :close-on-click-away="false">
+    <x-filament::modal id="modal-detail-pembelian" width="7xl" :close-on-click-away="false" x-on:tutup-detail-beli.window="$dispatch('close-modal', { id: 'modal-detail-pembelian' })">
         <x-slot:heading>Detail Pembelian</x-slot:heading>
 
-        <livewire:Pembelian.ViewDetailPembelian :id="$selectedId" :key="time() . $selectedId" />
+        <livewire:Pembelian.Detail :id="$selectedId" :key="time() . $selectedId" />
     </x-filament::modal>
 
 
@@ -19,7 +19,7 @@
     <div x-data x-on:trigger-print.window="$nextTick(() => printArea('print-pre-order'))">
         <div class="hidden" id="print-pre-order">
             @if ($selectedId)
-                <livewire:Pembelian.PrintPo :id="$selectedId" :key="'print-po' . $selectedId" />
+                <livewire:Pembelian.Pesanan.PrintPesanan :id="$selectedId" :$mengetahui :$menyetujui :$verifikator :key="'print-po' . Str::random()" />
             @endif
         </div>
     </div>

@@ -1,19 +1,27 @@
 <?php
 
-namespace App\Livewire\Pembelian;
+namespace App\Livewire\Pembelian\Pesanan;
 
 use App\Models\Gudang\Pembelian;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
-class PrintPo extends Component
+class PrintPesanan extends Component
 {
     public ?Pembelian $pembelian;
 
+    public ?string $mengetahui;
+    public ?string $menyetujui;
+    public ?string $verifikator;
 
-    public function mount(?int $id)
+
+    public function mount(?int $id, ?string $mengetahui, ?string $menyetujui, ?string $verifikator)
     {
+        $this->mengetahui = $mengetahui;
+        $this->menyetujui = $menyetujui;
+        $this->verifikator = $verifikator;
+
         $this->pembelian = Pembelian::with(['details', 'details.barang', 'details.barang.satuan', 'supplier'])->find($id);
     }
 
@@ -32,7 +40,7 @@ class PrintPo extends Component
                 'harga' => $harga,
                 'diskon' => $diskon,
                 'ppn' => $ppn,
-                'ppn_amount' => ($harga - $diskon) * ($ppn / 100)
+                'ppn_amount' => (($item->jumlah * $harga) - $diskon) * ($ppn / 100)
             ];
         })->toArray();
 
@@ -63,6 +71,6 @@ class PrintPo extends Component
 
     public function render()
     {
-        return view('livewire.pembelian.print-po');
+        return view('livewire.pembelian.pesanan.print-pesanan');
     }
 }

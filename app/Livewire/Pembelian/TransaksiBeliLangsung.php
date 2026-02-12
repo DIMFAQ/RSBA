@@ -34,20 +34,24 @@ class TransaksiBeliLangsung extends Component
 
     public $tgl_pembelian, $tgl_pembayaran;
     public int $supplier;
-    public string $no_faktur, $keterangan, $status_pembayaran = 'lunas';
+    public string $no_faktur, $keterangan;
+    public $status_pembayaran = 'lunas';
     public array $cabarOptions = [
         ['value' => 'lunas', 'nama' => 'Tunai / Lunas'],
         ['value' => 'tempo', 'nama' => 'Tempo'],
     ];
 
-    protected $rules = [
-        'supplier' => 'required',
-        'tgl_pembelian' => 'required|date',
-        'no_faktur' => 'required',
-        'tgl_pembayaran' => 'required',
-        'cartItems' => 'required|array|min:1',
-        // 'cartItems.*.jumlah' => 'required|numeric|min:1',
-    ];
+    public  function rules(): array
+    {
+        return [
+            'supplier' => 'required',
+            'tgl_pembelian' => 'required|date',
+            'no_faktur' => 'required',
+            'tgl_pembayaran' => ['nullable', 'date', 'required_unless:status_pembayaran,lunas'],
+            'cartItems' => 'required|array|min:1',
+            // 'cartItems.*.jumlah' => 'required|numeric|min:1',
+        ];
+    }
 
 
     public function messages()
@@ -176,180 +180,6 @@ class TransaksiBeliLangsung extends Component
     //     $this->cartItems = array_values($this->cartItems);
     // }
 
-    function submit01()
-    {
-        /**
-         * No 
-         * {PO}{0001}{1224}
-         * PO = Pre Order
-         * 0001 = number [reset setiap tahun], max nomor setiap tahun 9999
-         * 1224 = bulantahun
-         */
-
-
-        $this->validate();
-
-        DB::beginTransaction();
-        try {
-            // calc sub total
-            $subtotal = collect($this->cartItems)
-                ->sum(
-                    fn($cart) => $cart['jumlah'] * $cart['harga']
-                );
-
-            //total ppn
-            $totalPpn = collect($this->cartItems)
-                ->sum(
-                    fn($cart) => $cart['ppnAmount']
-                );
-
-            // total diskon
-            $totalDiskon = collect($this->cartItems)
-                ->sum(
-                    fn($cart) => $cart['diskon']
-                );
-
-            // harus bayar
-            $harus_bayar = ($subtotal - $totalDiskon) + $totalPpn;
-
-
-            $lampirans = collect($this->lampirans)->map(
-                function ($file) {
-                    return $file->store('pembelian/langsung', 'public');
-                }
-            )->toArray();
-
-            // mapping data pembelian
-            $pembelian = Pembelian::create([
-                'no' => $this->generateNumberPembelian(),
-                'tgl' => $this->tgl_pembelian,
-                'supplier_id' => $this->supplier,
-                'jenis' => 'langsung',
-                'status_pembayaran' => $this->status_pembayaran,
-                'tgl_pembayaran' => $this->tgl_pembayaran,
-                'subtotal' => $subtotal,
-                'total_diskon' => $totalDiskon,
-                'total_ppn' => $totalPpn,
-                'total' => $harus_bayar,
-                'lampirans' => $lampirans,
-                'created_by' => Auth::id(),
-                'status' => 'selesai'
-            ]);
-
-            // mapping data penerimaan
-            $penerimaan = Penerimaan::create([
-                'tanggal' => $this->tgl_pembelian,
-                'no_faktur' => $this->no_faktur,
-                'keterangan' => $this->keterangan ?? '-',
-                'penerima' => auth()->user()->id
-            ]);
-
-
-            // detil pembelian
-            $pembelianDetails = collect($this->cartItems)
-                ->map(
-                    function ($item) use ($pembelian) {
-                        return [
-                            'pembelian_id' => $pembelian->id,
-                            'barang_id' => $item['id'],
-                            'jumlah' => $item['jumlah'] ?? 0,
-                            'batch' => $item['batch'],
-                            'warranty' => $item['waranty_date'],
-                            'harga_satuan' => $item['harga'],
-                            'diskon' => $item['diskon'],
-                            'ppn' => $item['ppn']
-                        ];
-                    }
-                )->toArray();
-            PembelianDetail::insert($pembelianDetails);
-
-
-            // penerimaan Detail
-            $penerimaanDetails = collect($pembelianDetails)
-                ->map(
-                    function ($item) use ($penerimaan, $pembelian) {
-                        return [
-                            'penerimaan_id' => $penerimaan->id,
-                            'pembelian_det_id' => PembelianDetail::where('pembelian_id', $pembelian->id)
-                                ->where('barang_id', $item['barang_id'])
-                                ->first()->id,
-                            'jumlah' => $item['jumlah'],
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ];
-                    }
-                )->toArray();
-            PenerimaanDetail::insert($penerimaanDetails);
-
-
-            // STOK IN
-            $pembelianDets = PembelianDetail::with('terimas')->where('pembelian_id', $pembelian->id)->get();
-            // dd($pembelianDets);
-
-            $stokData = collect($pembelianDets)
-                ->map(
-                    function ($detail) {
-                        $terima = $detail->terimas?->first();
-                        return  [
-                            'penerimaan_det_id' => $terima->id,
-                            'barang_id' => $detail->barang_id,
-                            'stok' => $detail->jumlah,
-                            'batch' => $detail->batch,
-                            'harga_satuan' => $detail->harga_satuan,
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ];
-                    }
-                )->toArray();
-            Stok::insert($stokData);
-
-            // Mutasi Stok
-            $mutasiData = collect($pembelianDets)
-                ->map(
-                    function ($detail): array {
-                        return [
-                            "stok_id",
-                            "barang_id",
-                            "jenis_mutasi" => 'PEMBELIAN',
-                            "jumlah",
-                            "multiplier",
-                            "stok_sebelum" => 0,
-                            "stok_sesudah",
-                            "keterangan",
-                            "referensi_type",
-                            "referensi_id",
-                            "created_by",
-                            "is_posted",
-                            "is_reversed",
-                            "reversed_of_id",
-                            "created_at",
-                            "updated_at"
-                        ];
-                    }
-                )->toArray();
-            // StokMutasi::insert($mutasiData);
-
-            DB::commit();
-
-            $this->dispatch('new-transaksi-langsung-created');
-
-            // Clear Cache
-            $cacheKey = session()->get('current_pengajuan_cache_key');
-            Cache::forget($cacheKey);
-            session()->forget('current_pengajuan_cache_key');
-
-            $this->toast()
-                ->success('Berhasil', 'Pembelian berhasil disimpan.')
-                ->send();
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            $this->toast()
-                ->error('Failed', 'Error:' . $e->getMessage())
-                ->send();
-        }
-    }
-
     public function submit()
     {
         /**
@@ -402,7 +232,7 @@ class TransaksiBeliLangsung extends Component
                 'supplier_id' => $this->supplier,
                 'jenis' => 'langsung',
                 'status_pembayaran' => $this->status_pembayaran,
-                'tgl_pembayaran' => $this->tgl_pembayaran,
+                'tgl_pembayaran' => $this->tgl_pembayaran ?? now(),
                 'subtotal' => $subtotal,
                 'total_diskon' => $totalDiskon,
                 'total_ppn' => $totalPpn,

@@ -62,7 +62,11 @@ class AddSp3Pembelian extends Component
             $this->generateListSp3();
 
             $this->tgl = date('Y-m-d');
-            $this->mengetahuiOptions = Jabatan::where('bagian_id', 1)->get()
+            $this->mengetahuiOptions = Jabatan::with(['bagian'])
+                ->whereHas('bagian', function ($q) {
+                    $q->where('group', 'manajemen');
+                })
+                ->get()
                 ->map(function ($item) {
                     return [
                         'label' => $item->nama,

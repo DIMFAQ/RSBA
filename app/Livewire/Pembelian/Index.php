@@ -2,14 +2,12 @@
 
 namespace App\Livewire\Pembelian;
 
-use App\Models\Gudang\Pembelian;
 use App\Models\Gudang\PembelianRequest;
 use App\Traits\BlocksTransactionDuringOpname;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Lazy;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 
 #[Title('Pembelian')]
@@ -23,24 +21,12 @@ class Index extends Component
 
     public $tab;
     public bool $stats = false;
-    public $search = '';
 
-    public ?Pembelian $pembelian;
-
-    #[On('close-cari-pembelian')]
-    function updatedSearch($value)
-    {
-        $this->search = $value;
-        $this->pembelian = Pembelian::where('no', $value)->firstOr(function () {
-            return null;
-        });
-    }
 
     #[Computed]
     public function getRequestPembelianProperty()
     {
-        // return PembelianRequest::where('status', 'pending')->count();
-        return rand(1, 100); // Simulating a random count for requests
+        return PembelianRequest::where('status', 'pending')->orWhere('status', 'approved')->count();
     }
 
     public function render()
