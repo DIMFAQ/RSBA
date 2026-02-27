@@ -38,7 +38,7 @@ class DigitalSignatureService
         string $org,
         string $org_unit,
         string $email,
-        string $password,
+        ?string $password,
         int $exp  = self::DEFAULT_EXPIRY_DAYS,
     ) {
         $lastCertificate = $user->certificate()->latest('id')->first();
@@ -146,13 +146,13 @@ class DigitalSignatureService
      * @param string $certificate Nama file certificate (*.p12)
      * @param string $password Password certificate
      * @return string Base64 encoded signature
-     * @throws Exception
+     * @throws \Exception
      */
     public function signData(
         User $user,
         $data,
-        string $password,
-        string $type,
+        ?string $password = null,
+        ?string $type,
         int $id,
         string $algorithm = self::DEFAULT_ALGORITHM
     ): array {
@@ -229,7 +229,7 @@ class DigitalSignatureService
      * @param string $certificate Certificate file name
      * @param string $password Certificate password
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function verifyDataSignature(): bool
     {
@@ -252,7 +252,7 @@ class DigitalSignatureService
      * @param string $certificate Certificate file name
      * @param string $password Certificate password
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     public function getCertificateInfo(): array
     {
@@ -421,12 +421,12 @@ class DigitalSignatureService
 
     /**
      * Generate Certificate File
-     * @return Paths temporary each of certificate created. 
+     * @return \Paths temporary each of certificate created. 
      */
     private function generateCertificateFiles(
         string $tempDir,
         string $subject,
-        string $password,
+        ?string $password,
         int $expiryDays,
         array $sanDomains
     ): array {
@@ -586,7 +586,7 @@ class DigitalSignatureService
     /**
      * Get ProvateKey dalam p12
      */
-    private function extractPrivateKey(int $userId, string $p12Filename, string $password)
+    private function extractPrivateKey(int $userId, string $p12Filename, ?string $password)
     {
         $p12Path = $this->getPathP12($userId, $p12Filename);
         $p12File = $this->readFileP12($p12Path['path'], self::DISK_DIR_STORE);
@@ -622,7 +622,7 @@ class DigitalSignatureService
     /**
      * Parsing PKCS#12
      */
-    private function parseP12Content(string $content, string $password): array
+    private function parseP12Content(string $content, ?string $password): array
     {
         $certs = [];
         if (!openssl_pkcs12_read($content, $certs, $password)) {

@@ -1,32 +1,123 @@
- <div class="h-48 w-full p-4">
-     <div class="grid w-full grid-cols-3 border-4 border-black">
-         {{-- Logo RS --}}
-         <div class="flex items-center justify-center p-2">
-             {{-- Barcode label --}}
-             <img src="data:image/png;base64,{{ $this->generateBarcode }}" alt="Barcode Label" class="h-full w-auto">
-         </div>
+ <div>
+     <div class="thermal-wrapper">
+         <div class="thermal-label">
 
-         {{-- Keterangan --}}
-         <div class="col-span-2 flex flex-col items-start space-y-2 border-l-4 border-black p-2">
-             {{-- Header --}}
-             <div class="flex w-full items-center space-x-2 border-b-2 border-double border-black">
-                 <img src="{{ asset('storage/' . $rs->logo) }}" class="h-14 w-auto" />
-                 <div class="flex flex-col">
-                     <h1 class="font-bold uppercase">{{ $rs->nama }}</h1>
-                     <span class="text-xs text-gray-600">{{ $rs->alamat }}</span>
+             <!-- Header RS -->
+             <div class="header">
+                 <img src="{{ asset('storage/' . $rs->logo) }}" class="logo">
+                 <div class="rs-info">
+                     <div class="rs-name">{{ $rs->nama }}</div>
+                     <div class="rs-address">{{ $rs->alamat }}</div>
                  </div>
              </div>
 
-             {{-- Data Assets --}}
-             <div class="flex w-full flex-col pl-2">
-                 <span class="font-semibold">{{ $assetBarang->kode }}</span>
-                 <span class="flex flex-col text-sm text-gray-600">
-                     <span>{{ $assetBarang->barang->nama }}</span>
-                     <span>{{ $assetBarang->ruangan->nama }}</span>
-                     <span>{{ Carbon\Carbon::parse($assetBarang->tanggal_catat)->locale('ID')->translatedFormat('d M Y') }}</span>
-                 </span>
-             </div>
-         </div>
+             <div class="divider"></div>
 
+             <!-- Barcode -->
+
+             <div class="barcode">
+                 <img src="data:image/png;base64,{{ $this->generateBarcode }}" alt="barcode">
+             </div>
+
+             <!-- Asset Info -->
+             <div class="asset-info">
+                 <div class="kode">{{ $assetBarang->kode }}</div>
+                 <div>{{ $assetBarang->barang->nama }}</div>
+                 <div>{{ $assetBarang->ruangan->nama }}</div>
+                 {{-- <div>{{ Carbon\Carbon::parse($assetBarang->tanggal_catat)->locale('ID')->translatedFormat('d M Y') }}</div> --}}
+             </div>
+
+         </div>
      </div>
+
+
+
+     {{-- Print Styles --}}
+     <style>
+         @media print {
+
+             @page {
+                 size: 58mm auto;
+                 margin: 0;
+             }
+
+             html,
+             body {
+                 width: 58mm;
+                 margin: 0;
+                 padding: 0;
+                 font-family: Arial, sans-serif;
+                 font-size: 10px;
+             }
+
+             * {
+                 -webkit-print-color-adjust: exact;
+                 print-color-adjust: exact;
+             }
+         }
+
+         .thermal-wrapper {
+             width: 58mm;
+         }
+
+         .thermal-label {
+             width: 100%;
+             padding: 4px;
+             box-sizing: border-box;
+         }
+
+         .header {
+             display: flex;
+             align-items: center;
+             gap: 6px;
+         }
+
+         .logo {
+             height: 28px;
+             width: auto;
+         }
+
+         .rs-name {
+             font-weight: bold;
+             font-size: 11px;
+             line-height: 1.1;
+             text-transform: uppercase;
+         }
+
+         .rs-address {
+             font-size: 8px;
+         }
+
+         .divider {
+             border-top: 1px dashed black;
+             margin: 4px 0;
+         }
+
+         .barcode {
+             text-align: center;
+             margin: 4px 0;
+         }
+
+         .barcode img {
+             max-width: 100%;
+             height: 40px;
+         }
+
+         .asset-info {
+             text-align: center;
+             font-size: 8.5px;
+             line-height: 1;
+         }
+
+         .asset-info div {
+             margin: 0;
+         }
+
+         .kode {
+             font-weight: bold;
+             font-size: 10px;
+             margin-bottom: 1px;
+         }
+     </style>
+
  </div>

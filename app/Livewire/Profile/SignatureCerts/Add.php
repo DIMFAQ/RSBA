@@ -17,7 +17,7 @@ class Add extends Component
 
     public $user;
     public string $org = 'RSBA', $org_unit, $nama, $email;
-    public string $password, $passwordConfirmation;
+    public ?string $password = '', $passwordConfirmation;
 
     // storage path untuk certificate
     protected $relativePath;
@@ -26,7 +26,7 @@ class Add extends Component
         'org_unit' => 'required',
         'nama' => 'required',
         'email' => 'required',
-        'password' => 'required|same:passwordConfirmation',
+        // 'password' => 'required|same:passwordConfirmation',
 
     ];
 

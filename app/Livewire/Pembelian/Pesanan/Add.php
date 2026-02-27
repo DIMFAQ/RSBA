@@ -14,6 +14,7 @@ use App\Models\Gudang\PembelianRequestDetails;
 use App\Traits\BlocksTransactionDuringOpname;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Locked;
 
 #[Lazy]
 class Add extends Component
@@ -23,6 +24,9 @@ class Add extends Component
 
     public $createTerm = '';
     public $cartItems = [];
+
+    #[Locked]
+    public $selectedPermintaan;
 
     public $tgl_pembelian;
     public int $supplier;
@@ -47,10 +51,10 @@ class Add extends Component
     {
         $this->tgl_pembelian = date('Y-m-d');
 
-        $cacheKey = session()->get('current_pengajuan_cache_key');
-        $selectedIds = Cache::get($cacheKey);
-        if ($cacheKey) {
-            $this->loadProducts($selectedIds);
+        $cacheKey = session()->get('cart_pengajuan_cache_key');
+        $this->selectedPermintaan = Cache::pull($cacheKey);
+        if ($this->selectedPermintaan) {
+            $this->loadProducts(selectedDetIds: $this->selectedPermintaan);
         }
     }
 
@@ -75,10 +79,10 @@ class Add extends Component
         return null;
     }
 
-    public function loadProducts($selectedIds)
+    public function loadProducts($selectedDetIds)
     {
         $pengajuan = PembelianRequestDetails::with(['barang', 'barang.satuan'])
-            ->whereIn('id', $selectedIds)
+            ->whereIn('id', $selectedDetIds)
             ->selectRaw('barang_id, SUM(jml_disetujui) as total_jml_disetujui')
             ->groupBy('barang_id')
             ->get()
@@ -91,7 +95,11 @@ class Add extends Component
                     'satuan' => $item->barang->satuan->nama,
                     'jumlah' => $item->total_jml_disetujui,
                     'harga' => 0,
-                    'batch' => '',
+                    'diskon' => 0,
+                    'ppn' => 0,
+                    'ppnAmount' => 0,
+                    'batch' => null,
+                    'waranty_date' => null,
                     'subTotal' => 0
                 ];
             })->toArray();
@@ -157,6 +165,11 @@ class Add extends Component
                     'ppn' => $item['ppn'] ?? 0
                 ];
                 PembelianDetail::insert($dataDetails);
+            }
+
+            if (!empty($this->selectedPermintaan)) {
+                PembelianRequestDetails::whereIn('id', $this->selectedPermintaan)
+                    ->update(['pembelian_id' => $pembelian->id]);
             }
 
             DB::commit();

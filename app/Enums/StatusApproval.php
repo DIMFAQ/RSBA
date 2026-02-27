@@ -8,6 +8,7 @@ enum StatusApproval: string
     case WAITING = 'waiting';
     case APPROVED = 'approved';
     case REJECTED = 'rejected';
+    case MANUAL = 'manual';
 
     public function nama(): string
     {
@@ -16,6 +17,7 @@ enum StatusApproval: string
             self::WAITING => 'Menunggu',
             self::APPROVED => 'Disetujui',
             self::REJECTED => 'Tidak Disetujui',
+            self::MANUAL => 'Manual',
         };
     }
 
@@ -25,7 +27,8 @@ enum StatusApproval: string
             self::PENDING => 'warning',
             self::WAITING => 'info',
             self::APPROVED => 'success',
-            self::REJECTED => 'danger'
+            self::REJECTED => 'danger',
+            self::MANUAL => 'gray'
         };
     }
 

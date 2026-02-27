@@ -21,6 +21,7 @@ use App\Models\Gudang\PembelianRequestDetails;
 use App\Models\Gudang\StokMutasi;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 
 #[Lazy]
 class TransaksiBeliLangsung extends Component
@@ -31,6 +32,9 @@ class TransaksiBeliLangsung extends Component
 
     public $createTerm = '';
     public $cartItems = [];
+
+    #[Locked]
+    public $selectedPermintaan;
 
     public $tgl_pembelian, $tgl_pembayaran;
     public int $supplier;
@@ -116,16 +120,16 @@ class TransaksiBeliLangsung extends Component
 
         // Check data dari pengajuan
         $cacheKey = session()->get('cart_pengajuan_cache_key');
-        $selectedIds = Cache::get($cacheKey);
-        if ($selectedIds) {
-            $this->loadProducts($selectedIds);
+        $this->selectedPermintaan = Cache::pull($cacheKey); //retrive data cache dan hapus cache
+        if ($this->selectedPermintaan) {
+            $this->loadProducts(selectedDetIds: $this->selectedPermintaan);
         }
     }
 
-    public function loadProducts($selectedIds)
+    public function loadProducts($selectedDetIds)
     {
         $pengajuan = PembelianRequestDetails::with(['barang', 'barang.satuan'])
-            ->whereIn('id', $selectedIds)
+            ->whereIn('id', $selectedDetIds)
             ->selectRaw('barang_id, SUM(jml_disetujui) as total_jml_disetujui')
             ->groupBy('barang_id')
             ->get()
@@ -138,8 +142,11 @@ class TransaksiBeliLangsung extends Component
                     'satuan' => $item->barang->satuan->nama,
                     'jumlah' => $item->total_jml_disetujui,
                     'harga' => 0,
-                    'batch' => '',
-                    'waranty_date' => '',
+                    'diskon' => 0,
+                    'ppn' => 0,
+                    'ppnAmount' => 0,
+                    'batch' => null,
+                    'waranty_date' => null,
                     'subTotal' => 0
                 ];
             })->toArray();
@@ -223,7 +230,6 @@ class TransaksiBeliLangsung extends Component
                 }
             )->toArray();
 
-
             //Saving Data
             // 01. Header Pembelian
             $pembelian = Pembelian::create([
@@ -301,14 +307,15 @@ class TransaksiBeliLangsung extends Component
                     ]
                 );
             }
+            // Update permintaan details
+            if (!empty($this->selectedPermintaan)) {
+                PembelianRequestDetails::whereIn('id', $this->selectedPermintaan)
+                    ->update(['pembelian_id' => $pembelian->id]);
+            }
+
             DB::commit();
 
             $this->dispatch('new-transaksi-langsung-created');
-
-            // Clear Cache
-            $cacheKey = session()->get('current_pengajuan_cache_key');
-            Cache::forget($cacheKey);
-            session()->forget('current_pengajuan_cache_key');
 
             $this->toast()
                 ->success('Berhasil', 'Pembelian berhasil disimpan.')

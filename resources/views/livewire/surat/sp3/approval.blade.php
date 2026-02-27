@@ -1,13 +1,14 @@
 <div class="flex flex-col gap-2">
     <livewire:Surat.Sp3.Details :$suratSp3 :key="Str::random()" />
 
-    <form wire:submit.prevent='submit' class="flex flex-col gap-4 rounded-md border border-indigo-200 px-4 py-2">
-        <div x-data="{ status: @entangle('status') }">
+    <form x-data="approvalSp3" wire:submit.prevent='submit' class="flex flex-col gap-4 rounded-md border border-indigo-200 px-4 py-2">
+        {{-- <div x-data="{ status: @entangle('status') }"> --}}
+        <div>
             <span class="italic text-indigo-500">Persetujuan</span>
             <div class="flex w-full flex-col gap-2">
                 <div class="flex w-1/2 justify-between">
                     @foreach ($optionsApproval as $item)
-                        <div @click="status = '{{ $item['value'] }}'"
+                        <div @click="setStatus('{{ $item['value'] }}')"
                             :class="status === '{{ $item['value'] }}'
                                 ?
                                 'bg-{{ $item['color'] }}-200' :
@@ -27,8 +28,10 @@
 
         {{-- Simpan Actions --}}
         <div class="ml-auto flex flex-row justify-end gap-2">
-            <div class="relative" x-data="{ passwordPopUp: false }">
-                <x-ts:button sm icon="tabler.checks" x-on:click="passwordPopUp = true">Simpan</x-ts:button>
+            <div class="relative">
+                <x-ts:button sm icon="tabler.checks" type="button" x-on:click="handleSubmit()">
+                    <span x-text="btnSimpanTxt"></span>
+                </x-ts:button>
 
                 <div class="absolute right-0 z-50 mt-1 w-96 rounded-lg border bg-white px-6 py-4 shadow-lg" x-show="passwordPopUp" x-transition x-trap.noscroll="passwordPopUp"
                     x-on:click.away="passwordPopUp = false" x-on:keydown.escape.window="passwordPopUp = false">
@@ -57,3 +60,38 @@
 
     </form>
 </div>
+@script
+    <script>
+        Alpine.data('approvalSp3', () => {
+            return {
+                status: @entangle('status'),
+                passwordPopUp: false,
+                get btnSimpanTxt() {
+                    const map = {
+                        'manual': 'Simpan, & Print',
+                        'approved': 'Simpan',
+                        'rejected': 'Simpan',
+                    };
+                    return map[this.status] ?? 'Simpan';
+                },
+
+
+                setStatus(value) {
+                    this.status = value
+                    if (this.status === 'manual') {
+                        this.btnSimpanTxt = "Simpan, Print"
+                    }
+                },
+
+                handleSubmit() {
+                    if (this.status == 'manual') {
+                        $wire.submit()
+
+                    } else {
+                        this.passwordPopUp = true
+                    }
+                },
+            }
+        })
+    </script>
+@endscript

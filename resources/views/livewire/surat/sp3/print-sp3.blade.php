@@ -1,16 +1,10 @@
-<div style="width: 100%; margin: 0; padding: 15px; font-family: Arial, sans-serif;">
-    <style>
-        .bold {
-            font-weight: bold;
-        }
-    </style>
-
+<div id="print-sp3" style="width: 100%; margin: 0; padding: 15px; font-family: Arial, sans-serif;">
     <div align="center" class="mb-2">
         <img src="{{ asset('storage/' . $rs->logo) }}" style="height:60px;">
         <h2 class="bold text-lg uppercase">{{ $rs->nama }}</h2>
         <span class="text-sm">SURAT PERMINTAAN PROSES PEMBAYARAN<br>(Kontrak, Sundries, Material, dll.)</span>
     </div>
-    <table cellpadding="3" align="center" style="font-size:10px; ">
+    <table cellpadding="3" align="center" style="width: 100%; font-size:10px; ">
         <tr>
             <td colspan="6" style="border-top:1px solid;"></td>
         </tr>
@@ -86,19 +80,39 @@
         </tr>
         <tr>
             @forelse ($this->approvals as $item)
-                <td colspan="6" align="right">
-                    <table style="font-size:12px;">
-                        <tr>
-                            <td>{{ $item['status'] }} Oleh, <br> {{ $suratSp3->jabatans->nama }}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <img src="data:image/png;base64,{{ $this->generateBarcode }}" alt="Barcode Tanda Tangan" style="height: auto; width:128px; ">
-                                {{ $item['nama'] }}
-                            </td>
-                        </tr>
-                    </table>
-                </td>
+                @if ($item['status'] == 'Manual')
+                    <td colspan="6" align="right">
+                        <table style="font-size:12px; width:33%; text-align: center;">
+                            <tr>
+                                <td>Mengetahui,</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span style="display:block; height:48px; width:auto;"></span>
+                                    <span style="font-weight: bold; display:block; margin: 0 auto;">{{ $item['nama'] }}</span>
+                                    <span style="font-size:10px;">({{ $item['jabatan'][0]['nama'] ?? ' ' }})</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                @else
+                    <td colspan="6" align="right">
+                        <table style="font-size:12px; width:33%; text-align: center;">
+                            <tr>
+                                <td>{{ $item['status'] }} Oleh,</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <span>
+                                        <img src="data:image/png;base64,{{ $this->generateBarcode }}" alt="Barcode Tanda Tangan" style="height: 80px; width:auto; display:block; margin: 0 auto;">
+                                    </span>
+                                    <span style="font-weight: bold; display:block; margin: 0 auto;">{{ $item['nama'] }}</span>
+                                    <span style="font-size:10px;">({{ $item['jabatan'][0]['nama'] ?? ' ' }})</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                @endif
             @empty
                 <td colspan="6" align="right">
                     <table style="font-size:12px; font-style:italic;">
@@ -125,4 +139,39 @@
             </td>
         </tr>
     </table>
+
+    <style>
+        #print-sp3 .bold {
+            font-weight: bold;
+        }
+
+        /* #print-sp3 thead th {
+            border-bottom: 0.5px solid #666;
+        }
+
+        #print-sp3 tbody tr:last-child td {
+            border-bottom: 0.5px solid #666;
+        }
+
+        #print-sp3 tfoot tr:last-child td {
+            border-bottom: 0.5px solid #666;
+        } */
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
 </div>

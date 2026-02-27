@@ -30,7 +30,7 @@
                 <x-ts:badge :text="$pembelian?->status_pembayaran ? ucfirst($pembelian->status_pembayaran) : 'Belum Dibayar'" :color="$badgePembayaran" outline xs />
             </span>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col text-sm">
             <div class="flex items-center">
                 <span class="w-[150px]">Supplier</span> : {{ $pembelian?->supplier->nama }}
             </div>

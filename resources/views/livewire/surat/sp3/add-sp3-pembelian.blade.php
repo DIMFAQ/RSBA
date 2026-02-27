@@ -54,13 +54,51 @@
         </div>
 
 
-        <div class="ml-auto flex justify-end gap-2">
-            <x-ts:button outline x-on:click="$dispatch('close-modal',{id:'modal-create-sp3'})">Tutup</x-ts:button>
-            <x-ts:button type="submit" icon="tabler.checks">Simpan</x-ts:button>
+        <div x-data="{ popUpConfirmSubmit: false }" class="ml-auto flex justify-end gap-2">
+            <x-ts:button outline sm x-on:click="$dispatch('close-modal',{id:'modal-create-sp3'})">Tutup</x-ts:button>
+            <x-ts:button x-on:click="popUpConfirmSubmit = true" x-ref="simpanSp3" sm icon="tabler.checks">Simpan</x-ts:button>
+
+
+            <div x-show="popUpConfirmSubmit" x-transition x-trap.noscroll="popUpConfirmSubmit" x-on:click.away="popUpConfirmSubmit = false" x-on:keydown.escape.window="popUpConfirmSubmit = false"
+                x-anchor.bottom-end="$refs.simpanSp3" class="absolute z-50 mt-2 w-max max-w-sm rounded-lg border border-gray-300 bg-white p-4 shadow-lg">
+
+
+                <div class="flex items-center justify-between">
+                    <span class="flex flex-row items-center gap-2 whitespace-nowrap text-sm font-medium text-indigo-500">
+                        <x-ts:icon name="tabler.alert-circle" class="h-5 w-5" />
+                        Simpan Surat SP3 ?
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between gap-4">
+                    <span class="ms-4 flex flex-row items-center gap-2 whitespace-nowrap text-wrap text-xs font-light text-gray-500">
+                        Pilih kirim untuk tanda tangan secara digital, atau manual untuk cetak.
+                    </span>
+                </div>
+                <!-- Actions -->
+                <div class="mt-2 flex justify-end gap-2">
+                    <x-ts:button outline xs color="indigo" icon="tabler.send" loading="submit" x-on:click="$wire.submit(true)">
+                        Kirim
+                    </x-ts:button>
+
+                    {{-- button action validasi --}}
+                    <x-ts:button xs loading="submitManual" icon="tabler.file" outline sm color="gray" x-on:click="$wire.submit(false)">
+                        Manual, Cetak
+                    </x-ts:button>
+                </div>
+
+            </div>
         </div>
 
     </form>
 
+
+    {{-- Print Out SP3 --}}
+    <div id="print-sp3" class="hidden" x-on:print-out-sp3.window="$nextTick(() => printArea('print-sp3'))">
+        @if ($suratSp3)
+            <livewire:Surat.Sp3.PrintSp3 :$suratSp3 :key="Str::random(5)" />
+        @endif
+    </div>
 </div>
 
 @script

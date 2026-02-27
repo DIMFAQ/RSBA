@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Asset;
 
-use Livewire\Component;
-use Milon\Barcode\DNS2D;
-use Livewire\Attributes\Computed;
 use App\Models\Assets\AssetBarang;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+use Milon\Barcode\DNS1D;
 
 
 class PrintLabel extends Component
@@ -27,8 +27,24 @@ class PrintLabel extends Component
     #[Computed]
     public function generateBarcode()
     {
-        $barcode = new DNS2D();
-        return $barcode->getBarcodePNG($this->assetBarang?->kode, 'QRCODE');
+
+        $barcode = new DNS1D();
+
+        // QRCODE
+        // return $barcode->getBarcodePNG(
+        //     $this->assetBarang?->kode,
+        //     'QRCODE',
+        //     5,
+        //     5
+        // );
+
+        // Baris 
+        return $barcode->getBarcodePNG(
+            $this->assetBarang?->kode,
+            'C128',
+            2,
+            60
+        );
     }
 
     public function render()

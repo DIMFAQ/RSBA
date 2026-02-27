@@ -38,7 +38,7 @@ class TablePembelian extends Component implements HasTable, HasForms
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Pembelian::with('supplier'))
+            ->query(Pembelian::with('supplier')->latest())
             ->columns([
                 TextColumn::make('no')
                     ->label('Nomor Transaksi')

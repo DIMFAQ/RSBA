@@ -6,8 +6,10 @@ use Livewire\Component;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Lazy;
 use App\Models\Gudang\Pembelian;
+use Livewire\Attributes\Isolate;
 
 #[Lazy]
+#[Isolate]
 class Cari extends Component
 {
     public ?Pembelian $pembelian = null;

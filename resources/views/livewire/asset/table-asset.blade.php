@@ -59,7 +59,7 @@
 
     @isset($selectedId)
         <div class="hidden" id="print-label-area" x-on:print-label.window="printArea('print-label-area')">
-            {{-- <livewire:Asset.PrintLabel :id="$selectedId" :key="'print-' . $selectedId" /> --}}
+            <livewire:Asset.PrintLabel :id="$selectedId" :key="'print-' . $selectedId" />
         </div>
     @endisset
 

@@ -2,20 +2,28 @@
 
 namespace App\Livewire\Surat\Sp3;
 
-use Livewire\Component;
-use App\Models\Sdm\Jabatan;
-use Livewire\Attributes\Lazy;
-use App\Models\Surat\SuratSp3;
 use App\Models\Gudang\Pembelian;
-use Illuminate\Support\Facades\DB;
+use App\Models\Sdm\Jabatan;
+use App\Models\Surat\SuratSp3;
+use App\Models\Surat\SuratSp3Approval;
 use App\Models\Surat\SuratSp3Detail;
+use App\Models\User;
+use App\Services\DigitalSignatureService;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
+use Livewire\Component;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
 class AddSp3Pembelian extends Component
 {
+    #[Locked]
     public ?Pembelian $pembelian;
+
+    #[Locked]
+    public ?SuratSp3 $suratSp3;
 
     use Interactions;
 
@@ -28,7 +36,7 @@ class AddSp3Pembelian extends Component
     public $mengetahuiOptions;
     public $tgl;
     public string $rekanan, $keterangan = '', $method_bayar;
-    public int $mengetahui, $jabatan, $rekananId;
+    public ?int $mengetahui, $jabatan, $rekananId, $userApprove;
     public array $listSp3 = [];
     public $totalPembayaran = 0;
 
@@ -47,6 +55,13 @@ class AddSp3Pembelian extends Component
             'listSp3.required' => 'Rincikan item pembayarannya.',
             'listSp3.min' => 'Silahkan rincikan item pembayarannya.'
         ];
+    }
+
+    protected DigitalSignatureService $digitalSignatureService;
+
+    public function boot(DigitalSignatureService $digitalSignatureService)
+    {
+        $this->digitalSignatureService = $digitalSignatureService;
     }
 
     public function mount($id)
@@ -134,7 +149,8 @@ class AddSp3Pembelian extends Component
                 ->first();
 
             if ($karyawanJabatan) {
-                $this->mengetahui = $karyawanJabatan->karyawan->id;
+                $this->mengetahui = $karyawanJabatan->karyawan?->id;
+                $this->userApprove = $karyawanJabatan->karyawan?->user?->id;
             } else {
                 $this->toast()
                     ->error('Pejabat tidak ditemukan.', "Tidak ada karyawan dengan jabatan <b>{$jabatan->nama}</b>.")
@@ -147,7 +163,7 @@ class AddSp3Pembelian extends Component
         }
     }
 
-    public function submit()
+    public function submit($send = true)
     {
         $this->validate();
         $data = [
@@ -184,17 +200,92 @@ class AddSp3Pembelian extends Component
             // update sp3_id on pembelian
             $this->pembelian->sp3_id = $suratSp3->id;
             $this->pembelian->save();
+
+            // Manual dan printout
+            if (!$send) {
+                $this->signManual($suratSp3);
+            }
+
             DB::commit();
             $this->dispatch('created-sp3');
 
             $this->toast()
                 ->success('Berhasil', 'SP3 berhasil disimpan.')
                 ->send();
+
+            $this->js("setTimeout(() => \$dispatch('print-out-sp3'), 1500)");
         } catch (\Throwable $th) {
             DB::rollBack();
 
             $this->toast()
                 ->error('Gagal Menyimpan Data', 'error : ' . $th->getMessage())
+                ->send();
+        }
+    }
+
+    public function signManual($suratSp3)
+    {
+        $data = [
+            'surat_sp3_id' => $suratSp3->id,
+            'disetujui' => $this->userApprove,
+            'status' => 'manual',
+            'keterangan' => null,
+            'approved_at' => now()->toIso8601String(),
+        ];
+
+        DB::beginTransaction();
+        try {
+            // ambil data signature user [p12 path] , jika manual, gunakan tanda tangan Super Admin,
+            // Super Admin credential mewakili credential sistem,
+            $user = User::find(1);
+            $certificate = $user->certificate()->latest('id')->first();
+
+            if (!$certificate) {
+                throw new \Exception("Tidak memiliki certificate.");
+            }
+
+            // buat signature hash dari p12
+            $dataToSign = json_encode($data);
+
+            $passwordCertificate = null;
+
+            // Proses tanda tangan data
+            $signature = $this->digitalSignatureService->signData(
+                user: $user,
+                data: $dataToSign,
+                password: $passwordCertificate,
+                type: 'persetujuan_sp3',
+                id: $suratSp3->id
+            );
+
+            if (!$signature['status']) {
+                $this->toast()
+                    ->error('Proses tanda tangan tidak berhasil.', "<i>{$signature['message']}</i>")
+                    ->send();
+                return;
+            }
+
+            $data['signature_hash'] = $signature['data_hash']; //adding hash to data
+
+            SuratSp3Approval::create($data);
+            $suratSp3->update(
+                [
+                    'status' => 'approved'
+                ]
+            );
+
+            // return
+            $this->suratSp3 = $suratSp3;
+            DB::commit();
+
+            $this->toast()
+                ->success('Berhasil.', "Surat SP3 {$suratSp3->no} berhasil diupdate.")
+                ->send();
+        } catch (\Throwable $e) {
+            DB::rollback();
+
+            $this->toast()
+                ->error('Tidak Berhasil.', "Error : {$e->getMessage()}")
                 ->send();
         }
     }

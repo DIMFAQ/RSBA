@@ -10,10 +10,10 @@
     </x-filament::modal>
 
 
-    <x-filament::modal id="modal-create-sp3" width="5xl" :close-on-click-away="false">
+    <x-filament::modal id="modal-create-sp3" width="5xl" :close-on-click-away="false" x-on:created-sp3.window="$dispatch('close-modal',{id:'modal-create-sp3'})">
         <x-slot:heading>Buat SP3 Pembelian</x-slot:heading>
 
-        <livewire:Surat.Sp3.AddSp3Pembelian :id="$selectedId" :key="time() . $selectedId" />
+        <livewire:Surat.Sp3.AddSp3Pembelian :id="$selectedId" :key="time() . $selectedId" @created-sp3="$refresh" />
     </x-filament::modal>
 
     <div x-data x-on:trigger-print.window="$nextTick(() => printArea('print-pre-order'))">

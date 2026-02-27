@@ -34,6 +34,7 @@ class TableDistribusi extends Component implements HasTable, HasForms
                 Distribusi::with(
                     ['ruangan']
                 )
+                    ->latest()
             )
             ->columns([
                 TextColumn::make('id')

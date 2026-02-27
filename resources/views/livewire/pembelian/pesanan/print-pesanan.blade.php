@@ -164,6 +164,11 @@
                 margin: 0;
                 padding: 0;
             }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </div>

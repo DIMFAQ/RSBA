@@ -96,10 +96,11 @@ class ListPermintaanBarang extends Component implements HasTable, HasForms
                             ->label('Jenis Pembelian')
                             ->options([
                                 'langsung' => 'Pembelian Langsung',
-                                'pre_order' => 'Pre Order',
+                                'pesanan' => 'Buat Pesanan / PO',
                             ])
                             ->required()
                             ->reactive()
+                            ->preload()
                             ->searchable(),
                     ])
                     ->action(function (Collection $records, $data) {
@@ -108,7 +109,7 @@ class ListPermintaanBarang extends Component implements HasTable, HasForms
                         $selectedIds = $records->pluck('id')->toArray();
 
                         // buat chache key
-                        $cacheKey = 'cart_pengajuan_langsung:' . auth()->id() . ':' . session()->getId();
+                        $cacheKey = 'cart_pengajuan:' . auth()->id() . ':' . session()->getId();
 
                         // Simpan di cache dengan expiry
                         Cache::put($cacheKey, $selectedIds, now()->addMinutes(30));
@@ -117,14 +118,9 @@ class ListPermintaanBarang extends Component implements HasTable, HasForms
                         session()->put('cart_pengajuan_cache_key', $cacheKey);
 
                         if ($data['jenis_pembelian'] === 'langsung') {
-
                             $this->dispatch('open-modal', id: 'modal-pengajuan-to-langsung');
-
-                            $this->dispatch('selectedPengajuanLangsung', $selectedIds); //event
                         } else {
-
-
-                            $this->dispatch('open-modal', id: 'modal-pengajuan-to-pre-order');
+                            $this->dispatch('open-modal', id: 'modal-pengajuan-to-pesanan');
                         }
                     })
             ])

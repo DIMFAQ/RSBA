@@ -17,14 +17,14 @@
     <x-filament::modal id="modal-verify-sp3" width="max-w-4xl" :close-by-clicking-away="false">
         <x-slot:heading>Verifi SP3</x-slot:heading>
 
-        <livewire:Surat.Sp3.Verify />
+        <livewire:Surat.Sp3.Verify key="verify-sp3" />
     </x-filament::modal>
 
 
-    <x-filament::modal id="modal-add-sp3" width="max-w-4xl" :close-by-clicking-away="false">
+    <x-filament::modal id="modal-add-sp3" width="max-w-4xl" x-on:created-sp3="$dispatch('close-modal',{id:'modal-add-sp3'})" :close-by-clicking-away="false">
         <x-slot:heading>Buat SP3</x-slot:heading>
 
-        <livewire:Surat.Sp3.Add @created-sp3="$refresh" />
+        <livewire:Surat.Sp3.Add key="new-sp3" />
     </x-filament::modal>
 
 </div>

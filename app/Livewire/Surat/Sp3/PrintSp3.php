@@ -3,7 +3,7 @@
 namespace App\Livewire\Surat\Sp3;
 
 use Livewire\Component;
-use Milon\Barcode\DNS1D;
+// use Milon\Barcode\DNS1D;
 use Milon\Barcode\DNS2D;
 use App\Models\Surat\SuratSp3;
 use Livewire\Attributes\Computed;
@@ -24,6 +24,7 @@ class PrintSp3 extends Component
             return [
                 'status' => $item->status->nama(),
                 'nama' => $item->users->karyawan->nama,
+                'jabatan' => $item->users->karyawan?->jabatan ?? null,
                 'approved_at' => $item->approved_at,
                 'signature' => $item->signature_hash
             ];

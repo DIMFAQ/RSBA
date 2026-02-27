@@ -14,13 +14,14 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Livewire\Attributes\On;
 
 class TableSp3 extends Component implements HasTable, HasForms
 {
 
     use InteractsWithTable, InteractsWithForms;
 
-    // #[Locked]
+    #[Locked]
     public ?SuratSp3 $suratSp3;
 
     public function table(Table $table): Table
@@ -42,6 +43,7 @@ class TableSp3 extends Component implements HasTable, HasForms
                             }
                         });
                     })
+                    ->latest()
             )
             ->columns([
                 TextColumn::make('no')
@@ -129,6 +131,12 @@ class TableSp3 extends Component implements HasTable, HasForms
     {
         $this->suratSp3 = SuratSp3::findOrFail($id);
         return $this->dispatch('open-modal', id: $modal);
+    }
+
+    #[On('update-approval')]
+    public function refreshTable()
+    {
+        $this->resetTable();
     }
 
     public function render()
