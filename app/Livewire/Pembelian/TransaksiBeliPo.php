@@ -4,7 +4,6 @@ namespace App\Livewire\Pembelian;
 
 use Carbon\Carbon;
 use Livewire\Component;
-use Livewire\Attributes\On;
 use App\Models\Master\Barang;
 use Livewire\Attributes\Lazy;
 use App\Models\Gudang\Pembelian;
@@ -172,11 +171,11 @@ class TransaksiBeliPo extends Component
 
         $no = 1;
         if ($last) {
-            $no = (int)substr($last->no, 2, 4) + 1;
+            $no = (int)substr($last->no, 6, 4) + 1;
         }
         $no = str_pad($no, 4, '0', STR_PAD_LEFT);
 
-        return "PO{$no}{$bulantahun}";
+        return "PO{$bulantahun}{$no}";
     }
 
     public function render()

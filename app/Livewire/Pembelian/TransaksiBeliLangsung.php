@@ -347,11 +347,11 @@ class TransaksiBeliLangsung extends Component
 
         $no = 1;
         if ($last) {
-            $no = (int)substr($last->no, 2, 4) + 1;
+            $no = (int)substr($last->no, 6, 4) + 1;
         }
         $no = str_pad($no, 4, '0', STR_PAD_LEFT);
 
-        return "PD{$no}{$bulantahun}";
+        return "PD{$bulantahun}{$no}";
     }
 
     public function render()
