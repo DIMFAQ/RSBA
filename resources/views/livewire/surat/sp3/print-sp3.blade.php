@@ -4,7 +4,7 @@
         <h2 class="bold text-lg uppercase">{{ $rs->nama }}</h2>
         <span class="text-sm">SURAT PERMINTAAN PROSES PEMBAYARAN<br>(Kontrak, Sundries, Material, dll.)</span>
     </div>
-    <table cellpadding="3" align="center" style="width: 100%; font-size:10px; ">
+    <table cellpadding="3" align="center" style="width: 100%; font-size:11px; ">
         <tr>
             <td colspan="6" style="border-top:1px solid;"></td>
         </tr>
@@ -45,7 +45,7 @@
             <td valign="top"><b>Untuk Pembayaran</b></td>
             <td valign="top"><b>:</b></td>
             <td colspan="4">
-                <table cellpadding="5" border="1" style='font-size:12px;width:95%;border:1px solid black;'>
+                <table cellpadding="3" border="1" style='font-size:10px;width:95%;border:1px solid black;'>
                     @foreach ($suratSp3->details as $item)
                         <tr style="border:1px solid black;">
                             <td>{{ $loop->iteration }}.</td>
@@ -82,7 +82,7 @@
             @forelse ($this->approvals as $item)
                 @if ($item['status'] == 'Manual')
                     <td colspan="6" align="right">
-                        <table style="font-size:12px; width:33%; text-align: center;">
+                        <table style="font-size:11px; width:33%; text-align: center;">
                             <tr>
                                 <td>Mengetahui,</td>
                             </tr>
@@ -97,7 +97,7 @@
                     </td>
                 @else
                     <td colspan="6" align="right">
-                        <table style="font-size:12px; width:33%; text-align: center;">
+                        <table style="font-size:11px; width:33%; text-align: center;">
                             <tr>
                                 <td>{{ $item['status'] }} Oleh,</td>
                             </tr>
@@ -115,7 +115,7 @@
                 @endif
             @empty
                 <td colspan="6" align="right">
-                    <table style="font-size:12px; font-style:italic;">
+                    <table style="font-size:11px; font-style:italic;">
                         <tr>
                             <td>Menunggu Persetujuan</td>
                         </tr>

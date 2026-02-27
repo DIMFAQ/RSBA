@@ -160,7 +160,10 @@ class Add extends Component
                 ->success('Berhasil', 'SP3 berhasil disimpan.')
                 ->send();
 
-            $this->js("setTimeout(() => \$dispatch('print-out-sp3'), 1500)");
+            // If Manual , Direct to Printou
+            if (!$send) {
+                $this->js("setTimeout(() => \$dispatch('print-out-sp3'), 1500)");
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
 

@@ -213,8 +213,11 @@ class AddSp3Pembelian extends Component
                 ->success('Berhasil', 'SP3 berhasil disimpan.')
                 ->send();
 
+            // if manual direct to printout
             // $this->js("setTimeout(() => \$dispatch('print-out-sp3'), 1500)");
-            $this->dispatch('print-out-sp3');
+            if (!$send) {
+                $this->dispatch('print-out-sp3');
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
 
