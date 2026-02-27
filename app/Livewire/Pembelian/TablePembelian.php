@@ -10,6 +10,7 @@ use App\Models\Master\Supplier;
 use Livewire\Attributes\Locked;
 use App\Models\Gudang\Pembelian;
 use App\Models\Sdm\Karyawan;
+use App\Models\Surat\SuratSp3;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
@@ -28,12 +29,15 @@ class TablePembelian extends Component implements HasTable, HasForms
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
-    public int $selectedId;
+    public ?int $selectedId;
 
     #[Locked]
     public $mengetahui = null;
     public $menyetujui = null;
     public $verifikator = null;
+
+    #[Locked]
+    public ?SuratSp3 $suratSp3;
 
     public static function table(Table $table): Table
     {
@@ -168,19 +172,24 @@ class TablePembelian extends Component implements HasTable, HasForms
                 Action::make('sp3-create')
                     ->icon('tabler-file-dollar')
                     ->iconButton()
-                    ->color('success')
-                    ->visible(
-                        function ($record) {
-                            if ($record->status === 'selesai' && $record->sp3_id === null) {
-                                return true;
-                            }
-                        }
+                    ->color(
+                        fn($record) => $record->sp3_id === null ? 'gray' : 'success'
                     )
                     ->action(
-                        fn($record, $livewire) => $livewire->modalForm(
-                            modal: 'modal-create-sp3',
-                            id: $record->getKey()
-                        )
+                        function ($record, $livewire) {
+                            if ($record->sp3_id) {
+                                $livewire->sp3Print(
+                                    modal: 'modal-view-sp3',
+                                    id: $record->sp3_id
+                                );
+                            } else {
+                                $livewire->modalForm(
+                                    modal: 'modal-create-sp3',
+                                    id: $record->getKey()
+                                );
+                            }
+                        }
+
                     ),
 
                 Action::make('print-po')
@@ -244,6 +253,12 @@ class TablePembelian extends Component implements HasTable, HasForms
     function modalForm($modal, $id)
     {
         $this->selectedId = $id;
+        $this->dispatch('open-modal', id: $modal);
+    }
+
+    public function sp3Print($modal, $id)
+    {
+        $this->suratSp3 = SuratSp3::findOrFail($id);
         $this->dispatch('open-modal', id: $modal);
     }
 

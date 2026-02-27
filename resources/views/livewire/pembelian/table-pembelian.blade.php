@@ -16,6 +16,12 @@
         <livewire:Surat.Sp3.AddSp3Pembelian :id="$selectedId" :key="time() . $selectedId" @created-sp3="$refresh" />
     </x-filament::modal>
 
+    <x-filament::modal id="modal-view-sp3" width="5xl" :close-on-click-away="false">
+        <x-slot:heading>View SP3</x-slot:heading>
+
+        <livewire:Surat.Sp3.Details :$suratSp3 :key="Str::random(5)" />
+    </x-filament::modal>
+
     <div x-data x-on:trigger-print.window="$nextTick(() => printArea('print-pre-order'))">
         <div class="hidden" id="print-pre-order">
             @if ($selectedId)
