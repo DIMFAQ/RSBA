@@ -16,16 +16,11 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Illuminate\Database\Eloquent\Builder;
 
 class TableGudang extends Component implements HasTable, HasForms
 {
     use InteractsWithTable, InteractsWithForms;
-
-    // TODO : Gudang Table
-    /**
-     * TODO:
-     * - [ ] Cetak kartu stok
-     */
 
     #[Locked]
     public ?Barang $barang;
@@ -94,11 +89,43 @@ class TableGudang extends Component implements HasTable, HasForms
 
             ])
             ->filters([
+                SelectFilter::make('has_stok')
+                    ->label('Stok')
+                    ->options(
+                        fn(): array => [
+                            '1' => 'Tersedia',
+                            '0' => 'Tidak Tersedia',
+                        ]
+                    )
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (!isset($data['value']) || $data['value'] === '' || $data['value'] === null) {
+                            return $query;
+                        }
+
+                        if ($data['value'] === '1') {
+                            return $query->whereHas('stoks', function (Builder $q) {
+                                $q->where('stok', '>', 0);
+                            });
+                        }
+
+                        if ($data['value'] === '0') {
+                            return $query->where(function (Builder $q) {
+                                $q->whereDoesntHave('stoks')
+                                    ->orWhereHas('stoks', function (Builder $q2) {
+                                        $q2->havingRaw('SUM(stok) <= 0');
+                                    });
+                            });
+                        }
+
+                        return $query;
+                    }),
+
                 SelectFilter::make('kategori_id')
                     ->label('Kategori')
                     ->options(
                         fn(): array => BarangKategori::pluck('nama', 'id')->toArray()
                     ),
+
 
             ])
             ->actions([
@@ -111,12 +138,26 @@ class TableGudang extends Component implements HasTable, HasForms
                             fn(Barang $barang, $livewire) => $livewire->modalForm(modal: 'modal-detil-stok', id: $barang->getKey())
                         ),
 
-                    Action::make('print')
+                    Action::make('print-kartu-stok-by-trans')
+                        ->label('Kartu Stok Transaksi')
+                        ->icon('tabler-printer')
+                        ->tooltip('Kartu Stok')
+                        ->action(
+                            fn(Barang $barang) => $this->printKartuStok(
+                                barang: $barang,
+                                printId: 'print-kartu-stok-transaksi'
+                            )
+                        ),
+
+                    Action::make('print-kartu-stok')
                         ->label('Kartu Stok')
                         ->icon('tabler-printer')
                         ->tooltip('Kartu Stok')
                         ->action(
-                            fn(Barang $barang) => $this->printKartuStok($barang)
+                            fn(Barang $barang) => $this->printKartuStok(
+                                barang: $barang,
+                                printId: 'print-kartu-stok'
+                            )
                         ),
                 ])->tooltip('Actions')
             ])
@@ -125,7 +166,7 @@ class TableGudang extends Component implements HasTable, HasForms
 
     public function downloadStok()
     {
-        dd('hai');
+        // TODO
     }
 
     public function modalForm($modal, $id)
@@ -134,7 +175,12 @@ class TableGudang extends Component implements HasTable, HasForms
         $this->dispatch('open-modal', id: $modal);
     }
 
-    function printKartuStok($barang) {}
+    function printKartuStok($barang, $printId)
+    {
+        $this->barang = $barang;
+        $this->dispatch($printId);
+        // $this->js("printArea('print-kartu-stok')");
+    }
 
     public function render()
     {

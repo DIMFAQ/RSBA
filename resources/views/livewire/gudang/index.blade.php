@@ -31,7 +31,7 @@
             @endif
         </div>
         <div class="w-full rounded-lg bg-white p-4">
-            <livewire:Gudang.TableGudang :key="Str::random()" />
+            <livewire:Gudang.TableGudang key="table-gudang" />
         </div>
     </div>
 
@@ -46,7 +46,6 @@
     <div x-show="panelActive === 'penerimaan'" class="rounded-md bg-white px-4 py-2">
 
         <livewire:Pembelian.Penerimaan.Options wire:key="pesanan- {{ uniqid() }}" />
-        {{-- <livewire:Pembelian.TransaksiBeliLangsung :key="Str::random()" /> --}}
     </div>
 
     <div x-show="panelActive === 'distribusi'">
