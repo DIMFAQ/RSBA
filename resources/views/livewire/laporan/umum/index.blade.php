@@ -13,6 +13,17 @@
                         <x-ts:date range wire:model.lazy='periode' placeholder="Periode" />
                     </div>
                     <div class="w-full">
+                        <x-ts:select.styled wire:model.lazy='items' multiple :request="route('api.barang.ref')" select="label:nama|value:id" placeholder="Pilih barang">
+                            <x-slot:after>
+                                <div class="mb-2 flex items-center justify-center px-2">
+                                    <x-ts:button sm x-on:click="show = false; $dispatch('open-modal', {id:'modal-new-barang'}); $wire.set('createTerm',search)">
+                                        <span x-html="`Create <b>${search}</b>`"></span>
+                                    </x-ts:button>
+                                </div>
+                            </x-slot:after>
+                        </x-ts:select.styled>
+                    </div>
+                    <div class="w-full">
                         <x-ts:select.styled wire:model.lazy='vendor' :request="route('api.supplier')" select="label:nama|value:id" placeholder="Vendor / Supplier" />
                     </div>
                     <div class="w-full">
@@ -39,6 +50,18 @@
                 <form wire:submit.prevent='cariDistribusi' class="flex w-full flex-col items-center justify-between gap-3 rounded-lg bg-white px-4 py-2 lg:grid lg:grid-cols-6">
                     <div class="w-full lg:col-span-2">
                         <x-ts:date range wire:model.lazy='periode' placeholder="Periode Distribusi" />
+                    </div>
+                    <div class="w-full">
+                        <x-ts:select.styled wire:model.lazy='items' multiple :request="route('api.barang.ref')" select="label:nama|value:id" placeholder="Pilih barang">
+                            <x-slot:after>
+                                <div class="mb-2 flex items-center justify-center px-2">
+                                    <x-ts:button sm x-on:click="show = false; $dispatch('open-modal', {id:'modal-new-barang'}); $wire.set('createTerm',search)">
+                                        <span x-html="`Create <b>${search}</b>`"></span>
+                                    </x-ts:button>
+                                </div>
+                            </x-slot:after>
+                        </x-ts:select.styled>
+
                     </div>
                     <div class="w-full">
                         <x-ts:select.styled wire:model.lazy='ruangan' :request="route('api.ruangan')" select="label:nama|value:id" placeholder="Ruangan" />

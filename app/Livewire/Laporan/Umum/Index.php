@@ -20,6 +20,7 @@ class Index extends Component
         ['label' => 'Umum', 'value' => 'umum'],
     ];
     public array $periode = [];
+    public ?array $items = [];
     public $jenis, $vendor, $ruangan;
 
     public function mount()
@@ -39,6 +40,7 @@ class Index extends Component
         $this->dispatch(
             'cariPembelian',
             periode: $this->periode,
+            items: $this->items,
             vendor: $this->vendor,
             jenis: $this->jenis,
         )->to(PembelianLaporan::class);
@@ -50,6 +52,7 @@ class Index extends Component
         $this->dispatch(
             'cariDistribusi',
             periode: $this->periode,
+            items: $this->items,
             ruangan: $this->ruangan,
         )->to(DistribusiLaporan::class);
     }

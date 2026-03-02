@@ -15,8 +15,7 @@
                     x-transition:enter-start="opacity-0 scale-75" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200 transform"
                     x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-75" />
 
-                <button @click="open = !open; 
-                    $nextTick(() => $refs.searchInput.focus())" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                <button x-on:click="open = !open; $nextTick(() => $refs.searchInput.focus())" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                     <x-tabler-search class="h-5 w-5" />
                 </button>
             </div>

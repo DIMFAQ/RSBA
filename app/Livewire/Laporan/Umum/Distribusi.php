@@ -18,6 +18,7 @@ class Distribusi extends Component
         ['index' => 'nama_barang', 'label' => 'Barang'],
         ['index' => 'tanggal', 'label' => 'Tanggal'],
         ['index' => 'ruangan', 'label' => 'Ruangan'],
+        ['index' => 'penerima', 'label' => 'Penerima'],
         ['index' => 'jumlah', 'label' => 'Jumlah'],
         ['index' => 'harga', 'label' => 'Harga Satuan'],
         ['index' => 'total', 'label' => 'Total'],
@@ -30,15 +31,15 @@ class Distribusi extends Component
     public $total = 0;
 
     #[On('cariDistribusi')]
-    function cariDataDistribusi($periode, $ruangan)
+    function cariDataDistribusi($periode, $items, $ruangan)
     {
         $this->init = false;
-        $this->getDataDistribusi($periode, $ruangan);
+        $this->getDataDistribusi($periode, $items, $ruangan);
     }
 
 
     #[Computed]
-    public function getDataDistribusi($periode, $ruangan)
+    public function getDataDistribusi($periode, $items, $ruangan)
     {
         // periode to string $periode
         [$periode_awal, $periode_akhir] = $periode;
@@ -66,6 +67,17 @@ class Distribusi extends Component
                     );
                 }
             )
+            ->when(
+                $items,
+                function ($query, $items) {
+                    $query->whereHas(
+                        'stoks',
+                        function ($q) use ($items) {
+                            $q->whereIn('barang_id', $items);
+                        }
+                    );
+                }
+            )
             ->get()
             ->sortBy('distribusi.tanggal');
 
@@ -75,6 +87,7 @@ class Distribusi extends Component
                 'nama_barang' => $data->stoks->barang->nama,
                 'tanggal' => $data->distribusi->tanggal,
                 'ruangan' => $data->distribusi->ruangan->nama,
+                'penerima' => $data->distribusi->penerima_nama,
                 'jumlah' => $data->jml . ' ' . $data->stoks->barang->satuan->nama,
                 'harga' => formatRupiah($data->stoks->harga_satuan, false, false),
                 'total' => formatRupiah(($data->jml * $data->stoks->harga_satuan), false, false),

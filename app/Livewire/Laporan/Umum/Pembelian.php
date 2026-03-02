@@ -34,14 +34,14 @@ class Pembelian extends Component
     public $total = 0;
 
     #[On('cariPembelian')]
-    public function cariDataBeli($periode, $vendor, $jenis)
+    public function cariDataBeli($periode, $items, $vendor, $jenis)
     {
         $this->init = false;
-        $this->getDataBeli($periode, $vendor, $jenis);
+        $this->getDataBeli($periode, $items, $vendor, $jenis);
     }
 
     #[Computed]
-    public function getDataBeli($periode, $vendor, $jenis)
+    public function getDataBeli($periode, $items, $vendor, $jenis)
     {
         // periode to string $periode_awal and $periode_akhir
         [$periode_awal, $periode_akhir] = $periode;
@@ -65,6 +65,20 @@ class Pembelian extends Component
                             $q->where(
                                 'supplier_id',
                                 $vendor
+                            );
+                        }
+                    );
+                }
+            )
+            ->when(
+                $items,
+                function ($query, $items) {
+                    $query->whereHas(
+                        'pembelianDet',
+                        function ($q) use ($items) {
+                            $q->whereIn(
+                                'barang_id',
+                                $items
                             );
                         }
                     );
