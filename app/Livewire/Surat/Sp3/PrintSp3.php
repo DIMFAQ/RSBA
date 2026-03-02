@@ -23,7 +23,7 @@ class PrintSp3 extends Component
         $data = $this->suratSp3->approvals->map(function ($item): array {
             return [
                 'status' => $item->status->nama(),
-                'nama' => $item->users->karyawan->nama,
+                'nama' => $item->users->karyawan->full_nama,
                 'jabatan' => $item->users->karyawan?->jabatan ?? null,
                 'approved_at' => $item->approved_at,
                 'signature' => $item->signature_hash

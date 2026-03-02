@@ -14,6 +14,7 @@ class Karyawan extends Model
 {
     protected $table = 'sdm_karyawan';
     protected $guarded = [];
+    protected $appends = ['full_nama'];
 
     // casting enum status karyawan
     protected $casts = [
@@ -83,6 +84,17 @@ class Karyawan extends Model
             ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
             ->orderBy('pivot_created_at', 'desc')
             ->limit(1);
+    }
+
+    public function getFullNamaAttribute(): string
+    {
+        $parts = array_filter([
+            $this->gelar_depan,
+            $this->nama,
+            $this->gelar_belakang,
+        ]);
+
+        return implode(' ', $parts);
     }
 
     // Relation cuti

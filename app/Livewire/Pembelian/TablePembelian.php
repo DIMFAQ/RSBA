@@ -223,12 +223,15 @@ class TablePembelian extends Component implements HasTable, HasForms
                             $data['verifikator'],
                         ];
 
+                        // $map = Karyawan::whereIn('id', $ids)
+                        //     ->pluck('nama', 'id');
                         $map = Karyawan::whereIn('id', $ids)
-                            ->pluck('nama', 'id');
+                            ->get(['id', 'gelar_depan', 'nama', 'gelar_belakang'])
+                            ->keyBy('id');
 
-                        $livewire->mengetahui  = $map[$data['mengetahui']] ?? null;
-                        $livewire->menyetujui  = $map[$data['menyetujui']] ?? null;
-                        $livewire->verifikator = $map[$data['verifikator']] ?? null;
+                        $livewire->mengetahui  = $map[$data['mengetahui']]?->full_nama ?? null;
+                        $livewire->menyetujui  = $map[$data['menyetujui']]?->full_nama ?? null;
+                        $livewire->verifikator = $map[$data['verifikator']]?->full_nama ?? null;
 
                         $livewire->selectedId = $record->getKey();
                         $livewire->dispatch('trigger-print');
