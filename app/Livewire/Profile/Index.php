@@ -9,6 +9,8 @@ use Livewire\WithFileUploads;
 use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
@@ -19,6 +21,8 @@ class Index extends Component
     use WithFileUploads;
 
     public $profileTmp;
+
+    #[Locked]
     public $user;
 
     public $tab = 'Home';
@@ -26,6 +30,19 @@ class Index extends Component
     function mount()
     {
         $this->user = Auth::user();
+    }
+
+
+    #[Computed]
+    public function karyawan()
+    {
+        return Karyawan::findOrFail($this->user->karyawan_id);
+    }
+
+    #[Computed]
+    public function sisaCuti(): int
+    {
+        return $this->karyawan->sisa_cuti;
     }
 
     function updateAvatar()

@@ -42,6 +42,13 @@ Route::prefix('master')
 
                 Route::get('/', App\Livewire\Master\Spesialisasi\Index::class)->name('index');
             });
+
+        Route::prefix('cuti')
+            ->name('cuti.')
+            ->group(function () {
+
+                Route::get('/', App\Livewire\Master\Cuti\Index::class)->name('index');
+            });
     });
 
 

@@ -32,6 +32,17 @@ enum StatusApproval: string
         };
     }
 
+    public function colorHex(): string
+    {
+        return match ($this) {
+            self::PENDING  => '#f59e0b', // warning - amber
+            self::WAITING  => '#3b82f6', // info - blue
+            self::APPROVED => '#22c55e', // success - green
+            self::REJECTED => '#ef4444', // danger - red
+            self::MANUAL   => '#6b7280', // gray
+        };
+    }
+
 
     public static function options(): array
     {

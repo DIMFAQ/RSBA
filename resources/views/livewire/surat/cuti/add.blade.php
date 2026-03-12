@@ -35,20 +35,25 @@
             {{-- pilih karyawan --}}
             <x-ts:select.styled searchable placeholder="Cari Karyawan" :request="route('api.karyawan.ref')" select="label:nama|value:id" x-on:select="$wire.updateKaryawan($event.detail.select.id)" />
 
-            <x-ts:select.styled wire:model='form.jenis_cuti' x-on:select="$wire.updateJenisCuti($event.detail.select.id)" placeholder="Jenis Cuti" :options="$form->options_urgensi" select="label:label|value:id" />
+            <x-ts:select.styled wire:model='form.jenis_cuti' :disabled="$karyawan?->sisa_cuti < 0" wire:key="{{ $karyawan?->id }}" placeholder="Jenis Cuti" :options="$form->options_urgensi"
+                select="label:label|value:value" x-on:select="$wire.set('form.jenis_cuti',$event.detail.select.value)">
+            </x-ts:select.styled>
 
-            <x-ts:date multiple x-on:select="updateLamaCuti($event.detail.date)" :min-date="now()->subDays(-1)" placeholder="Tgl Cuti" hint="Pilih satu per satu tanggal cuti yang diajukan." />
+            <x-ts:date multiple format="DD MMM" x-on:select="updateLamaCuti($event.detail.date)" :min-date="now()->subDays(-1)" placeholder="Tgl Cuti" hint="Pilih satu per satu tanggal cuti yang diajukan." />
 
             <x-ts:textarea wire:model='form.keterangan' placeholder="Keterangan" />
 
             <x-ts:textarea wire:model='form.alamat' placeholder="Alamat selama Cuti" />
 
-            <x-ts:select.styled wire:key="atasan-select" multiple searchable wire:model.defer="form.atasan" placeholder="Persetujuan Atasan" :request="route('api.karyawan.ref')" select="label:nama|value:id" />
+            <div wire:key="{{ $karyawan?->id }}">
+                <x-ts:select.styled wire:key="atasan-select" multiple :limit="2" searchable wire:model.defer="form.atasan" placeholder="Persetujuan Atasan" :request="$karyawan?->jabatan?->first()?->parent_id ? route('api.karyawan.listnjabatan', [$karyawan->jabatan->first()->parent_id]) : route('api.karyawan.listnjabatan')"
+                    select="label:nama|value:id" lazy="10" />
+            </div>
 
         </div>
         <div class="ml-auto flex justify-end gap-2">
-            <x-ts:button outline x-on:click="$dispatch('close-modal',{id:'create-cuti'})">Tutup</x-ts:button>
-            <x-ts:button type="submit" icon="tabler.checks" loading="submit">Ajukan</x-ts:button>
+            <x-ts:button sm outline x-on:click="$dispatch('close-modal',{id:'create-cuti'})">Tutup</x-ts:button>
+            <x-ts:button sm type="submit" icon="tabler.checks" loading="submit">Ajukan</x-ts:button>
 
         </div>
     </form>

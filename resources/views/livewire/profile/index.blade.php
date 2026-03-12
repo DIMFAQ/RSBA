@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-2 lg:flex-row">
         <div class="w-full lg:w-1/4">
             <div class="flex flex-col space-y-2 rounded-lg bg-white p-8">
-                <div class="flex flex-col items-center justify-center" x-data="{ userPreview: '{{ $profileTmp ? $profileTmp->temporaryUrl() : asset('storage/' . $user->karyawan->foto) }}' }">
+                <div class="flex flex-col items-center justify-center" x-data="{ userPreview: '{{ $profileTmp ? $profileTmp->temporaryUrl() : asset('storage/' . $this->karyawan->foto) }}' }">
                     <div class="flex h-44 w-44 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-indigo-300">
                         <img :src="userPreview" class="h-full w-full object-cover" alt="Click to update" x-on:click="document.getElementById('profileInput').click();">
                     </div>
@@ -20,27 +20,32 @@
                     @endif
 
                     <span class="text-lg uppercase text-primary-500">
-                        {{ $user->karyawan->nama }}
+                        {{ $this->karyawan->nama }}
                     </span>
                     <span class="text-md">
-                        {{ $user->karyawan->nip }}
+                        {{ $this->karyawan->nip }}
                     </span>
                 </div>
 
                 <div class="flex">
-                    <span class="w-1/4">Jabatan </span> : {{ $user->karyawan->jabatan?->first()->nama ?? '-' }}
+                    <span class="w-1/4">Jabatan </span> : {{ $this->karyawan->jabatan?->first()->nama ?? '-' }}
                 </div>
                 <div class="flex">
                     <span class="w-1/4">Status</span> :
-                    <x-filament::badge color="{{ $user->karyawan->status->color() }}">
-                        {{ $user->karyawan->status->nama() }}
+                    <x-filament::badge color="{{ $this->karyawan->status->color() }}">
+                        {{ $this->karyawan->status->nama() }}
                     </x-filament::badge>
                 </div>
                 <div class="flex">
-                    <span class="w-1/4">Masa Kerja</span> : {{ $user->karyawan->masakerja }}
+                    <span class="w-1/4">Masa Kerja</span> : {{ $this->karyawan->masakerja }}
                 </div>
                 <div class="flex">
-                    <span class="w-1/4">Sisa Cuti</span> : {{ $user->karyawan->cuti }} Hari
+                    <span class="w-1/4">Sisa Cuti</span> :
+                    @if ($this->sisaCuti < 0)
+                        <span class="italic text-red-500"> Masa kerja < 1 Th</span>
+                            @else
+                                {{ $this->sisaCuti }} Hari
+                    @endif
                 </div>
                 <div class="flex">
                     <span class="w-1/4">Role </span> : {{ $user?->getRoleNames()[0] ?? 'Not Assign Roles' }}
@@ -55,7 +60,7 @@
                         <x-ts:icon name="tabler.home" class="h-5 w-5" />
                     </x-slot:left>
 
-                    <livewire:Profile.Home :id="$user?->karyawan_id">
+                    <livewire:Profile.Home :id="$user?->karyawan_id" key="home">
                 </x-ts:tab.items>
 
                 <x-ts:tab.items tab="Identitas">
@@ -64,7 +69,7 @@
                     </x-slot:left>
 
                     {{-- load edit-identitas --}}
-                    <livewire:Karyawan.EditIdentitas :id="$user?->karyawan_id" />
+                    <livewire:Karyawan.EditIdentitas :id="$user?->karyawan_id" key="identitas-karyawan" />
                 </x-ts:tab.items>
 
                 <x-ts:tab.items tab="Pendidikan">
@@ -73,7 +78,7 @@
                     </x-slot:left>
 
                     {{-- load Karyawan.Pendidikan --}}
-                    <livewire:Karyawan.Pendidikan.PendidikanList :id="$user?->karyawan_id" :key="Str::random()" @pendidikan-karyawan-created="$refresh" @deleted-pendidikan-karyawan="$refresh" />
+                    <livewire:Karyawan.Pendidikan.PendidikanList :id="$user?->karyawan_id" key="'pendidikan-list'" @pendidikan-karyawan-created="$refresh" @deleted-pendidikan-karyawan="$refresh" />
 
                 </x-ts:tab.items>
 
@@ -84,7 +89,7 @@
 
 
                     {{-- load Karyawan.Documents --}}
-                    <livewire:Karyawan.Document.DocumentList :id="$user?->karyawan_id" :key="Str::random()" @document-karyawan-created="$refresh" @document-karyawan-deleted="$refresh" />
+                    <livewire:Karyawan.Document.DocumentList :id="$user?->karyawan_id" key="'document-list'" @document-karyawan-created="$refresh" @document-karyawan-deleted="$refresh" />
                 </x-ts:tab.items>
 
 
@@ -94,7 +99,7 @@
                     </x-slot:left>
 
                     {{-- load Jadwal & Cuti --}}
-                    <livewire:Profile.Cuti :id="$user?->karyawan_id" :key="Str::random()">
+                    <livewire:Profile.Cuti :id="$user?->karyawan_id" key="cuti-list">
                 </x-ts:tab.items>
             </x-ts:tab>
 

@@ -20,6 +20,7 @@ Route::prefix('karyawan')
     ->group(function () {
         Route::get('/register', [KaryawanController::class, 'register'])->name('register');
         Route::get('/ref', [KaryawanController::class, 'list'])->name('ref');
+        Route::get('/listnjabatan/{atasan?}', [KaryawanController::class, 'listWithJabatan'])->name('listnjabatan');
         Route::get('reg/dokter', [KaryawanController::class, 'registerDokter'])->name('reg.dokter');
     });
 

@@ -25,4 +25,16 @@
 
         <livewire:Surat.Cuti.DetilTanggalCuti :$surat :key="$surat?->id" />
     </x-filament::modal>
+
+    <x-filament::modal id="modal-status-cuti">
+        <livewire:Surat.Cuti.ViewStatus :$surat :key="'view-status-cuti-' . Str::random(3)">
+    </x-filament::modal>
+
+    <div x-data x-on:trigger-print-cuti.window="$nextTick(() => printArea('print-cuti-approved'))">
+        <div class="hidden" id="print-cuti-approved">
+            @if ($surat)
+                <livewire:Surat.Cuti.PrintCuti :suratCuti="$surat" :key="'print-cuti-' . Str::random(5)" />
+            @endif
+        </div>
+    </div>
 </div>

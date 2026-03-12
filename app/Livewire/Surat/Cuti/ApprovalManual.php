@@ -1,0 +1,147 @@
+<?php
+
+namespace App\Livewire\Surat\Cuti;
+
+use App\Models\Surat\SuratCuti;
+use App\Models\Surat\SuratCutiApproval;
+use App\Models\User;
+use App\Services\DigitalSignatureService;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
+use Livewire\Component;
+use TallStackUi\Traits\Interactions;
+
+#[Lazy]
+class ApprovalManual extends Component
+{
+    use Interactions;
+
+    #[Locked]
+    public ?SuratCuti $suratCuti;
+
+    public ?int $mengetahui = null, $menyetujui;
+
+    public function rules(): array
+    {
+        return [
+            'menyetujui' => 'required'
+        ];
+    }
+
+    protected DigitalSignatureService $digital_signature_service;
+
+    public function boot(DigitalSignatureService $digital_signature_service)
+    {
+        $this->digital_signature_service = $digital_signature_service;
+    }
+
+    public function mount(?SuratCuti $suratCuti)
+    {
+        $this->suratCuti = $suratCuti;
+    }
+
+    #[Computed]
+    public function approvalOptions(): array
+    {
+        return $this->suratCuti->approvals->map(
+            fn($approval) => [
+                'value' => $approval->karyawan->id,
+                'nama' => $approval->karyawan->nama,
+            ]
+        )->toArray();
+    }
+
+
+    public function printManual(): void
+    {
+
+        $this->validate();
+
+        DB::beginTransaction();
+        try {
+
+            // ambil data signature user [p12 path] , jika manual, gunakan tanda tangan Super Admin,
+            // Super Admin credential mewakili credential sistem,
+            $user = User::find(1) ?? auth()->user();
+            $certificate = $user->certificate()->latest('id')->first();
+
+            if (!$certificate) {
+                throw new \Exception("Tidak memiliki certificate.");
+            }
+
+            // Get data Approval
+            $queryApprovals = SuratCutiApproval::where('surat_cuti_id', $this->suratCuti->id);
+
+            $approvers = array_filter([$this->mengetahui, $this->menyetujui]);
+
+            if (empty($approvers)) return;
+
+            foreach ($approvers as $approver) {
+                $dataSign = [
+                    'title' => "Approval Cuti {$this->suratCuti->id}",
+                    'status' => 'Approved Manual',
+                    'ket_reject' => null,
+                    'user' => auth()->user()->karyawan->nama,
+                    'approver' => $approver
+                ];
+
+                $signature = $this->digital_signature_service->signData(
+                    user: $user,
+                    data: json_encode($dataSign),
+                    password: null,
+                    type: 'surat_cuti_approval',
+                    id: $this->suratCuti->id
+                );
+
+
+                if (!$signature['status']) {
+                    $this->toast()
+                        ->error('Proses tanda tangan tidak berhasil.', "<i>{$signature['message']}</i>")
+                        ->send();
+
+                    return;
+                }
+
+                // prepare data update
+                $dataUpdate = [
+                    'status' => 'approved',
+                    'keterangan' => 'Aproval cuti dengan manual',
+                    'signature_hash' => $signature['data_hash'],
+                    'approved_at' => now()->toIso8601String()
+                ];
+
+                // update approvals cuti
+                (clone $queryApprovals)
+                    ->where('disetujui_oleh', $approver)
+                    ->update($dataUpdate);
+
+                // selesaikan status cuti
+                $this->suratCuti->update([
+                    'status' =>  'approved',
+                    'updated_by' => auth()->user()->id
+                ]);
+            }
+
+            DB::commit();
+
+            $this->dispatch('surat-cuti-manual-approved');
+
+            $this->toast()
+                ->success('Berhasil Disimpan')
+                ->send();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            $this->toast()
+                ->error('Tidak Berhasil', $e->getMessage())
+                ->send();
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.surat.cuti.approval-manual');
+    }
+}

@@ -24,6 +24,37 @@ class KaryawanController extends Controller
         return response()->json($karyawan);
     }
 
+
+    // get all with jabatan
+    public function listWithJabatan(Request $request, $atasan = null)
+    {
+        // parameter
+        // $atasan = $request->input('atasan');
+        $input = $request->input('search');
+
+        $karyawan = Karyawan::with('jabatan')
+            ->select('id', 'nama')
+            ->when($input, function ($query, $input) {
+                $query->where('nama', 'like', "%$input%");
+            })
+            ->when(
+                $atasan,
+                fn($query) => $query->whereHas('jabatan', fn($q) => $q->where('sdm_jabatan.id', '<=', $atasan))
+            )
+            ->orderBy('nama')
+            ->limit(10)
+            ->get()
+            ->map(
+                fn($data) => [
+                    'id' => $data->id,
+                    'nama' => $data->nama,
+                    'description' => $data->jabatan?->first()?->nama ?? null
+                ]
+            )->toArray();
+
+        return response()->json($karyawan);
+    }
+
     // Cari Karyawan Untuk Registrasi
     public function register(Request $request)
     {

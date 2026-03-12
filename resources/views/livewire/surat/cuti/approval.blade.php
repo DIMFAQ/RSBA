@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-2">
     {{-- detail surat cuti --}}
-    <div class="flex w-full flex-col rounded-md border border-indigo-200 px-4 py-2">
+    <div class="flex w-full flex-col rounded-md border border-indigo-200 px-4 py-2 text-sm">
         <span class="text-indigo-500">#{{ $suratCuti->no_surat }}</span>
         <span>{{ $suratCuti->karyawan->nama }}</span>
         <span>{{ $suratCuti->lama_cuti }} Hari</span>
@@ -27,7 +27,7 @@
                     @endforeach
                 </div>
 
-                <div class="w-full" x-show="status === 'rejected'">
+                <div class="w-full" x-show="status == 'pending' || status == 'rejected'">
                     <x-ts:textarea wire:model.defer='keterangan' placeholder="Keterangan" resize-auto class="h-12" />
                 </div>
             </div>

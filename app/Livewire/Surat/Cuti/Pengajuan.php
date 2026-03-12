@@ -3,9 +3,11 @@
 namespace App\Livewire\Surat\Cuti;
 
 use App\Livewire\Forms\SuratCutiForm;
+use App\Models\Surat\CutiJenis;
 use Livewire\Component;
 use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
@@ -15,21 +17,35 @@ class Pengajuan extends Component
 
     public SuratCutiForm $form;
 
+    #[Locked]
     public ?Karyawan $karyawan;
+
+    // public $options_urgensi;
 
     public function mount($id)
     {
         $this->karyawan = Karyawan::findOrFail($id);
-        $this->form->sisa_cuti = $this->karyawan?->cuti;
+
+        if ($this->karyawan?->sisa_cuti < 0) {
+            $this->toast()
+                ->warning('Belum terpenuhi', 'Masa kerja kurang dari 1 tahun')
+                ->send();
+            return;
+        }
+        $this->form->sisa_cuti = $this->karyawan?->sisa_cuti;
+        $this->form->initOptionsUrgensi();
     }
 
     public function updatedFormJenisCuti($value)
     {
-        $this->form->tgl_cuti = []; //ketika ganti jenis, tanggal pengajuan cuti di reset terlebih dahulu 
+        $this->form->tgl_cuti = [];
+        $cutiDiambil = $this->karyawan?->cuti;
 
-        $this->form->sisa_cuti = $this->karyawan?->cuti;
-        if ($value === 'bersalin') {
-            $this->form->sisa_cuti = 90;
+        $jenis  = CutiJenis::findOrFail($value);
+
+        $this->form->sisa_cuti = $jenis->lama;
+        if ($jenis->periode) {
+            $this->form->sisa_cuti = $jenis->lama - $cutiDiambil;
         }
     }
 
@@ -39,7 +55,7 @@ class Pengajuan extends Component
         // submit data menggunakan SuratCutiForm
         $submiting = $this->form->submiting(karyawan: $this->karyawan);
 
-        if ($submiting['status'] === 'sukses') {
+        if ($submiting['success']) {
             $this->dispatch('created-cuti');
 
             $this->toast()

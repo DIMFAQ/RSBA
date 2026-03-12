@@ -2,12 +2,13 @@
 
 namespace App\Models\Sdm;
 
-use Carbon\Carbon;
-use App\Models\User;
 use App\Enums\StatusKaryawan;
+use App\Models\Surat\CutiJenis;
 use App\Models\Surat\SuratCuti;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Karyawan extends Model
@@ -95,6 +96,19 @@ class Karyawan extends Model
         ]);
 
         return implode(' ', $parts);
+    }
+
+    public function getSisaCutiAttribute(): int
+    {
+        $jenis = CutiJenis::find(1);
+        if (!$jenis) return 0;
+
+        $tanggalMasuk = Carbon::parse($this->tgl_masuk);
+        $now = Carbon::now();
+
+        if ($now->lt($tanggalMasuk->copy()->addYear())) return -1; // belum genap 1 tahun return negatif
+
+        return max(0, $jenis->lama - $this->cuti);
     }
 
     // Relation cuti

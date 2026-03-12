@@ -2,39 +2,55 @@
 
 namespace App\Livewire\Surat\Cuti;
 
-use Livewire\Component;
+use App\Livewire\Forms\SuratCutiForm;
+use App\Models\Surat\CutiJenis;
 use App\Models\Sdm\Jabatan;
 use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
+use Livewire\Component;
 use TallStackUi\Traits\Interactions;
-use App\Livewire\Forms\SuratCutiForm;
 
 #[Lazy]
 class Add extends Component
 {
     use Interactions;
     public SuratCutiForm $form;
+
+    #[Locked]
     public ?Karyawan $karyawan;
 
     public function mount()
     {
         $this->form->options_atasan = Jabatan::pluck('nama', 'id');
+        $this->form->initOptionsUrgensi();
     }
 
     public function updateKaryawan($value)
     {
         $this->karyawan = Karyawan::findOrFail($value);
-        $this->form->sisa_cuti = $this->karyawan?->cuti;
         $this->form->jenis_cuti = '';
+
+        if ($this->karyawan?->sisa_cuti < 0) {
+            $this->form->sisa_cuti = 0;
+            $this->toast()
+                ->warning('Belum terpenuhi', 'Masa kerja kurang dari 1 tahun')
+                ->send();
+            return;
+        }
+        $this->form->sisa_cuti = $this->karyawan?->sisa_cuti;
     }
 
-    public function updateJenisCuti($value)
+    public function updatedFormJenisCuti($value)
     {
-        $this->form->tgl_cuti = []; //ketika ganti jenis, tanggal pengajuan cuti di reset terlebih dahulu 
+        $this->form->tgl_cuti = [];
+        $cutiDiambil = $this->karyawan?->cuti;
 
-        $this->form->sisa_cuti = $this->karyawan?->cuti;
-        if ($value === 'bersalin') {
-            $this->form->sisa_cuti = 90;
+        $jenis  = CutiJenis::findOrFail($value);
+
+        $this->form->sisa_cuti = $jenis->lama;
+        if ($jenis->periode) {
+            $this->form->sisa_cuti = $jenis->lama - $cutiDiambil;
         }
     }
 
@@ -45,7 +61,7 @@ class Add extends Component
 
         $submitting = $this->form->submiting(karyawan: $this->karyawan);
 
-        if ($submitting['status'] === 'sukses') {
+        if ($submitting['success']) {
             $this->dispatch('created-cuti');
 
             $this->toast()
@@ -60,6 +76,8 @@ class Add extends Component
 
     public function render()
     {
+        $this->authorize('view-cuti');
+
         return view('livewire.surat.cuti.add');
     }
 }
