@@ -4,6 +4,7 @@ namespace App\Livewire\Karyawan;
 
 use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions;
@@ -15,6 +16,7 @@ class Edit extends Component
 {
     use Interactions;
 
+    #[Locked]
     public ?Karyawan $karyawan;
 
     public function mount($id)
@@ -84,7 +86,7 @@ class Edit extends Component
 
     public function render()
     {
-        $this->authorize('edit-karyawan');
+        $this->authorize('edit-kepegawaian-karyawan');
         return view('livewire.karyawan.edit');
     }
 }

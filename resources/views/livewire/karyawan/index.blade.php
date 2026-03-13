@@ -2,7 +2,10 @@
 
     <div class="flex w-full flex-row rounded-lg bg-white">
         <div class="px-3 py-2">
-            @props(['active' => 'text-lg font-bold border-b-4 border-indigo-500/50 bg-indigo-500/15 '])
+            @props([
+                'active' => 'text-lg font-bold border-b-4 border-indigo-500/50 bg-indigo-500/15 ',
+                'activeResign' => 'text-lg font-bold border-b-4 border-red-500/50 bg-red-500/15 ',
+            ])
 
             <x-ts:button sm flat loading="navigateTo('all')" wire:click="navigateTo('all')" @class([$active => $content === 'all'])>
                 <x-ts:icon name="tabler.users" class="h-5 w-5" />
@@ -16,6 +19,11 @@
                     Dokter
                 </x-ts:button>
             @endcan
+
+            <x-ts:button sm flat color="red" loading="navigateTo('resign')" wire:click="navigateTo('resign')" @class([$activeResign => $content === 'resign'])>
+                <x-ts:icon name="tabler.briefcase-off" class="h-5 w-5" />
+                Resign
+            </x-ts:button>
 
         </div>
         <div class="ms-auto px-3 py-2">
@@ -57,9 +65,13 @@
                 @break
 
                 @case('dokter')
-                    <livewire:Karyawan.Dokter.TableDokter :key="Str::random()">
-                    @break
-                @endswitch
+                    <livewire:Karyawan.Dokter.TableDokter :key="Str::random()" />
+                @break
+
+                @case('resign')
+                    <livewire:Karyawan.TableResign key="table-resign" />
+                @break
+            @endswitch
         </div>
     </div>
 

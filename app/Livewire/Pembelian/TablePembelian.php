@@ -199,20 +199,32 @@ class TablePembelian extends Component implements HasTable, HasForms
 
                         Select::make('mengetahui')
                             ->label('Mengetahui')
-                            ->options(Karyawan::pluck('nama', 'id')->toArray())
+                            ->options(
+                                Karyawan::orderBy('nama')
+                                    ->pluck('nama', 'id')
+                                    ->toArray()
+                            )
                             ->searchable()
                             ->preload(),
 
                         Select::make('menyetujui')
                             ->label('Menyetujui')
-                            ->options(Karyawan::pluck('nama', 'id')->toArray())
+                            ->options(
+                                Karyawan::orderBy('nama')
+                                    ->pluck('nama', 'id')
+                                    ->toArray()
+                            )
                             ->searchable()
                             ->preload(),
 
 
                         Select::make('verifikator')
                             ->label('Verifikator')
-                            ->options(Karyawan::pluck('nama', 'id')->toArray())
+                            ->options(
+                                Karyawan::orderBy('nama')
+                                    ->pluck('nama', 'id')
+                                    ->toArray()
+                            )
                             ->searchable()
                             ->preload(),
                     ])

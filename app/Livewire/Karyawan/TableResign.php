@@ -19,7 +19,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Locked;
 
-class TableKaryawan extends Component implements HasForms, HasTable
+class TableResign extends Component implements HasForms, HasTable
 {
     use InteractsWithTable, InteractsWithForms;
 
@@ -29,7 +29,8 @@ class TableKaryawan extends Component implements HasForms, HasTable
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Karyawan::with('latestJabatan.jabatan')->where('resign', null))
+            ->query(Karyawan::query()->with('latestJabatan.jabatan')
+                ->whereNotNull('resign'))
             ->deferLoading(false)
             ->striped()
             ->columns([
@@ -65,12 +66,22 @@ class TableKaryawan extends Component implements HasForms, HasTable
                 TextColumn::make('masakerja')
                     ->label('Masa Kerja'),
 
-                TextColumn::make('status_dinas')
+                TextColumn::make('resign')
                     ->badge()
-                    ->getStateUsing(function (Karyawan $record) {
-                        return $record->resign ?? 'Aktif';
-                    })
-                    ->color(fn(Karyawan $record) => (!empty($record->resign)) ? 'danger' : 'primary'),
+                    ->formatStateUsing(
+                        fn($state): string => match ($state) {
+                            '1' => 'Resign / Mengundurkan Diri',
+                            '2' => 'Diberhentikan',
+                            '4' => 'Habis Kontrak',
+                            default => 'Aktif'
+                        }
+                    )
+                    ->color(
+                        fn(Karyawan $record) => (!empty($record->resign)) ? 'danger' : 'primary'
+                    ),
+
+                TextColumn::make('resign_at')
+                    ->label('Tanggal Resign')
             ])
             ->filters([
                 // Filter status
@@ -121,15 +132,6 @@ class TableKaryawan extends Component implements HasForms, HasTable
                             karyawan: $record->getKey()
                         );
                     }),
-
-                Action::make('edit')
-                    ->iconButton()
-                    ->icon('tabler-user-edit')
-                    ->color('danger')
-                    ->url(fn(Karyawan $record): string => route('kepegawaian.karyawan.edit', $record))
-                    ->visible(
-                        fn() => auth()->user()->can('edit-kepegawaian-karyawan')
-                    )
             ]);
     }
 
@@ -148,6 +150,6 @@ class TableKaryawan extends Component implements HasForms, HasTable
 
     public function render()
     {
-        return view('livewire.karyawan.table-karyawan');
+        return view('livewire.karyawan.table-resign');
     }
 }

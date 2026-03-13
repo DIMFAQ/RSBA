@@ -46,6 +46,8 @@ class Resign extends Component
 
             DB::commit();
 
+            $this->dispatch('karyawan-resign-updated');
+
             $this->toast()
                 ->success('Berhasil', 'Karyawan berhasil diupdate.')
                 ->send();

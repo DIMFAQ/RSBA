@@ -130,7 +130,7 @@
 
 
         <div class="flex justify-end gap-2 pt-4">
-            <x-ts:button loading="update" sm icon="tabler.user-edit" type="submit">Update</x-ts:button>
+            <x-ts:button loading="update" xs outline icon="tabler.user-edit" type="submit">Update</x-ts:button>
         </div>
     </form>
 </div>

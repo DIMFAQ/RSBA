@@ -63,64 +63,29 @@
         {{-- this section can scrollable --}}
         <div class="scrollbar-hidden flex max-h-screen w-full flex-col space-y-3 overflow-y-auto lg:max-h-[calc(100vh-20px)] lg:w-3/4">
 
-            <x-ts:card minimize>
-                <x-slot:header>
-                    <div class="flex flex-row items-center gap-2 text-indigo-500">
-                        <x-tabler-briefcase class="h-5 w-5" />
-                        Kedinasan
-                    </div>
-                </x-slot:header>
+            <x-collapsible-card title="Kedinasan" icon="tabler-briefcase" color="indigo">
+                <livewire:Karyawan.EditKedinasan :id="$karyawan->id" :key="'dinas-' . $karyawan->id" @new-jabatan-created="$refresh" @status-updated="$refresh" />
+            </x-collapsible-card>
 
-                <livewire:Karyawan.EditKedinasan :id="$karyawan->id" :key="'dinas-' . $karyawan->id" @new-jabatan-created="$refresh" @status-updated="$refresh">
-            </x-ts:card>
+            <x-collapsible-card title="Identitas" icon="tabler-user-edit" color="indigo" :defaultOpen="false">
+                <livewire:Karyawan.EditIdentitas :id="$karyawan->id" :key="'identitas-' . $karyawan->id" @updated-karywan="$refresh" />
+            </x-collapsible-card>
 
-            <x-ts:card minimize>
-                <x-slot:header>
-                    <div class="flex flex-row items-center gap-2 text-indigo-500">
-                        <x-tabler-user-edit class="h-5 w-5" />
-                        Identitas
-                    </div>
-                </x-slot:header>
+            <x-collapsible-card title="Pendidikan" icon="tabler-school" color="indigo" :defaultOpen="false">
+                <livewire:Karyawan.Pendidikan.PendidikanList :id="$karyawan->id" :key="Str::random(5)" @deleted-pendidikan-karyawan="$refresh" @pendidikan-karyawan-created="$refresh" />
+            </x-collapsible-card>
 
-                <div class="flex flex-col lg:flex-row">
-                    <livewire:Karyawan.EditIdentitas :id="$karyawan->id" :key="'identitas-' . $karyawan->id" @updated-karywan="$refresh">
-                </div>
-            </x-ts:card>
-
-            <x-ts:card minimize="mount">
-                <x-slot:header>
-                    <div class="flex flex-row items-center gap-2 text-indigo-500">
-                        <x-tabler-school class="h-5 w-5" />
-                        Pendidikan
-                    </div>
-                </x-slot:header>
-                <div>
-                    {{-- component form update --}}
-                    <livewire:Karyawan.Pendidikan.PendidikanList :id="$karyawan->id" :key="Str::random()" @deleted-pendidikan-karyawan="$refresh" @pendidikan-karyawan-created="$refresh" />
-                </div>
-            </x-ts:card>
-
-
-            <x-ts:card minimize="mount">
-                <x-slot:header>
-                    <div class="flex flex-row items-center gap-2 text-indigo-500">
-                        <x-tabler-file-type-doc class="h-5 w-5" />
-                        Documents
-                    </div>
-                </x-slot:header>
-                <div>
-                    {{-- component form update --}}
-                    <livewire:Karyawan.Document.DocumentList :id="$karyawan->id" :key="Str::random()" @document-karyawan-created="$refresh" @document-karyawan-deleted="$refresh" />
-                </div>
-            </x-ts:card>
+            <x-collapsible-card title="Dokumen" icon="tabler-file-type-doc" color="indigo" :defaultOpen="false">
+                <livewire:Karyawan.Document.DocumentList :id="$karyawan->id" :key="Str::random(5)" @document-karyawan-created="$refresh" @document-karyawan-deleted="$refresh" />
+            </x-collapsible-card>
         </div>
     </div>
 
 
     {{-- modal form resign --}}
-    <x-ts:modal id="modal-resign-karyawan" center title="Resign">
+    <x-ts:modal id="modal-resign-karyawan" center title="Resign" x-on:karyawan-resign-updated.window="$modalClose('modal-resign-karyawan')">
         {{-- form --}}
-        <livewire:Karyawan.Resign @karyawan-resign-updated="$refresh" :id="$karyawan->id" :key="'modal-' . Str::random()" />
+        <livewire:Karyawan.Resign :id="$karyawan->id" :key="'modal-resign-' . Str::random(5)" />
     </x-ts:modal>
     {{-- end acton resign --}}
 </div>
