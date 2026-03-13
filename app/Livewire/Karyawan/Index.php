@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan;
 
+use App\Traits\AuthorizesFromRoute;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -11,6 +12,7 @@ use TallStackUi\Traits\Interactions;
 #[Lazy]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
     use Interactions;
 
     public $content = 'all';
@@ -29,7 +31,7 @@ class Index extends Component
 
     public function render()
     {
-        $this->authorize('view-karyawan');
+        $this->authorizeFromRoute();
         return view('livewire.karyawan.index');
     }
 }

@@ -3,9 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Menu;
-use Illuminate\Container\Attributes\DB;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Spatie\Permission\Models\Permission;
 
 class MenuSeeder extends Seeder
@@ -43,7 +41,7 @@ class MenuSeeder extends Seeder
                         'nama' => 'User',
                         'route' => 'admin.user.index',
                         'icon' => 'users',
-                        'permission' => 'view-user',
+                        'permission' => 'view-admin-user-index',
                         'group' => 'adm',
                         'submenus' => []
                     ],
@@ -58,7 +56,7 @@ class MenuSeeder extends Seeder
                                 'nama' => 'Menu',
                                 'route' => 'admin.settings.menu',
                                 'icon' => null,
-                                'permission' => 'view-menus',
+                                'permission' => 'view-admin-settings-menu',
                                 'group' => 'adm',
                                 'submenus' => []
                             ],
@@ -66,7 +64,7 @@ class MenuSeeder extends Seeder
                                 'nama' => 'Perusahaan',
                                 'route' => 'admin.settings.perusahaan',
                                 'icon' => null,
-                                'permission' => 'view-perusahaan',
+                                'permission' => 'view-admin-settings-perusahaan',
                                 'group' => 'adm',
                                 'submenu' => []
                             ]
@@ -84,7 +82,7 @@ class MenuSeeder extends Seeder
                                 'nama' => 'Role',
                                 'route' => 'admin.settings.role',
                                 'icon' => null,
-                                'permission' => 'view-roles',
+                                'permission' => 'view-admin-settings-role',
                                 'group' => 'adm',
                                 'submenus' => []
                             ],
@@ -92,7 +90,7 @@ class MenuSeeder extends Seeder
                                 'nama' => 'Permission',
                                 'route' => 'admin.settings.permission',
                                 'icon' => null,
-                                'permission' => 'view-permissions',
+                                'permission' => 'view-admin-settings-permission',
                                 'group' => 'adm',
                                 'submenus' => []
                             ]

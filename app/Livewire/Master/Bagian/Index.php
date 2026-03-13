@@ -4,6 +4,7 @@ namespace App\Livewire\Master\Bagian;
 
 use Livewire\Component;
 use App\Models\Sdm\Bagian;
+use App\Traits\AuthorizesFromRoute;
 use Filament\Tables\Table;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
@@ -20,6 +21,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 #[Title('Bagian')]
 class Index extends Component implements HasForms, HasTable
 {
+    use AuthorizesFromRoute;
     use InteractsWithForms, InteractsWithTable;
     use Interactions;
 
@@ -105,6 +107,7 @@ class Index extends Component implements HasForms, HasTable
 
     public function render()
     {
+        $this->authorizeFromRoute();
         return view('livewire.master.bagian.index');
     }
 }

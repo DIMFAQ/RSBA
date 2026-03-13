@@ -9,6 +9,7 @@ use Livewire\Attributes\Lazy;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\Route;
+use Livewire\Attributes\Computed;
 use Spatie\Permission\Models\Permission;
 
 #[Lazy]
@@ -26,14 +27,16 @@ class Edit extends Component
     public $group;
 
     // select option
-    public $permission_options;
-    public $parents;
+    // public $parents;
     public $groups;
 
-    public $rules = [
-        'nama' => 'required|string',
-        'permission' => 'required'
-    ];
+    public function rules(): array
+    {
+        return [
+            'nama' => 'required|string',
+            'permission' => $this->route ? 'required' : []
+        ];
+    }
 
     function mount($id)
     {
@@ -49,7 +52,15 @@ class Edit extends Component
             $this->group = $this->menu->group;
         }
         // 
-        $this->parents = Menu::with('parent')->select('id', 'nama', 'parent_id', 'group')
+        // $this->permission_options = Permission::select('id', 'name')->get();
+        $this->route_avail = $this->cekRouteList(routeName: $this->route);
+        $this->groups = MenuGroup::options();
+    }
+
+    #[Computed]
+    public function parents()
+    {
+        return Menu::with('parent')->select('id', 'nama', 'parent_id', 'group')
             ->get()
             ->map(
                 fn($item) => [
@@ -58,11 +69,12 @@ class Edit extends Component
                     'description' => ($item->parent?->nama ?? 'Main Menu') . ", " .  ($item->group?->nama())
                 ]
             );
+    }
 
-
-        $this->permission_options = Permission::select('id', 'name')->get();
-        $this->route_avail = $this->cekRouteList(routeName: $this->route);
-        $this->groups = MenuGroup::options();
+    #[Computed]
+    public function permissionOptions(): array
+    {
+        return Permission::select('id', 'name')->get()->toArray();
     }
 
     // check route form blade

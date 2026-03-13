@@ -7,12 +7,14 @@ use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Locked;
 use App\Models\Gudang\Distribusi;
+use App\Traits\AuthorizesFromRoute;
 use App\Traits\BlocksTransactionDuringOpname;
 
 #[Title('Distribusi')]
 #[Lazy]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
     use BlocksTransactionDuringOpname;
 
     #[Locked]
@@ -40,7 +42,7 @@ class Index extends Component
         }
 
 
-        $this->authorize('view-distribusi');
+        $this->authorizeFromRoute();
         return view('livewire.distribusi.index');
     }
 }

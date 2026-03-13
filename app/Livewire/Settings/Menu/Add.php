@@ -5,7 +5,6 @@ namespace App\Livewire\Settings\Menu;
 use App\Enums\MenuGroup;
 use App\Models\Menu;
 use Livewire\Component;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Lazy;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
@@ -91,8 +90,10 @@ class Add extends Component
         $this->validate();
 
         // default permission to this menu : string
-        $defaultPermission = 'view-' . Str::slug($this->nama); // concate 'view-' $nama 
-        $collectDefaultPermission[] = $defaultPermission; // format as array
+        // $defaultPermission = 'view-' . Str::slug($this->nama); // concate 'view-' $nama 
+        // $collectDefaultPermission[] = $defaultPermission; // format as array
+        $permissions = $this->generatePermissionFromRoute(route: $this->route);
+
 
         // data prepare to insert
         $data = [
@@ -101,13 +102,22 @@ class Add extends Component
             'icon' => $this->icon,
             'parent_id' => $this->parent_id ?? 0,
             'group' => $this->group,
-            'permission' => $collectDefaultPermission //insert array, di model sudah casts = [permission => array]
+            'permission' => $permissions //insert array, di model sudah casts = [permission => array]
         ];
 
         DB::beginTransaction();
         try {
             // create permission
-            Permission::findOrCreate($defaultPermission, 'web');
+            // Permission::findOrCreate($defaultPermission, 'web');
+            foreach ($permissions as $perm) {
+                Permission::firstOrCreate([
+                    'name'       => $perm,
+                    'guard_name' => 'web',
+                ]);
+
+                // Relasi menu → permission
+                // $menu->permissions()->attach($permission->id);
+            }
 
             // insert data
             Menu::create($data);
@@ -128,6 +138,20 @@ class Add extends Component
             # code...
 
         }
+    }
+
+    protected function generatePermissionFromRoute(?string $route = null): array
+    {
+        if (empty($route)) return [];
+
+        $resource = str_replace('.', '-', $route);
+
+        return [
+            "view-{$resource}",
+            "add-{$resource}",
+            "edit-{$resource}",
+            "delete-{$resource}",
+        ];
     }
 
     public function render()

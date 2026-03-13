@@ -3,6 +3,7 @@
 namespace App\Livewire\Maintenance;
 
 use App\Models\Maintenance\Request as MaintenanceRequest;
+use App\Traits\AuthorizesFromRoute;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Isolate;
 use Livewire\Attributes\Title;
@@ -12,6 +13,7 @@ use Livewire\Component;
 #[Isolate]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
 
     #[Computed]
     public function getHasNewRequestProperty()
@@ -23,7 +25,7 @@ class Index extends Component
 
     public function render()
     {
-        $this->authorize('view-maintenance');
+        $this->authorizeFromRoute();
         return view('livewire.maintenance.index');
     }
 }

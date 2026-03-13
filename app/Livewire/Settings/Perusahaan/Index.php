@@ -4,6 +4,7 @@ namespace App\Livewire\Settings\Perusahaan;
 
 use Livewire\Component;
 use App\Models\Perusahaan;
+use App\Traits\AuthorizesFromRoute;
 use Illuminate\Container\Attributes\DB;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
@@ -14,6 +15,7 @@ use TallStackUi\Traits\Interactions;
 #[Lazy]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
     use Interactions;
     use WithFileUploads;
 
@@ -91,7 +93,8 @@ class Index extends Component
 
     public function render()
     {
-        $this->authorize('view-perusahaan');
+        // $this->authorize('view-perusahaan');
+        $this->authorizeFromRoute();
         return view('livewire.settings.perusahaan.index');
     }
 }

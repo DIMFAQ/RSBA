@@ -10,11 +10,13 @@ use App\Models\Gudang\OpnameStok;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
 use App\Models\Gudang\OpnameStokDetail;
+use App\Traits\AuthorizesFromRoute;
 
 #[Title('Stok Opname')]
 #[Lazy]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
     use Interactions;
 
     public function create()
@@ -82,6 +84,7 @@ class Index extends Component
 
     public function render()
     {
+        $this->authorizeFromRoute();
         return view('livewire.stok-opname.index');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings\Role;
 
+use App\Traits\AuthorizesFromRoute;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\Lazy;
@@ -20,6 +21,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 #[Lazy]
 class Index extends Component implements HasTable, HasForms
 {
+    use AuthorizesFromRoute;
     use InteractsWithTable, InteractsWithForms;
     use Interactions;
 
@@ -97,7 +99,8 @@ class Index extends Component implements HasTable, HasForms
 
     public function render()
     {
-        $this->authorize('view-roles');
+        // $this->authorize('view-roles');
+        $this->authorizeFromRoute();
         return view('livewire.settings.role.index');
     }
 }

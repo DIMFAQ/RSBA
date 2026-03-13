@@ -7,11 +7,14 @@ use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
 use App\Livewire\Laporan\Umum\Pembelian as PembelianLaporan;
 use App\Livewire\Laporan\Umum\Distribusi as DistribusiLaporan;
+use App\Traits\AuthorizesFromRoute;
 
 #[Title('Laporan Umum')]
 #[Lazy]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
+
     public string $tab;
 
     public $optionsFaktur = [
@@ -59,6 +62,7 @@ class Index extends Component
 
     public function render()
     {
+        $this->authorizeFromRoute();
         return view('livewire.laporan.umum.index');
     }
 }

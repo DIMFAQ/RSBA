@@ -11,7 +11,7 @@
     </x-filament::modal>
 
 
-    <x-filament::modal id="edit-user-permission" width="full" :close-by-clicking-away="false">
+    <x-filament::modal id="edit-user-permission" width="6xl" :close-by-clicking-away="false">
         <x-slot name="heading">
             User Permission <span class="text-primary-500">{{ $user?->karyawan->nama }}</span>
         </x-slot>

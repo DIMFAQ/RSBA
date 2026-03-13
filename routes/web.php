@@ -33,13 +33,6 @@ Route::middleware('auth')
         Route::get('/dashboard', App\Livewire\Dashboard\Home::class)->name('dashboard');
     });
 
-
-Route::middleware('auth')
-    ->group(function () {
-
-        Route::get('/dashboard', App\Livewire\Dashboard\Home::class)->name('dashboard');
-    });
-
 Route::get('surat/verification', App\Livewire\Surat\Verifikasi\Index::class)->name('surat.verification');
 
 // // Administrator

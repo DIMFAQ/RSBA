@@ -12,15 +12,19 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Locked;
 
 #[Lazy]
 class PermissionEdit extends Component
 {
     use Interactions;
 
+    #[Locked]
     public ?User $user;
+
     public $mainMenu;
-    public $group = 'sdm';
+    public $groups;
+    public $group = '';
 
     public $permission = [];
     public $rolePermission = [];
@@ -29,6 +33,7 @@ class PermissionEdit extends Component
     {
         $this->user = User::findOrFail($id);
         $this->mainMenu = Menu::first();
+        $this->groups = MenuGroup::options();
 
         // $this->menus = Menu::where('id', '!=', $this->mainMenu->id)->with('submenus')->get();
 
@@ -51,6 +56,7 @@ class PermissionEdit extends Component
     {
         return Menu::where('id', '!=', $this->mainMenu->id)
             ->with('submenus')
+            ->where('group', $this->group)
             ->orderBy('group', 'ASC')
             ->orderBy('nama', 'ASC')
             ->get()

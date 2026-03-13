@@ -3,6 +3,7 @@
 namespace App\Livewire\Master\Ruangan;
 
 use App\Models\Ruangan;
+use App\Traits\AuthorizesFromRoute;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\Lazy;
@@ -19,6 +20,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 #[Title('Data Ruangan')]
 class Index extends Component implements HasForms, HasTable
 {
+    use AuthorizesFromRoute;
     use InteractsWithTable, InteractsWithForms;
     use Interactions;
 
@@ -86,6 +88,7 @@ class Index extends Component implements HasForms, HasTable
     }
     public function render()
     {
+        $this->authorizeFromRoute();
         return view('livewire.master.ruangan.index');
     }
 }

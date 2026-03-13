@@ -3,6 +3,7 @@
 namespace App\Livewire\Pembelian;
 
 use App\Models\Gudang\PembelianRequest;
+use App\Traits\AuthorizesFromRoute;
 use App\Traits\BlocksTransactionDuringOpname;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -14,6 +15,7 @@ use Livewire\Attributes\Title;
 #[Lazy]
 class Index extends Component
 {
+    use AuthorizesFromRoute;
     use WithPagination;
     use BlocksTransactionDuringOpname;
 
@@ -36,7 +38,7 @@ class Index extends Component
             return view('components.opname-block');
         }
 
-        $this->authorize('view-pembelian');
+        $this->authorizeFromRoute();
         return view('livewire.pembelian.index');
     }
 }
