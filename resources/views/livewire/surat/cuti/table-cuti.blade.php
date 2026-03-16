@@ -28,7 +28,7 @@
     <div x-data x-on:trigger-print.window="$nextTick(() => printArea('print-cuti-approved'))">
         <div class="hidden" id="print-cuti-approved">
             @if ($surat)
-                <livewire:Surat.Cuti.PrintCuti :suratCuti="$surat" :key="'print-cuti-' . Str::random(5)" />
+                <livewire:Surat.Cuti.PrintCuti :suratCuti="$surat" :key="'print-cuti-' . $surat->id" />
             @endif
         </div>
     </div>

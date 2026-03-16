@@ -22,10 +22,4 @@
         <x-ts:button sm outline color="dark">Batal</x-ts:button>
         <x-ts:button sm outline icon="tabler.printer" loading="printManual" wire:click="printManual()">Print</x-ts:button>
     </div>
-
-    <div x-on:surat-cuti-manual-approved.window="$nextTick(()=> printArea('print-cuti-manual'))">
-        <div class="hidden" id="print-cuti-manual">
-            <livewire:Surat.Cuti.PrintCuti :suratCuti="$suratCuti" :key="'print-cuti-' . $suratCuti?->id" />
-        </div>
-    </div>
 </div>

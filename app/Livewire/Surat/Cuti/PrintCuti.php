@@ -5,6 +5,7 @@ namespace App\Livewire\Surat\Cuti;
 use App\Models\Surat\SuratCuti;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Milon\Barcode\DNS2D;
 
@@ -15,7 +16,16 @@ class PrintCuti extends Component
 
     public function mount(SuratCuti $suratCuti)
     {
-        $this->suratCuti = $suratCuti;
+        $this->suratCuti = SuratCuti::findOrFail($suratCuti->id);
+    }
+
+    #[On('surat-cuti-manual-approved')]
+    #[On('surat-cuti-approved')]
+    public function refreshData()
+    {
+        $this->suratCuti = SuratCuti::find($this->suratCuti->id);
+
+        $this->dispatch('trigger-print');
     }
 
     #[Computed]

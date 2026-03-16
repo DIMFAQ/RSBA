@@ -41,7 +41,7 @@ class MenuSeeder extends Seeder
                         'nama' => 'User',
                         'route' => 'admin.user.index',
                         'icon' => 'users',
-                        'permission' => 'view-admin-user-index',
+                        'permission' => 'view-admin-user',
                         'group' => 'adm',
                         'submenus' => []
                     ],
