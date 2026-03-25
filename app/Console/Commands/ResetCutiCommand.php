@@ -82,8 +82,13 @@ class ResetCutiCommand extends Command
 
 
         // Next Proses
-        if (!$this->confirm('Lanjutkan proses reset cuti?', true)) {
-            $this->info('Dibatalkan.');
+        // if (!$this->confirm('Lanjutkan proses reset cuti?', true)) {
+        //     $this->info('Dibatalkan.');
+        //     return self::SUCCESS;
+        // }
+        $shouldContinue = $this->input->isInteractive() ? $this->confirm('Lanjutkan proses reset cuti ?', true) : true;
+        if (!$shouldContinue) {
+            $this->info('Dibatalkan');
             return self::SUCCESS;
         }
 
@@ -98,7 +103,9 @@ class ResetCutiCommand extends Command
         }
 
 
-        $this->info('💡 Jalankan: php artisan queue:work');
+        if ($this->input->isInteractive()) {
+            $this->info('💡 Jalankan: php artisan queue:work');
+        }
 
         return self::SUCCESS;
     }
