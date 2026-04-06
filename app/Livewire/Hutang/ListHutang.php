@@ -9,15 +9,17 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-#[Lazy]
 class ListHutang extends Component implements HasTable, HasForms
 {
     use InteractsWithTable, InteractsWithForms;
+
+    #[Locked]
+    public $selectedId;
 
     #[Locked]
     public $periode;
@@ -42,7 +44,9 @@ class ListHutang extends Component implements HasTable, HasForms
                     ->when($this->supplier, function ($query) {
                         $query->where('supplier_id', $this->supplier);
                     })
+                    ->latest()
             )
+            ->deferLoading()
             ->striped()
             ->columns([
                 TextColumn::make('index')
@@ -106,11 +110,35 @@ class ListHutang extends Component implements HasTable, HasForms
                     ->label('Total')
                     ->money('idr')
             ])
+            ->filters([
+                SelectFilter::make('status_pembayaran')
+                    ->label('Status Pembayaran')
+                    ->options(
+                        fn() =>  [
+                            'lunas' => 'Lunas',
+                            'tempo' => 'Tempo'
+                        ]
+                    )
+                    ->searchable()
+                    ->preload()
+            ])
             ->actions([
+                Action::make('detail')
+                    ->label('Detail Pembelian')
+                    ->iconButton()
+                    ->icon('tabler-file-invoice')
+                    ->color('gray')
+                    ->action(
+                        fn($record, $livewire) => $livewire->openModal(
+                            modal: 'modal-detail-pembayaran-hutang',
+                            id: $record->getKey()
+                        )
+                    ),
+
                 Action::make('bayar')
                     ->label('Pembayaran')
                     ->iconButton()
-                    ->icon('tabler-file-invoice')
+                    ->icon('tabler-file-symlink')
                     ->action(
                         fn($record, $livewire) => $livewire->openModal(
                             modal: 'modal-pembayaran-hutang',
@@ -122,7 +150,7 @@ class ListHutang extends Component implements HasTable, HasForms
 
     public function openModal($modal, $id)
     {
-
+        $this->selectedId = $id;
         $this->dispatch('open-modal', id: $modal);
     }
 

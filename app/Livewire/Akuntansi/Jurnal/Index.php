@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Livewire\Laporan\Keuangan;
+namespace App\Livewire\Akuntansi\Jurnal;
 
 use App\Traits\AuthorizesFromRoute;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Jurnal Umum')]
 class Index extends Component
 {
     use AuthorizesFromRoute;
 
-    public $tab;
-
     public function render()
     {
         $this->authorizeFromRoute();
-        return view('livewire.laporan.keuangan.index');
+        return view('livewire.akuntansi.jurnal.index');
     }
 }

@@ -20,3 +20,19 @@ Route::prefix('laporan')
     ->group(function () {
         Route::get('/', App\Livewire\Laporan\Keuangan\Index::class)->name('index');
     });
+
+Route::prefix('akuntansi')
+    ->name('akuntansi.')
+    ->group(
+        function () {
+            Route::get('coa', App\Livewire\Akuntansi\Coa\Index::class)->name('coa');
+
+            // jurnal
+            Route::prefix('jurnal')
+                ->name('jurnal.')
+                ->group(function () {
+                    Route::get('umum', App\Livewire\Akuntansi\Jurnal\Index::class)->name('umum');
+                });
+        }
+
+    );
