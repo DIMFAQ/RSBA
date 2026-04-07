@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\Gudang\Stok;
 use App\Models\Gudang\StokMutasi;
 use Illuminate\Container\Attributes\DB;
@@ -50,7 +51,7 @@ class StokMutasiService
             $stoks = Stok::lockForUpdate()->findOrFail($stokId);
 
             if ($stoks->stok < $jumlah) {
-                throw new \Exception("Stok tidak mencukupi. Stok tersedia: {$stoks->barang->nama}");
+                throw new Exception("Stok tidak mencukupi. Stok tersedia: {$stoks->barang->nama}");
             }
 
             $stokSebelum = $stoks->stok;

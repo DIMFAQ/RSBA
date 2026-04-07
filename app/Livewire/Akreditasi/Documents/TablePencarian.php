@@ -2,26 +2,29 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Locked;
 use Livewire\WithoutUrlPagination;
-use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Akreditasi\AkreDocuments;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TablePencarian extends Component implements HasTable, HasForms
+class TablePencarian extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithForms, InteractsWithTable;
     use WithoutUrlPagination;
@@ -142,7 +145,7 @@ class TablePencarian extends Component implements HasTable, HasForms
                     ->searchable()
                     ->preload()
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->iconButton()
                     ->icon('tabler-dual-screen')

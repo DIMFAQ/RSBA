@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Models\JmPasien;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -18,12 +19,10 @@ class PasiensImport implements ToModel, WithHeadingRow, WithBatchInserts, WithCh
      */
     protected $batchData = [];
     // protected $batchSize = 50;
-
-
     /**
      * @param array $row
      *
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @return Model|null
      */
     public function model(array $row)
     {

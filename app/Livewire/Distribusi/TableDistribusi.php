@@ -2,13 +2,15 @@
 
 namespace App\Livewire\Distribusi;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use Carbon\Carbon;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Locked;
 use App\Models\Gudang\Distribusi;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Filters\Indicator;
@@ -19,8 +21,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TableDistribusi extends Component implements HasTable, HasForms
+class TableDistribusi extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -81,7 +84,7 @@ class TableDistribusi extends Component implements HasTable, HasForms
                 // filter tanggal (periode)
                 Filter::make('tanggal')
                     ->label('Periode Distribusi')
-                    ->form([
+                    ->schema([
                         DatePicker::make('tgl_mulai')
                             ->default(now()->startOfMonth())
                             ->label('Dari')
@@ -120,7 +123,7 @@ class TableDistribusi extends Component implements HasTable, HasForms
                     })
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('detail')
                     ->label('Detail')
                     ->icon('tabler-file-symlink')

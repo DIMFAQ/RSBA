@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan;
 
+use Throwable;
 use App\Exports\TemplateImportKaryawan;
 use App\Imports\KaryawanImport;
 use Livewire\Attributes\Lazy;
@@ -35,7 +36,7 @@ class ImportKaryawan extends Component
             $this->toast()
                 ->success('Import Karyawan Berhasil!', 'Data Karyawan berhasil diimport!')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Import Karyawan Gagal!', "Error : " . $e->getMessage())
                 ->send();

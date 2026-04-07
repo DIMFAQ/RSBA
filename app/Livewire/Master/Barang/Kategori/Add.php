@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Barang\Kategori;
 
+use Throwable;
 use App\Models\Master\BarangKategori;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Kategori barang berhasil dibuat.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

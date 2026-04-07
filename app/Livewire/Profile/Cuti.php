@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Profile;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Enums\StatusApproval;
 use App\Models\Sdm\Karyawan;
 use App\Models\Surat\SuratCuti;
@@ -17,8 +19,9 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 #[Lazy]
-class Cuti extends Component implements HasTable, HasForms
+class Cuti extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Akreditasi\Chapters;
 
+use Throwable;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
@@ -56,7 +57,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Chapter / Standar akreditasi ditambahkan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             if (!empty($folder) && Storage::disk('public')->exists($folder)) {

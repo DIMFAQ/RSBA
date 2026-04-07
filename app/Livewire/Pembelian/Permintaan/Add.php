@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pembelian\Permintaan;
 
+use Throwable;
 use Livewire\Component;
 use Illuminate\Support\Arr;
 use App\Models\Master\Barang;
@@ -113,7 +114,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Pengajuan anda telah dikirim.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Terjadi Kesalahan', "<i>{$e->getMessage()}</i> <br>Silahkan Coba Lagi.")
                 ->send();

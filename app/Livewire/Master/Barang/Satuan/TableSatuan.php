@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Master\Barang\Satuan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Throwable;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use App\Models\Master\BarangSatuan;
-use Filament\Tables\Actions\Action;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -15,8 +18,9 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Livewire\Attributes\Locked;
 use TallStackUi\Traits\Interactions;
 
-class TableSatuan extends Component implements HasTable, HasForms
+class TableSatuan extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithForms, InteractsWithTable;
 
@@ -35,7 +39,7 @@ class TableSatuan extends Component implements HasTable, HasForms
                 TextColumn::make('deskripsi')
                     ->label('Deskripsi')
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit')
@@ -71,7 +75,7 @@ class TableSatuan extends Component implements HasTable, HasForms
             $this->toast()
                 ->success('Berhasil', 'Data satuan dinonaktifkan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

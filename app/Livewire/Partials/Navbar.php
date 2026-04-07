@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Partials;
 
+use Throwable;
 use Livewire\Component;
 use App\Livewire\Auth\Login;
 use Livewire\Attributes\Lazy;
@@ -92,7 +93,7 @@ class Navbar extends Component
             session()->regenerateToken();
 
             return $this->redirect(Login::class, navigate: true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error("An error occured {$e}")
                 ->send();

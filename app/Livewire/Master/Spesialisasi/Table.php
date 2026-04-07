@@ -2,18 +2,21 @@
 
 namespace App\Livewire\Master\Spesialisasi;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Sdm\DokterSpesialisasi;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table as FilamentTable;
 use Livewire\Component;
 
-class Table extends Component implements HasTable, HasForms
+class Table extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     public ?DokterSpesialisasi $spesialisasi;
@@ -34,7 +37,7 @@ class Table extends Component implements HasTable, HasForms
                 TextColumn::make('singkatan')
                     ->label('Singkatan / Gelar')
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit')

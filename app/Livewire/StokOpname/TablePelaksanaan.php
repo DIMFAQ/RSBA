@@ -2,6 +2,10 @@
 
 namespace App\Livewire\StokOpname;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Throwable;
 use Carbon\Carbon;
 use Livewire\Component;
 use Filament\Tables\Table;
@@ -9,7 +13,6 @@ use App\Exports\OpnameHasil;
 use App\Models\Gudang\OpnameStok;
 use App\Models\Gudang\StokMutasi;
 use Illuminate\Support\Facades\DB;
-use Filament\Tables\Actions\Action;
 use Maatwebsite\Excel\Facades\Excel;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Contracts\HasForms;
@@ -19,8 +22,9 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TablePelaksanaan extends Component implements HasTable, HasForms
+class TablePelaksanaan extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithTable, InteractsWithForms;
 
@@ -62,7 +66,7 @@ class TablePelaksanaan extends Component implements HasTable, HasForms
                     ->label('Validator')
 
             ])
-            ->actions([
+            ->recordActions([
 
                 Action::make('input-so')
                     ->iconButton()
@@ -104,7 +108,7 @@ class TablePelaksanaan extends Component implements HasTable, HasForms
                                 $this->toast()
                                     ->success('Berhasil.', "Stok opname selesai, silahkan lakukan investigasi.")
                                     ->send();
-                            } catch (\Throwable $e) {
+                            } catch (Throwable $e) {
                                 DB::rollBack();
                                 $this->toast()
                                     ->error('Tidak Berhasil.', "<i>{$e->getMessage()}</i>")
@@ -177,7 +181,7 @@ class TablePelaksanaan extends Component implements HasTable, HasForms
             $this->toast()
                 ->success('Berhasil', 'Kegiatan stok opanme telah selesai.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->error('Tidak Berhasil', "<i>{$e->getMessage()}</i>")
@@ -201,7 +205,7 @@ class TablePelaksanaan extends Component implements HasTable, HasForms
             }
 
             DB::commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
 
             DB::rollBack();
         }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Jasmed\Dokter;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\JmDokter;
 use Livewire\Attributes\Lazy;
@@ -89,7 +90,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil', 'Dokter visite berhasil diperbaharui.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->error('Tidak Berhasil', 'Dokter visite tidak berhasil diperbaharui. Error: ' . $e->getMessage())

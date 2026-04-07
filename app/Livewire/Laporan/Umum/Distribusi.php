@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Laporan\Umum;
 
+use App\Models\Gudang\DistribusiDetail;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -44,7 +45,7 @@ class Distribusi extends Component
         // periode to string $periode
         [$periode_awal, $periode_akhir] = $periode;
 
-        $data = \App\Models\Gudang\DistribusiDetail::with('distribusi', 'stoks', 'stoks.barang')
+        $data = DistribusiDetail::with('distribusi', 'stoks', 'stoks.barang')
             ->whereHas(
                 'distribusi',
                 function ($query) use ($periode_awal, $periode_akhir) {

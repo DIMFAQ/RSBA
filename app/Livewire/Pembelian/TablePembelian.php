@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Pembelian;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use Carbon\Carbon;
 use Livewire\Component;
 use Filament\Tables\Table;
@@ -11,7 +14,6 @@ use Livewire\Attributes\Locked;
 use App\Models\Gudang\Pembelian;
 use App\Models\Sdm\Karyawan;
 use App\Models\Surat\SuratSp3;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Contracts\HasForms;
@@ -24,8 +26,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TablePembelian extends Component implements HasTable, HasForms
+class TablePembelian extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -120,7 +123,7 @@ class TablePembelian extends Component implements HasTable, HasForms
                 // filter tanggal (periode)
                 Filter::make('tgl')
                     ->label('Periode Pembelian')
-                    ->form([
+                    ->schema([
                         DatePicker::make('tgl_mulai')
                             ->default(now()->startOfMonth())
                             ->label('Dari')
@@ -159,7 +162,7 @@ class TablePembelian extends Component implements HasTable, HasForms
                     })
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('detail')
                     ->icon('tabler-file-symlink')
                     ->iconButton()
@@ -195,7 +198,7 @@ class TablePembelian extends Component implements HasTable, HasForms
                 Action::make('print-po')
                     ->iconButton()
                     ->icon('tabler-printer')
-                    ->form([
+                    ->schema([
 
                         Select::make('mengetahui')
                             ->label('Mengetahui')

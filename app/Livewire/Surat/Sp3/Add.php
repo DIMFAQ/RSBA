@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Surat\Sp3;
 
+use Throwable;
+use Exception;
 use App\Models\Master\Supplier;
 use App\Models\Sdm\Jabatan;
 use App\Models\Surat\SuratSp3;
@@ -164,7 +166,7 @@ class Add extends Component
             if (!$send) {
                 $this->js("setTimeout(() => \$dispatch('print-out-sp3'), 1500)");
             }
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
 
             $this->toast()
@@ -191,7 +193,7 @@ class Add extends Component
             $certificate = $user->certificate()->latest('id')->first();
 
             if (!$certificate) {
-                throw new \Exception("Tidak memiliki certificate.");
+                throw new Exception("Tidak memiliki certificate.");
             }
 
             // buat signature hash dari p12
@@ -231,7 +233,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil.', "Surat SP3 {$suratSp3->no} berhasil diupdate.")
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

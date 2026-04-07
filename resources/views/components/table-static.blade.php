@@ -19,7 +19,7 @@
         <tbody>
             @forelse ($rows as $index => $row)
                 <tr @class([
-                    'text-sm text-gray-800 border-y hover:bg-indigo-100/50 ',
+                    'text-sm text-gray-800 border-y border-gray-200 hover:bg-indigo-100/50 ',
                     'even:bg-gray-200/25' => $striped,
                 ]) :key="{{ $index }}">
 
@@ -35,7 +35,7 @@
 
                 </tr>
             @empty
-                <tr class="border-b text-left text-sm text-gray-600 even:bg-gray-200/25">
+                <tr class="border-b border-gray-200 text-left text-sm text-gray-600 even:bg-gray-200/25">
                     <td class="px-4 py-2 text-center italic" colspan="{{ count($headers) + 1 }}">Tidak ada data</td>
                 </tr>
             @endforelse

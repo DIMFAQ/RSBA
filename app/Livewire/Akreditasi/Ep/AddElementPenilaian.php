@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Akreditasi\Ep;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Computed;
@@ -14,8 +17,9 @@ use Filament\Forms\Contracts\HasForms;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]
-class AddElementPenilaian extends Component implements HasForms
+class AddElementPenilaian extends Component implements HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithForms;
 
@@ -97,7 +101,7 @@ class AddElementPenilaian extends Component implements HasForms
             $this->toast()
                 ->success('Berhasil', 'Barhasil menambah element nilai.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

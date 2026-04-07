@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Surat\Sp3;
 
+use Exception;
 use Livewire\Component;
 use App\Models\SignatureCerts;
 use App\Models\SignatureLogs;
@@ -107,13 +108,13 @@ class Verify extends Component
         // Decode signature from base64
         $signatureBinary = base64_decode($signature);
         if ($signatureBinary === false) {
-            throw new \Exception("Invalid signature encoding");
+            throw new Exception("Invalid signature encoding");
         }
 
         // Get public key resource
         $publicKeyResource = openssl_pkey_get_public($publicKey);
         if ($publicKeyResource === false) {
-            throw new \Exception("Invalid public key");
+            throw new Exception("Invalid public key");
         }
 
         // Verify signature
@@ -141,7 +142,7 @@ class Verify extends Component
 
             return false;
         } else {
-            throw new \Exception("Verification error: " . openssl_error_string());
+            throw new Exception("Verification error: " . openssl_error_string());
         }
     }
 }

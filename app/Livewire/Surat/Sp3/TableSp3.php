@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Surat\Sp3;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use Livewire\Component;
 use Filament\Tables\Table;
 use App\Enums\StatusApproval;
 use App\Models\Surat\SuratSp3;
 use Livewire\Attributes\Locked;
-use Filament\Tables\Actions\Action;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -16,9 +18,10 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Livewire\Attributes\On;
 
-class TableSp3 extends Component implements HasTable, HasForms
+class TableSp3 extends Component implements HasTable, HasForms, HasActions
 {
 
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -90,7 +93,7 @@ class TableSp3 extends Component implements HasTable, HasForms
                             ->toArray()
                     )
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->iconButton()
                     ->icon('tabler-file-description')

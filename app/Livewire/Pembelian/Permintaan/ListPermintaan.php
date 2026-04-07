@@ -2,20 +2,23 @@
 
 namespace App\Livewire\Pembelian\Permintaan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Gudang\PembelianRequest;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
-class ListPermintaan extends Component implements HasTable, HasForms
+class ListPermintaan extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     public function table(Table $table): Table
@@ -78,7 +81,7 @@ class ListPermintaan extends Component implements HasTable, HasForms
             ->filters([
                 // Define any filters if needed
             ])
-            ->actions([
+            ->recordActions([
                 // Define actions like view, edit, delete
                 Action::make('persetujuan')
                     ->iconButton()

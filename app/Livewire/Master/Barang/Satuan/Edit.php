@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Barang\Satuan;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ class Edit extends Component
                     'Data satuan berhasil diubah.'
                 )
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

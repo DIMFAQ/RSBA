@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Profile\SignatureCerts;
 
+use Throwable;
+use Carbon\Carbon;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -45,7 +47,7 @@ class Index extends Component
     {
         try {
             $certificate = $this->digitalSignatureService->getActiveCertificate($this->users->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Not Found !.', $e->getMessage())
                 ->send();
@@ -64,11 +66,11 @@ class Index extends Component
             return [
                 'cert_info' => $cert_info,
                 'p12_path' => $pathP12,
-                'created' => \Carbon\Carbon::parse($cert_info->validFrom_time_t)->locale('id'),
-                'expired' => \Carbon\Carbon::parse($cert_info->validTo_time_t)->locale('id'),
+                'created' => Carbon::parse($cert_info->validFrom_time_t)->locale('id'),
+                'expired' => Carbon::parse($cert_info->validTo_time_t)->locale('id'),
                 'is_expired' => time() >= (int) $cert_info->validTo_time_t ? true : false,
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Not Found!', $e->getMessage())
                 ->send();

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\User;
 
+use Throwable;
 use App\Models\Menu;
 use App\Models\User;
 use Livewire\Component;
@@ -84,7 +85,7 @@ class PermissionEdit extends Component
             $this->toast()
                 ->success('Sukses', 'Spesial permission diperbaharui.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

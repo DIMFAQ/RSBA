@@ -2,25 +2,28 @@
 
 namespace App\Livewire\Asset;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use App\Models\Ruangan;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
 use App\Models\Assets\AssetBarang;
 use App\Models\Master\Barang;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TableAsset extends Component implements HasTable, HasForms
+class TableAsset extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -150,7 +153,7 @@ class TableAsset extends Component implements HasTable, HasForms
                         fn() => Ruangan::pluck('nama', 'id')->toArray()
                     )
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('catat')
                     ->iconButton()
                     ->icon('tabler-library-plus')

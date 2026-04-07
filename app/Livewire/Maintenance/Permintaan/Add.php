@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Maintenance\Permintaan;
 
+use Throwable;
 use Livewire\Component;
 use Illuminate\Support\Arr;
 use Livewire\Attributes\Lazy;
@@ -134,7 +135,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Permintaan berhasil dikirim')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             # code...
             DB::rollBack();
             $this->toast()

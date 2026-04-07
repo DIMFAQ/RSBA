@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings\Menu;
 
+use Throwable;
 use App\Models\Menu;
 use Livewire\Component;
 use App\Enums\MenuGroup;
@@ -124,7 +125,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil', 'Update menu sukses.')
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
             $this->toast()
                 ->error('Failed', 'Error : ' . $th->getMessage())

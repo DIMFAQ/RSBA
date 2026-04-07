@@ -80,7 +80,7 @@
                 <col style="width:13%">
             </colgroup>
 
-            <thead class="border-b-2 border-double text-left text-xs font-thin capitalize text-gray-600">
+            <thead class="border-b border-double border-gray-300 text-left text-xs font-thin capitalize text-gray-600">
                 <tr>
                     <th class="p-2"></th>
                     <th class="p-2">Barang</th>

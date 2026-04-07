@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Jabatan;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\Bagian;
 use App\Models\Sdm\Jabatan;
@@ -52,7 +53,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Jabatan baru berhasil dibuat.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->error('Failed', 'Error' . $e->getMessage())

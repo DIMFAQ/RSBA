@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Cuti;
 
+use Throwable;
 use App\Models\Surat\CutiJenis;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Lazy;
@@ -54,7 +55,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil update.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

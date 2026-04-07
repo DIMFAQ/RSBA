@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Jasmed;
 
+use Throwable;
 use Livewire\Component;
 use App\Imports\VisiteImport;
 use Livewire\WithFileUploads;
@@ -41,7 +42,7 @@ class BpjsImport extends Component
             Excel::import(new $importClass, $importedFile);
 
             $this->toast()->success('Berhasil !', $successMessage)->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()->error('Gagal !', "Error : " . $e->getMessage())->send();
         }
     }

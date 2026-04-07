@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Akreditasi;
 
+use Throwable;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -167,7 +168,7 @@ class AddKegiatan extends Component
             $this->toast()
                 ->success('Berhasil', 'Kegiatan akreditasi ditambahkan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             // Hapus folder jika sudah terbuat

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Supplier;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use App\Models\Master\Supplier;
@@ -71,7 +72,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil', 'Supplier berhasil disimpan.')
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
 
             $this->toast()

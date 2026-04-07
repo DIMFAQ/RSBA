@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -19,7 +20,7 @@ class TemplateImportJasa implements FromArray, WithHeadings
 
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function array(): array
     {

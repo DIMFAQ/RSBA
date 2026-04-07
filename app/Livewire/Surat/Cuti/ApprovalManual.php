@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Surat\Cuti;
 
+use Exception;
+use Throwable;
 use App\Models\Surat\SuratCuti;
 use App\Models\Surat\SuratCutiApproval;
 use App\Models\User;
@@ -68,7 +70,7 @@ class ApprovalManual extends Component
             $certificate = $user->certificate()->latest('id')->first();
 
             if (!$certificate) {
-                throw new \Exception("Tidak memiliki certificate.");
+                throw new Exception("Tidak memiliki certificate.");
             }
 
             // Get data Approval
@@ -131,7 +133,7 @@ class ApprovalManual extends Component
             $this->toast()
                 ->success('Berhasil Disimpan')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

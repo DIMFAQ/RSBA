@@ -68,7 +68,7 @@ class ResetCutiCommand extends Command
             $karyawans->map(fn(Karyawan $emp) => [
                 $emp->id,
                 $emp->nama,
-                \Carbon\Carbon::parse($emp->tgl_masuk)->toDateString(),
+                Carbon::parse($emp->tgl_masuk)->toDateString(),
                 $emp->cuti
             ]),
         );

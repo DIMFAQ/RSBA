@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Asset;
 
+use Throwable;
 use App\Models\Assets\AssetBarang;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -68,7 +69,7 @@ class Specs extends Component
                 'Berhasil',
                 'Spesifikasi berhasil disimpan.'
             )->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
 
             // send toast notifications error
             $this->toast()->error(

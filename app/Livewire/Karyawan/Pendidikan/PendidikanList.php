@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan\Pendidikan;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
@@ -49,7 +50,7 @@ class PendidikanList extends Component
             $this->toast()
                 ->success('Sukses', 'Data pendidikan dihapus.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
             $this->toast()
                 ->error('Failed', 'Error : ' . $e->getMessage())

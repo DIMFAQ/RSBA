@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Maintenance\Permintaan;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Illuminate\Support\Facades\DB;
@@ -92,7 +93,7 @@ class PermintaanApproval extends Component
             $this->toast()
                 ->success('Berhasil', "Permintaan maintenance {$is_setuju}.")
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->success('Terjadi Kesalahan', "<i>{$e->getMessage()}</i> <br> Silahkan coba lagi.")

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\StokOpname;
 
+use Exception;
 use Livewire\Component;
 use App\Helpers\ErrorHelper;
 use Livewire\WithPagination;
@@ -98,7 +99,7 @@ class Input extends Component
             $this->toast()
                 ->success('Berhasil Disimpan.')
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->toast()

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings\Menu;
 
+use Throwable;
 use App\Enums\MenuGroup;
 use App\Models\Menu;
 use Livewire\Component;
@@ -128,7 +129,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Menu baru disimpan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

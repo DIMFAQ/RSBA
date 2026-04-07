@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Surat\Cuti;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Enums\StatusApproval;
 use App\Models\Surat\SuratCuti;
 use Livewire\Component;
@@ -9,14 +12,14 @@ use Filament\Tables\Table;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
-class TableCuti extends Component implements HasTable, HasForms
+class TableCuti extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -71,7 +74,7 @@ class TableCuti extends Component implements HasTable, HasForms
                         )
                     ),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('print')
                     ->label('Print')
                     ->iconButton()

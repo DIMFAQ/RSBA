@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Spesialisasi;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\DokterSpesialisasi;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil', 'Data diupdate.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

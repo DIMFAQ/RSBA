@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use Throwable;
 use App\Models\Surat\CutiJenis;
 use App\Models\Surat\SuratCuti;
 use App\Models\Surat\SuratCutiApproval;
@@ -112,7 +113,7 @@ class SuratCutiForm extends Form
                 'success' => true,
                 'message' => 'Inserted'
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             return [

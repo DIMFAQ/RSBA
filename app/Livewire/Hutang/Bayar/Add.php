@@ -13,10 +13,12 @@ class Add extends Component
 
     public $tanggal, $nominal;
     public ?array $lampiran = [];
+    public bool $status = false;
 
     public function mount($id)
     {
         $this->pembelian = Pembelian::findOrFail($id);
+        $this->status = $this->pembelian->status == 'selesai' ? true : false;
     }
 
     public function boot()

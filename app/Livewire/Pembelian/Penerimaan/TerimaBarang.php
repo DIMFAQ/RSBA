@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Pembelian\Penerimaan;
 
+use Exception;
+use Throwable;
 use Livewire\Component;
 use App\Models\Gudang\Stok;
 use Livewire\Attributes\Lazy;
@@ -120,12 +122,12 @@ class TerimaBarang extends Component
                 ->values();
 
             if ($items->isEmpty()) {
-                throw new \Exception("Tidak ada item diterima");
+                throw new Exception("Tidak ada item diterima");
             }
 
             foreach ($items as $item) {
                 if ($item['jumlahDiterima'] > $item['remainingQuantity']) {
-                    throw new \Exception("Jumlah diterima melebihi sisa PO");
+                    throw new Exception("Jumlah diterima melebihi sisa PO");
                 }
             }
 
@@ -214,7 +216,7 @@ WHERE id IN (" . $ids->implode(',') . ")";
             $this->toast()
                 ->success('Berhasil', 'Data pembelian deterima, stok barang telah diperbaharui.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

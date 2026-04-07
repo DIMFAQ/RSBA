@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Master\Barang\Kategori;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Master\BarangKategori;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -13,8 +15,9 @@ use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class TableKategori extends Component implements HasTable, HasForms
+class TableKategori extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -36,7 +39,7 @@ class TableKategori extends Component implements HasTable, HasForms
                 TextColumn::make('prefix')
                     ->label('Preffix Kode')
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit')

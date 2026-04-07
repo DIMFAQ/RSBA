@@ -7,7 +7,7 @@
             <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">
 
                 <div class="overflow-hidden">
-                    <table class="text-surface min-w-full text-left text-sm font-light dark:text-white">
+                    <table class="text-surface min-w-full text-left text-sm dark:text-white">
                         <thead class="border-b border-neutral-200 font-semibold dark:border-white/10">
                             <tr>
                                 <th scope="col" class="px-6 py-2">Nama Document</th>
@@ -52,7 +52,7 @@
 
     <x-filament::modal id="view-document-karyawan" width="6xl" class="h-screen min-h-full" :close-by-clicking-away="false" :autofocus="false">
         <x-slot name="heading">
-            Document <span class="font-semibold text-primary-500">{{ $documentsSelected?->nama }}</span>
+            Document <span class="text-primary-500 font-semibold">{{ $documentsSelected?->nama }}</span>
         </x-slot>
 
         <livewire:Karyawan.Document.View :$documentsSelected :key="Str::random()" />

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\User;
 
+use Throwable;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -45,7 +46,7 @@ class SetRole extends Component
             $this->toast()
                 ->success('Sukses', 'Set role user berhasil.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
             $this->toast()
                 ->error('Failed', 'Error:' . $e->getMessage())

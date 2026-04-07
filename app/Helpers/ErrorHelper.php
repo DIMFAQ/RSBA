@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use Throwable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
@@ -13,7 +14,7 @@ class ErrorHelper
      * Get user-friendly error message based on exception type
      * ALWAYS return user-friendly message, regardless of environment
      */
-    public static function getUserMessage(\Throwable $e): string
+    public static function getUserMessage(Throwable $e): string
     {
         return match (true) {
             $e instanceof QueryException => self::handleDatabaseError($e),
@@ -26,7 +27,7 @@ class ErrorHelper
     /**
      * Get detailed error message for debugging (only in development)
      */
-    public static function getDetailedMessage(\Throwable $e): string
+    public static function getDetailedMessage(Throwable $e): string
     {
         if (app()->environment('production')) {
             return self::getUserMessage($e);
@@ -141,7 +142,7 @@ class ErrorHelper
     /**
      * Log error with context
      */
-    public static function log(\Throwable $e, array $context = []): void
+    public static function log(Throwable $e, array $context = []): void
     {
         $logData = array_merge([
             'message' => $e->getMessage(),
@@ -168,7 +169,7 @@ class ErrorHelper
      * Handle exception and return user message (combines get and log)
      * This ALWAYS returns user-friendly message
      */
-    public static function handle(\Throwable $e, array $context = []): string
+    public static function handle(Throwable $e, array $context = []): string
     {
         self::log($e, $context);
         return self::getUserMessage($e);
@@ -178,7 +179,7 @@ class ErrorHelper
      * Handle exception and return both user message and detailed message
      * Useful for development/debugging
      */
-    public static function handleWithDetails(\Throwable $e, array $context = []): array
+    public static function handleWithDetails(Throwable $e, array $context = []): array
     {
         self::log($e, $context);
 

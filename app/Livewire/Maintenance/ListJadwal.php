@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Maintenance;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use Livewire\Component;
 use Filament\Tables\Table;
 use App\Models\Maintenance\Jadwal;
-use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Contracts\HasTable;
@@ -16,8 +19,9 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
 #[Isolate]
-class ListJadwal extends Component implements HasTable, HasForms
+class ListJadwal extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
     use Interactions;
 
@@ -52,29 +56,29 @@ class ListJadwal extends Component implements HasTable, HasForms
 
             )
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('Jadwal ID')
                     ->searchable()
                     ->sortable(),
 
-                \Filament\Tables\Columns\TextColumn::make('asset.kode')
+                TextColumn::make('asset.kode')
                     ->label('Kode Asset')
                     ->searchable(),
 
-                \Filament\Tables\Columns\TextColumn::make('asset.barang.nama')
+                TextColumn::make('asset.barang.nama')
                     ->label('Asset Item'),
 
-                \Filament\Tables\Columns\TextColumn::make('asset.ruangan.nama')
+                TextColumn::make('asset.ruangan.nama')
                     ->label('Lokasi'),
 
-                \Filament\Tables\Columns\TextColumn::make('tanggal')
+                TextColumn::make('tanggal')
                     ->label('Jadwal')
                     ->date(),
 
-                \Filament\Tables\Columns\TextColumn::make('teknisi.user.karyawan.nama')
+                TextColumn::make('teknisi.user.karyawan.nama')
                     ->label('Teknisi'),
 
-                \Filament\Tables\Columns\TextColumn::make('priority')
+                TextColumn::make('priority')
                     ->label('Prioritas')
                     ->formatStateUsing(fn($state) => ucfirst($state))
                     ->badge()
@@ -87,7 +91,7 @@ class ListJadwal extends Component implements HasTable, HasForms
                         }
                     ),
 
-                \Filament\Tables\Columns\TextColumn::make('work.status')
+                TextColumn::make('work.status')
                     ->label('Status')
                     ->getStateUsing(function ($record) {
                         return $record->work?->status;
@@ -116,7 +120,7 @@ class ListJadwal extends Component implements HasTable, HasForms
             ->filters([
                 // Add any filters if needed
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('maintenance')
                     ->iconButton()
                     ->recordTitle('asset.barang.nama')

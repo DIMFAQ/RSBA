@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan;
 
+use Throwable;
 use App\Enums\Agama;
 use App\Enums\Kelamin;
 use Livewire\Component;
@@ -53,7 +54,7 @@ class EditIdentitas extends Component
             $this->toast()
                 ->success('Updated', 'Update identitas karyawan berhasil.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Failed', 'Error ' . $e->getMessage())
                 ->send();

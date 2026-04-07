@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Jasmed;
 
+use Throwable;
 use App\Models\JmJasa;
 use Livewire\Component;
 use App\Models\JmDokter;
@@ -44,7 +45,7 @@ class Bpjs extends Component
                     'Success!',
                     'Upload data sukses.!'
                 )->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $errors = $e->getMessage();
             $this->toast()
                 ->error(
@@ -150,7 +151,7 @@ class Bpjs extends Component
                 // kelompok jasa
                 $kelompok = $pasien->kelompok;
                 $this->calcJasaDokterRanap($prosentase, $dokter, $kelompok);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $errors = $e->getMessage();
 
                 // toast
@@ -557,7 +558,7 @@ class Bpjs extends Component
 
             // toast 
             $this->toast()->success('Success!', 'Import data berhasil.!')->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $errors = $e->getMessage();
 
             // toast
@@ -586,7 +587,7 @@ class Bpjs extends Component
                 $dokter = $this->getDokter($pasien);
 
                 $this->calcProsentaseRajal($pasien, $dokter);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $errors = $e->getMessage();
 
                 // toast

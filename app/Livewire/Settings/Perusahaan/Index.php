@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings\Perusahaan;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Perusahaan;
 use App\Traits\AuthorizesFromRoute;
@@ -62,7 +63,7 @@ class Index extends Component
             $this->toast()
                 ->success('Updated!', 'Update data sukses!')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()
@@ -84,7 +85,7 @@ class Index extends Component
             Perusahaan::where('id', 1)->update(['logo' => $path]);
 
             $this->toast()->success('Success!', 'Logo berhasil diupdate.')->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()->error('Failed!', 'Error: ' . $e->getMessage())->send();
         }
 

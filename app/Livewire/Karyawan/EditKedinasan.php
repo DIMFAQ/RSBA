@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\Jabatan;
 use App\Models\Sdm\Karyawan;
@@ -132,7 +133,7 @@ class EditKedinasan extends Component
             $this->toast()
                 ->success('Sukses', 'Update data kedinasan berhasil.')
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             $this->toast()
                 ->error('Failed', 'Error : ', $th->getMessage())
                 ->send();
@@ -163,7 +164,7 @@ class EditKedinasan extends Component
             $this->toast()
                 ->success('Berhasil', 'Jabatan baru berhasil disimpan.')
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             $this->toast()
                 ->error('Failed', 'Error : ', $th->getMessage())
                 ->send();

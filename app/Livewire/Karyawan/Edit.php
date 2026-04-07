@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan;
 
+use Throwable;
 use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
@@ -50,7 +51,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil', "<b>$karyawan->nama</b>  berhasil dihapus.")
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             $this->toast()
                 ->error('Failed', "Error : " . $th->getMessage())
                 ->send();

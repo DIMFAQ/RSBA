@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
@@ -99,7 +100,7 @@ class AttachTo extends Component
             $this->toast()
                 ->success('Berhasil', 'Document berhasil tambahkan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Tidak Berhasil', $e->getMessage() . " [Line: {$e->getLine()}]")
                 ->send();

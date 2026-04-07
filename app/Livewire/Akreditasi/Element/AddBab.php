@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Akreditasi\Element;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Computed;
@@ -13,8 +16,9 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 
 #[Lazy]
-class AddBab extends Component implements HasForms
+class AddBab extends Component implements HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithForms;
 
@@ -57,7 +61,7 @@ class AddBab extends Component implements HasForms
             $this->toast()
                 ->success('Berhasil', 'Bab baru ditambahkan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

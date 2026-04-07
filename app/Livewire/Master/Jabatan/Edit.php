@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Jabatan;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\Bagian;
 use App\Models\Sdm\Jabatan;
@@ -59,7 +60,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Sukses', 'Jabatan berhasil diperbaharui.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->error('Failed', 'Error : ' . $e->getMessage())

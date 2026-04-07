@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Collection;
 use App\Models\JmJasa;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -27,7 +28,7 @@ class RekapJasaDokter implements FromCollection, WithHeadings, WithTitle
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function collection()
     {

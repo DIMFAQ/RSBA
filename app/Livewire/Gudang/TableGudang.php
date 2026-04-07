@@ -2,24 +2,29 @@
 
 namespace App\Livewire\Gudang;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Carbon\Carbon;
+use Filament\Support\Enums\IconSize;
+use Filament\Actions\ActionGroup;
 use Livewire\Component;
 use Filament\Tables\Table;
 use App\Models\Master\Barang;
 use Livewire\Attributes\Locked;
-use Filament\Tables\Actions\Action;
 use App\Models\Master\BarangKategori;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Illuminate\Database\Eloquent\Builder;
 
-class TableGudang extends Component implements HasTable, HasForms
+class TableGudang extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -71,13 +76,13 @@ class TableGudang extends Component implements HasTable, HasForms
                     ->label('Terakhir Masuk')
                     ->getStateUsing(
                         fn($record) => $record->stoks->max('penerimaanDet.penerimaan.tanggal')
-                            ? \Carbon\Carbon::parse($record->stoks->max('penerimaanDet.penerimaan.tanggal'))->diffForHumans()
+                            ? Carbon::parse($record->stoks->max('penerimaanDet.penerimaan.tanggal'))->diffForHumans()
                             : 'Belum pernah beli barang ini.'
                     ),
 
 
                 IconColumn::make('stok_indicator') // Kolom untuk indikator stok rendah
-                    ->size(IconColumn\IconColumnSize::Medium)
+                    ->size(IconSize::Medium)
                     ->label('')
                     ->getStateUsing(
                         fn($record) => $record->stoks_sum_stok < $record->min_stok ? 'tabler-trending-down' : null
@@ -128,7 +133,7 @@ class TableGudang extends Component implements HasTable, HasForms
 
 
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     Action::make('detil')
                         ->label('Stocks')

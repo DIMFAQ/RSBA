@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Throwable;
 use App\Models\Sdm\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -57,7 +58,7 @@ class ResetKaryawanCuti implements ShouldQueue
         if ($karyawans->isEmpty()) {
             Log::info(
                 '[CutiReset] Tidak ada karyawan yang anniversary hari ini.',
-                ['date' => \Carbon\Carbon::parse($today)->toDateString()]
+                ['date' => Carbon::parse($today)->toDateString()]
             );
             return;
         }
@@ -65,7 +66,7 @@ class ResetKaryawanCuti implements ShouldQueue
 
         // Log Start
         Log::info('[CutiReset] Mulai proses reset cuti.', [
-            'date' => \Carbon\Carbon::parse($today)->toDateString(),
+            'date' => Carbon::parse($today)->toDateString(),
             'total_karyawan' => $karyawans->count()
         ]);
 
@@ -81,9 +82,9 @@ class ResetKaryawanCuti implements ShouldQueue
                 Log::info('[cutiReset] Cuti direset.', [
                     'karyawan_id' => $karyawan->id,
                     'nama'        => $karyawan->nama, // sesuaikan nama kolom
-                    'tanggal'     => \Carbon\Carbon::parse($today)->toDateString(),
+                    'tanggal'     => Carbon::parse($today)->toDateString(),
                 ]);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $failCount++;
                 Log::error('[cutiReset] Gagal reset cuti karyawan.', [
                     'employee_id'   => $karyawan->id,

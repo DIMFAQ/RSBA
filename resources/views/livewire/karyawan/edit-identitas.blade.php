@@ -55,8 +55,8 @@
 
         {{-- KONTAK --}}
         <div class="space-y-2 pt-2">
-            <hr>
-            <span class="flex gap-1 font-semibold text-primary-500">
+            <hr class="text-gray-200">
+            <span class="text-primary-500 flex gap-1 font-semibold">
                 <x-ts:icon name="tabler.phone-plus" class="h-5 w-5" />
                 Kontak
             </span>
@@ -73,8 +73,8 @@
 
         {{-- ALAMAT --}}
         <div class="space-y-2 pt-2">
-            <hr>
-            <span class="flex gap-1 font-semibold text-primary-500">
+            <hr class="text-gray-200">
+            <span class="text-primary-500 flex gap-1 font-semibold">
                 <x-ts:icon name="tabler.map-plus" class="h-5 w-5" />
                 Alamat
             </span>

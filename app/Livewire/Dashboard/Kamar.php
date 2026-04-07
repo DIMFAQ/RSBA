@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Dashboard;
 
+use Throwable;
 use GuzzleHttp\Client;
 use Livewire\Attributes\Isolate;
 use Livewire\Attributes\Layout;
@@ -98,7 +99,7 @@ class Kamar extends Component
                         'prosentase_color' => $color
                     ];
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Failed', 'Error : ' . $e->getMessage())
                 ->send();

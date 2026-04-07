@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
+use Exception;
+use Throwable;
 use App\Models\Akreditasi\AkreDocuments;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -86,7 +88,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'File berhasil ditambahkan.')
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollback();
 
             $this->toast()
@@ -156,7 +158,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'File document tersimpan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
 
             DB::rollBack();
             $this->toast()

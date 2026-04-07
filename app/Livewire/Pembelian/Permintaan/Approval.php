@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pembelian\Permintaan;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Computed;
@@ -146,7 +147,7 @@ class Approval extends Component
             $this->toast()
                 ->success('Berhasil', 'Pengajuan berhasil diverifikasi.')
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollback();
             $this->toast()
                 ->error('Terjadi Kesalahan', "<i>{$th->getMessage()}</i> <br> Silahkan coba lagi.")

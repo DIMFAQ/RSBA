@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Surat\Cuti;
 
+use Exception;
+use Throwable;
 use App\Models\Surat\SuratCuti;
 use App\Models\Surat\SuratCutiApproval;
 use App\Services\DigitalSignatureService;
@@ -91,7 +93,7 @@ class Approval extends Component
                 ->exists();
 
             if (!$hasApproval) {
-                return throw new \Exception('Surat cuti ini tidak ditujukan untuk anda setujui');
+                return throw new Exception('Surat cuti ini tidak ditujukan untuk anda setujui');
             }
 
             // update
@@ -139,7 +141,7 @@ class Approval extends Component
             $this->toast()
                 ->success('Berhasil')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Maintenance\Work;
 
+use Throwable;
+use Exception;
 use App\Livewire\Forms\Asset\AssetBarangForm;
 use App\Livewire\Forms\Distribusi\TransaksiForm as DistribusiTransaksiForm;
 use App\Livewire\Forms\Asset\MaintcWorkForm as MaintcWorkForm;
@@ -251,7 +253,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', "Work Order <b>#{$this->maintenanceWork->id}</b> berhasil diselesaikan.")
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()
@@ -349,7 +351,7 @@ class Add extends Component
     private function prosesTransaksiDistribusi(array $items): array
     {
         if (empty($items)) {
-            throw new \Exception("Tidak ada item untuk didistribusikan");
+            throw new Exception("Tidak ada item untuk didistribusikan");
         }
 
         $bhpItems = [];
@@ -430,7 +432,7 @@ class Add extends Component
     private function prosesPengajuanPembelian(array $items): int
     {
         if (empty($items)) {
-            throw new \Exception("Tidak ada item untuk diajukan");
+            throw new Exception("Tidak ada item untuk diajukan");
         }
 
         // Map items for procurement request

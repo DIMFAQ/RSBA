@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Surat\Sp3;
 
+use Throwable;
+use Exception;
 use App\Models\Gudang\Pembelian;
 use App\Models\Sdm\Jabatan;
 use App\Models\Surat\SuratSp3;
@@ -218,7 +220,7 @@ class AddSp3Pembelian extends Component
             if (!$send) {
                 $this->dispatch('print-out-sp3');
             }
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
 
             $this->toast()
@@ -245,7 +247,7 @@ class AddSp3Pembelian extends Component
             $certificate = $user->certificate()->latest('id')->first();
 
             if (!$certificate) {
-                throw new \Exception("Tidak memiliki certificate.");
+                throw new Exception("Tidak memiliki certificate.");
             }
 
             // buat signature hash dari p12
@@ -285,7 +287,7 @@ class AddSp3Pembelian extends Component
             $this->toast()
                 ->success('Berhasil.', "Surat SP3 {$suratSp3->no} berhasil diupdate.")
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

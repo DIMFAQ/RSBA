@@ -2,6 +2,7 @@
 
 namespace App\Livewire\StokOpname;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Gudang\Stok;
 use Livewire\WithPagination;
@@ -132,7 +133,7 @@ class Investigasi extends Component
             $this->toast()
                 ->success('Berhasil', 'Hasil investigasi disimpan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
 
             DB::rollBack();
             $this->toast()
@@ -204,7 +205,7 @@ class Investigasi extends Component
             $this->toast()
                 ->success('Berhasil', 'Stok opname telah divalidasi, dan stok telah disesuaikan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

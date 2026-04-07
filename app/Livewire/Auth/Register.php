@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use Throwable;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -52,7 +53,7 @@ class Register extends Component
                 ->send();
 
             return $this->redirect(route('profile.index'), navigate: true);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error('Registrasi gagal!', 'Terjadi kesalahan saat mendaftar, error: ' . $e->getMessage())
                 ->send();

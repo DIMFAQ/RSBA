@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Carbon\Carbon;
 use App\Models\Sdm\Karyawan;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -34,7 +35,7 @@ class KaryawanImport implements ToModel, WithHeadingRow, WithChunkReading, WithS
         }
 
         // Case 2: If it's an Excel serial number
-        return Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value))->format($format);
+        return Carbon::instance(Date::excelToDateTimeObject($value))->format($format);
     }
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Models\Surat;
 
+use Carbon\Carbon;
 use App\Enums\StatusApproval;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,6 @@ class SuratSp3Approval extends Model
 
     public function getApprovedAtAttribute($value)
     {
-        return \Carbon\Carbon::parse($value)->toIso8601String();
+        return Carbon::parse($value)->toIso8601String();
     }
 }

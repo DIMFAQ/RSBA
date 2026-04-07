@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use Throwable;
 use Livewire\Attributes\Validate;
 use Carbon\Carbon;
 use Livewire\Form;
@@ -158,7 +159,7 @@ class KaryawanForm extends Form
                 'status' => 'sukses',
                 'message' => 'Inserted'
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             return [

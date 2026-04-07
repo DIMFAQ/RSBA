@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Maintenance\Permintaan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
@@ -17,8 +19,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Livewire\Attributes\Isolate;
 
 #[Isolate]
-class ListPermintaan extends Component implements HasTable, HasForms
+class ListPermintaan extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -85,7 +88,7 @@ class ListPermintaan extends Component implements HasTable, HasForms
                     ]),
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view')
                     ->iconButton()
                     ->icon('tabler-file-check')

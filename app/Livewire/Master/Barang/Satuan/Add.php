@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Barang\Satuan;
 
+use Throwable;
 use App\Models\Master\BarangSatuan;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,7 @@ class Add extends Component
                     'Data satuan berhasil ditambahkan.'
                 )
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

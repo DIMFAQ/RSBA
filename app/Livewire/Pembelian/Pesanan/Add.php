@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pembelian\Pesanan;
 
+use Throwable;
 use Carbon\Carbon;
 use Livewire\Component;
 use App\Models\Master\Barang;
@@ -179,7 +180,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Pesanan berhasil disimpan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

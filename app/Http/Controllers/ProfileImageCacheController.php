@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -43,7 +45,7 @@ class ProfileImageCacheController extends Controller
      */
     protected function processImage($userId, $width, $height)
     {
-        $user = \App\Models\User::where('id', $userId)
+        $user = User::where('id', $userId)
             ->whereHas('karyawan')
             ->first();
 
@@ -98,7 +100,7 @@ class ProfileImageCacheController extends Controller
                 ->header('Content-Type', 'image/webp')
                 ->header('Cache-Control', 'public');
             // ->header('Cache-Control', 'public, max-age=86400');
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return response('', 404);
         }
     }

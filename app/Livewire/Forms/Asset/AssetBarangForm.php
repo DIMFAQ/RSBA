@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Forms\Asset;
 
+use Throwable;
+use Exception;
 use App\Models\Assets\AssetBarang;
 use Livewire\Form;
 use Livewire\Attributes\Validate;
@@ -76,9 +78,9 @@ class AssetBarangForm extends Form
             ]);
 
             DB::commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
-            throw new \Exception($e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 

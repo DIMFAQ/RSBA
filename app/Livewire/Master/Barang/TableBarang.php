@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Master\Barang;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Master\Barang;
 use App\Models\Master\BarangKategori;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -15,8 +17,9 @@ use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class TableBarang extends Component implements HasTable, HasForms
+class TableBarang extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -74,7 +77,7 @@ class TableBarang extends Component implements HasTable, HasForms
 
             ])
 
-            ->actions([
+            ->recordActions([
                 Action::make('print')
                     ->iconButton()
                     ->icon('tabler-tags')

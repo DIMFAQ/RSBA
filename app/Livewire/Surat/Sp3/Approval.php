@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Surat\Sp3;
 
+use Exception;
+use Throwable;
 use App\Models\Sdm\Jabatan;
 use App\Models\Surat\SuratSp3;
 use App\Models\Surat\SuratSp3Approval;
@@ -95,7 +97,7 @@ class Approval extends Component
             $certificate = $user->certificate()->latest('id')->first();
 
             if (!$certificate) {
-                throw new \Exception("Tidak memiliki certificate.");
+                throw new Exception("Tidak memiliki certificate.");
             }
 
             // buat signature hash dari p12
@@ -134,7 +136,7 @@ class Approval extends Component
             $this->toast()
                 ->success('Berhasil.', "Surat SP3 {$this->suratSp3->no} berhasil diupdate.")
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

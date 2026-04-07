@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan\Document;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Illuminate\Support\Facades\DB;
@@ -70,7 +71,7 @@ class DocumentList extends Component
             }
 
             DB::commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             $this->toast()

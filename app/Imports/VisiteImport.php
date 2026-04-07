@@ -2,6 +2,8 @@
 
 namespace App\Imports;
 
+use Throwable;
+use Illuminate\Database\Eloquent\Model;
 use App\Models\JmDokter;
 use App\Models\JmPasien;
 use Illuminate\Support\Collection;
@@ -18,7 +20,7 @@ class VisiteImport implements ToCollection, WithGroupedHeadingRow
     /**
      * @param array $row
      *
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @return Model|null
      */
     public function collection(Collection $rows)
     {
@@ -251,7 +253,7 @@ class VisiteImport implements ToCollection, WithGroupedHeadingRow
             }
             DB::commit();
             Log::info("Commmited for : [MRN: $noRekmedis, pasienId : $pasienId]");
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
             Log::error($th->getMessage());
         }

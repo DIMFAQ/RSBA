@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Spesialisasi;
 
+use Throwable;
 use App\Models\Sdm\DokterSpesialisasi;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -44,7 +45,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Data spesialis disimpan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

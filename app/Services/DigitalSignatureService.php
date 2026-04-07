@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Throwable;
+use Exception;
 use App\Models\SignatureCerts;
 use App\Models\SignatureLogs;
 use App\Models\User;
@@ -90,7 +92,7 @@ class DigitalSignatureService
                 'certificate' => $signatureCert,
                 'paths' => $storagePaths
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [
                 'status' => false,
                 'message' => "Gagal generate digital signature. ({$e->getMessage()})",
@@ -124,7 +126,7 @@ class DigitalSignatureService
         $paths = $this->defineCertificatePaths($tempDir);
 
         if (!file_exists($existingPrivateKeyPath)) {
-            throw new \Exception("Private key tidak ditemukan {$existingPrivateKeyPath}");
+            throw new Exception("Private key tidak ditemukan {$existingPrivateKeyPath}");
         }
 
         // Skip generate private key, gunakan yang sudah ada.
@@ -146,7 +148,7 @@ class DigitalSignatureService
      * @param string $certificate Nama file certificate (*.p12)
      * @param string $password Password certificate
      * @return string Base64 encoded signature
-     * @throws \Exception
+     * @throws Exception
      */
     public function signData(
         User $user,
@@ -201,7 +203,7 @@ class DigitalSignatureService
             ];
 
             // 05. return base64_encode($signature)
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [
                 'status' => false,
                 'message' => "Gagal menandatangani data, " . $e->getMessage()
@@ -229,7 +231,7 @@ class DigitalSignatureService
      * @param string $certificate Certificate file name
      * @param string $password Certificate password
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function verifyDataSignature(): bool
     {
@@ -252,7 +254,7 @@ class DigitalSignatureService
      * @param string $certificate Certificate file name
      * @param string $password Certificate password
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getCertificateInfo(): array
     {
@@ -358,7 +360,7 @@ class DigitalSignatureService
         shell_exec("openssl genrsa -out {$paths['privateKey']} " . self::DEFAULT_KEY_SIZE);
 
         if (!file_exists($paths['privateKey']) || filesize($paths['privateKey']) === 0) {
-            throw new \Exception("Tidak berhasil membuat private key file.");
+            throw new Exception("Tidak berhasil membuat private key file.");
         }
     }
 
@@ -370,7 +372,7 @@ class DigitalSignatureService
         shell_exec("openssl req -new -key {$paths['privateKey']} -out {$paths['csr']} -subj '{$subject}'");
 
         if (!file_exists($paths['csr']) || filesize($paths['csr']) === 0) {
-            throw new \Exception("Tidak berhasil membuat CSR file.");
+            throw new Exception("Tidak berhasil membuat CSR file.");
         }
     }
 
@@ -386,7 +388,7 @@ class DigitalSignatureService
         shell_exec("openssl x509 -req -days {$expiryDays} -in {$paths['csr']} -signkey {$paths['privateKey']} -out {$paths['cert']} -extfile {$configFile} -extensions v3_req");
 
         if (!file_exists($paths['cert']) || filesize($paths['cert']) === 0) {
-            throw new \Exception("Tidak berhasil membuat X.509 sertifikat.");
+            throw new Exception("Tidak berhasil membuat X.509 sertifikat.");
         }
     }
 
@@ -398,7 +400,7 @@ class DigitalSignatureService
         shell_exec("openssl pkcs12 -export -out {$paths['p12']} -inkey {$paths['privateKey']} -in {$paths['cert']} -password pass:{$password}");
 
         if (!file_exists($paths['p12']) || filesize($paths['p12'] === 0)) {
-            throw new \Exception("Gagal membuat file PCKS#12");
+            throw new Exception("Gagal membuat file PCKS#12");
         }
     }
 
@@ -412,7 +414,7 @@ class DigitalSignatureService
         $signing = openssl_sign($data, $signature, $privateKey, $openSslAlgo);
 
         if (!$signing) {
-            throw new \Exception("Gagal membuat signature data.");
+            throw new Exception("Gagal membuat signature data.");
         }
 
         return $signature;
@@ -435,7 +437,7 @@ class DigitalSignatureService
         $this->executeSSLCommand($paths, $subject, $password, $expiryDays, $sanDomains);
 
         if (!file_exists($paths['p12'])) {
-            throw new \Exception("Tidak berhasil generate PKCS#12 file.");
+            throw new Exception("Tidak berhasil generate PKCS#12 file.");
         }
 
         return $paths;
@@ -531,7 +533,7 @@ class DigitalSignatureService
             ->first();
 
         if (!$certificate) {
-            throw new \Exception("Tidak ada sertifikat aktif untuk user ini.");
+            throw new Exception("Tidak ada sertifikat aktif untuk user ini.");
         }
 
         return $certificate;
@@ -559,7 +561,7 @@ class DigitalSignatureService
             }
         }
 
-        throw new \Exception("File PKCS#12 tidak ditemukan di storage.");
+        throw new Exception("File PKCS#12 tidak ditemukan di storage.");
     }
 
     /**
@@ -595,7 +597,7 @@ class DigitalSignatureService
         $privateKey = openssl_pkey_get_private($certs['pkey']);
 
         if (!$privateKey) {
-            throw new \Exception("Gagal mendapatkan private key.");
+            throw new Exception("Gagal mendapatkan private key.");
         }
 
         return $privateKey;
@@ -608,12 +610,12 @@ class DigitalSignatureService
     private function readFileP12(string $path)
     {
         if (!Storage::disk(self::DISK_DIR_STORE)->exists($path)) {
-            throw new \Exception("File sertifikat tidak ditemukan : {$path}");
+            throw new Exception("File sertifikat tidak ditemukan : {$path}");
         }
 
         $pkcs12Content = Storage::disk(self::DISK_DIR_STORE)->get($path);
         if ($pkcs12Content === null) {
-            throw new \Exception("Gagal membaca file sertfikat : {$path}");
+            throw new Exception("Gagal membaca file sertfikat : {$path}");
         }
 
         return $pkcs12Content;
@@ -626,7 +628,7 @@ class DigitalSignatureService
     {
         $certs = [];
         if (!openssl_pkcs12_read($content, $certs, $password)) {
-            throw new \Exception("Proses parsing sertifikat tidak berhasil, pastikan password anda benar.");
+            throw new Exception("Proses parsing sertifikat tidak berhasil, pastikan password anda benar.");
         }
 
         return $certs;
@@ -640,7 +642,7 @@ class DigitalSignatureService
         $certInfo = openssl_x509_parse($certs['cert']);
 
         if (!$certInfo) {
-            throw new \Exception("Gagal memparsing data sertifikat info.");
+            throw new Exception("Gagal memparsing data sertifikat info.");
         }
         return $certInfo;
     }

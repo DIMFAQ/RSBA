@@ -1,12 +1,66 @@
 @import './loader.css';
-
-@tailwind base;
-@tailwind components;
+@import "tailwindcss";
 @tailwind utilities;
-@tailwind variants;
+
+/* Fix: TallStackUI toast overlay blocking clicks on Tailwind v4 */
+/* [x-data^="tallstackui_toastBase"] {
+    pointer-events: none !important;
+}
+
+[x-data^="tallstackui_toastBase"] [class*="pointer-events-auto"] {
+    pointer-events: auto !important;
+} */
 
 
-/* Scrollbar */
+/* tallstackui */
+@import '../../vendor/tallstackui/tallstackui/css/v4.css';
+@plugin '@tailwindcss/forms';
+@source '../../vendor/tallstackui/tallstackui/**/*.php';
+/* tallstackui */
+
+
+@plugin '@tailwindcss/forms';
+
+/* filament */
+/* Required by all components */
+@import '../../vendor/filament/support/resources/css/index.css';
+
+/* Required by tables */
+@import '../../vendor/filament/tables/resources/css/index.css';
+
+/* Required by actions and tables */
+@import '../../vendor/filament/actions/resources/css/index.css';
+
+/* Required by actions, forms and tables */
+@import '../../vendor/filament/forms/resources/css/index.css';
+
+/* Required by actions, infolists, forms, schemas and tables */
+@import '../../vendor/filament/schemas/resources/css/index.css';
+
+/* filament table reduce rows padding */
+/* .fi-ta-ctn .py-4 {
+    padding-top: 0.125rem !important;
+    padding-bottom: 0.125rem !important;
+} */
+
+/* Filament v4 table cell padding override */
+/* .fi-ta-table td.fi-ta-cell,
+.fi-ta-table th.fi-ta-cell {
+    padding-top: 0.1rem !important;
+    padding-bottom: 0.1rem !important;
+} */
+/* end filament */
+
+
+#sidebar.hidden {
+    display: none;
+}
+
+#main-content.w-full {
+    width: 100%;
+}
+
+
 @layer utilities {
 
     /* Hide scrollbar for Chrome, Safari and Opera */
@@ -51,37 +105,3 @@
     /* end CV Style */
 
 }
-
-
-#sidebar.hidden {
-    display: none;
-}
-
-#main-content.w-full {
-    width: 100%;
-}
-
-
-/* filament table reduce rows padding */
-.fi-ta-ctn .py-4 {
-    padding-top: .625rem !important;
-    padding-bottom: .625rem !important;
-}
-
-/* Hide print area on screen */
-/* .print-hidden {
-    display: none;
-} */
-
-/* Print area */
-/* @media print {
-    body.print-mode>*:not(#print-permintaan-approval) {
-        display: none !important;
-    }
-
-    body.print-mode #print-permintaan-approval {
-        display: block !important;
-        position: static !important;
-        left: auto !important;
-    }
-} */

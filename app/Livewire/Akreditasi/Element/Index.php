@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Akreditasi\Element;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use ZipArchive;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -96,12 +98,12 @@ class Index extends Component
         }
 
         // Return dengan pagination info
-        return new \Illuminate\Pagination\LengthAwarePaginator(
+        return new LengthAwarePaginator(
             $organized,
             $parentBabs->total(),
             $parentBabs->perPage(),
             $parentBabs->currentPage(),
-            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+            ['path' => Paginator::resolveCurrentPath()]
         );
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Karyawan\Dokter;
 
+use Throwable;
 use App\Models\Sdm\Dokter;
 use App\Models\Sdm\DokterSpesialisasi;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', "Karyawan <b>{$dokter->karyawan->nama}</b> ditambah kedokter.")
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->error('Failed', 'Error : ' . $e->getMessage())

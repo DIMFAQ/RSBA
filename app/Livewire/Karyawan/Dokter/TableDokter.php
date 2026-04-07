@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Karyawan\Dokter;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Throwable;
 use Livewire\Component;
 use Filament\Tables\Table;
 use App\Enums\StatusKaryawan;
 use App\Models\Sdm\Dokter;
 use App\Models\Sdm\DokterSpesialisasi;
-use Filament\Tables\Actions\Action;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -16,8 +19,9 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Filters\SelectFilter;
 use TallStackUi\Traits\Interactions;
 
-class TableDokter extends Component implements HasTable, HasForms
+class TableDokter extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
     use Interactions;
 
@@ -52,7 +56,7 @@ class TableDokter extends Component implements HasTable, HasForms
                     )->searchable()
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit'),
@@ -93,7 +97,7 @@ class TableDokter extends Component implements HasTable, HasForms
             $this->toast()
                 ->success('Berhasil', "<b>{$dokter->karyawan->nama}</b> berhasil dihapus.")
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             $this->toast()
                 ->error('Gagal', "Error : " . $th->getMessage())
                 ->send();

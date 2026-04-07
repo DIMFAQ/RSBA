@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms\Distribusi;
 
+use Throwable;
 use Exception;
 use Livewire\Form;
 use App\Models\Gudang\Stok;
@@ -71,9 +72,9 @@ class TransaksiForm extends Form
             $distribusi->load('details');
             $this->lastDistribusiId = $distribusi->id;
             $this->lastDisribusi = $distribusi;
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
-            throw new \Exception($th->getMessage());
+            throw new Exception($th->getMessage());
         }
     }
 
@@ -156,7 +157,7 @@ class TransaksiForm extends Form
             ->findOrFail($item['id']);
 
         if ($barang->stoks_sum_stok < $item['jumlah'] or $barang->stoks_sum_stok == 0 or  $barang->stoks_sum_stok == null) {
-            throw new \Exception("Stok barang <b>{$barang->nama}</b> tidak mencukupi.");
+            throw new Exception("Stok barang <b>{$barang->nama}</b> tidak mencukupi.");
         }
     }
 

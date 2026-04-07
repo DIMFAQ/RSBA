@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Master\Cuti;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Surat\CutiJenis;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -13,8 +15,9 @@ use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class TableJenisCuti extends Component implements HasTable, HasForms
+class TableJenisCuti extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
 
@@ -33,7 +36,7 @@ class TableJenisCuti extends Component implements HasTable, HasForms
                 TextColumn::make('lama')
                     ->label('Lama Cuti')
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->action(
                         fn($record, $livewire) => $livewire->modalTrigger(

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Jasmed;
 
+use Throwable;
 use App\Models\JmJasa;
 use Livewire\Component;
 use App\Models\JmDokter;
@@ -41,7 +42,7 @@ class BpjsRanap extends Component
                     'Sukses!',
                     'Upload data sukses.!'
                 )->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $errors = $e->getMessage();
             $this->toast()
                 ->error(
@@ -147,7 +148,7 @@ class BpjsRanap extends Component
                 // kelompok jasa
                 $kelompok = $pasien->kelompok;
                 $this->calcJasaDokterRanap($prosentase, $dokter, $kelompok);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $errors = $e->getMessage();
 
                 // toast

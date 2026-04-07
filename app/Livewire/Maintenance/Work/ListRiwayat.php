@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Maintenance\Work;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use App\Models\Maintenance\Work;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -14,8 +18,9 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Lazy]
-class ListRiwayat extends Component implements HasTable, HasForms
+class ListRiwayat extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     public ?object $assetBarang;
@@ -43,10 +48,10 @@ class ListRiwayat extends Component implements HasTable, HasForms
                     ->latest('created_at')
             )
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('jadwal.tanggal')
+                TextColumn::make('jadwal.tanggal')
                     ->label('Tanggal')
                     ->date(),
-                \Filament\Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
                     ->formatStateUsing(
                         fn($state) => match ($state) {
@@ -57,15 +62,15 @@ class ListRiwayat extends Component implements HasTable, HasForms
                             default => 'Tidak Diketahui',
                         }
                     ),
-                \Filament\Tables\Columns\TextColumn::make('jadwal.teknisi.user.karyawan.nama')
+                TextColumn::make('jadwal.teknisi.user.karyawan.nama')
                     ->label('Teknisi'),
 
-                \Filament\Tables\Columns\TextColumn::make('total_biaya')
+                TextColumn::make('total_biaya')
                     ->label('Biaya'),
 
             ])
-            ->actions([
-                \Filament\Tables\Actions\Action::make('maintenance')
+            ->recordActions([
+                Action::make('maintenance')
                     ->iconButton()
                     ->icon('tabler-settings-exclamation')
                     ->color('primary')
@@ -77,7 +82,7 @@ class ListRiwayat extends Component implements HasTable, HasForms
                     )
                     ->visible(fn($record) => $record->status === 'in_progress'),
 
-                \Filament\Tables\Actions\Action::make('report')
+                Action::make('report')
                     ->iconButton()
                     ->icon('tabler-report')
                     ->color('gray')

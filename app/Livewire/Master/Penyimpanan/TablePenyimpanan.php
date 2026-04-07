@@ -2,18 +2,21 @@
 
 namespace App\Livewire\Master\Penyimpanan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Master\BarangPenyimpanan;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Livewire\Component;
 
-class TablePenyimpanan extends Component implements HasTable, HasForms
+class TablePenyimpanan extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     public static function table(Table $table): Table
@@ -28,7 +31,7 @@ class TablePenyimpanan extends Component implements HasTable, HasForms
                 TextColumn::make('deskripsi')
                     ->label('Deskripsi')
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit'),

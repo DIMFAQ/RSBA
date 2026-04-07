@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Asset;
 
+use Throwable;
 use App\Livewire\Forms\Asset\AssetBarangForm;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -48,7 +49,7 @@ class Catat extends Component
             $this->toast()
                 ->success('Berhasil', 'Barang berhasil dilakukan pencatatan sebagai asset.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error("Tidak Berhasil", "<i>{$e->getMessage()}</i> <br> Silahkan coba lagi.")
                 ->send();

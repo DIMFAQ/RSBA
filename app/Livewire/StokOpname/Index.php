@@ -2,6 +2,7 @@
 
 namespace App\Livewire\StokOpname;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Gudang\Stok;
 use Livewire\Attributes\Lazy;
@@ -41,7 +42,7 @@ class Index extends Component
             $this->toast()
                 ->success('Berhasil', 'Kegiatan stok opaname ditambahkan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
             if ($e->getCode() == 23000) { //duplicate status == 'process'

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Barang;
 
+use Throwable;
 use App\Models\Master\Barang as MasterBarang;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
@@ -86,7 +87,7 @@ class Edit extends Component
             $this->toast()
                 ->success('Berhasil', 'Item barang berhasil diubah.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->toast()
                 ->error('Gagal', "Item barang gagal diubah. Error: {$e->getMessage()}")

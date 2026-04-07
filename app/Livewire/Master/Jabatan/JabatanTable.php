@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Master\Jabatan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Throwable;
 use Livewire\Component;
 use Filament\Tables\Table;
 use App\Models\Sdm\Jabatan;
 use Illuminate\Support\Facades\DB;
-use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
@@ -15,8 +18,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class JabatanTable extends Component implements HasTable, HasForms
+class JabatanTable extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithTable, InteractsWithForms;
 
@@ -48,7 +52,7 @@ class JabatanTable extends Component implements HasTable, HasForms
                         fn(): array => Jabatan::pluck('nama', 'id')->toArray()
                     )
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('edit')
                     ->iconButton()
                     ->tooltip('Edit')
@@ -96,7 +100,7 @@ class JabatanTable extends Component implements HasTable, HasForms
             $this->toast()
                 ->success('Berhasil', "<b>" . $this->jabatan->nama . "</b>  berhasil dihapus.")
                 ->send();
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             DB::rollBack();
             $this->toast()
                 ->error('Failed', "Error : " . $th->getMessage())

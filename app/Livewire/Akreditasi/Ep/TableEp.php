@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Akreditasi\Ep;
 
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use Livewire\Component;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Components\Select;
 use App\Models\Akreditasi\AkreElement;
@@ -20,8 +22,9 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Livewire\Attributes\On;
 
-class TableEp extends Component implements HasTable, HasForms
+class TableEp extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use Interactions;
     use InteractsWithTable, InteractsWithForms;
 
@@ -99,7 +102,7 @@ class TableEp extends Component implements HasTable, HasForms
                     ->action(
                         Action::make('penilaian')
                             ->modalHeading('Penilaian Element')
-                            ->form([
+                            ->schema([
                                 Checkbox::make('tdd')
                                     ->label('Tidak Dapat Dinilai (TDD)')
                                     ->live()
@@ -176,7 +179,7 @@ class TableEp extends Component implements HasTable, HasForms
                     ->extraAttributes(['class' => 'text-xs'])
                     ->view('livewire.akreditasi.ep.list-documents'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('upload')
                     ->iconButton()
                     ->icon('tabler-book-upload')

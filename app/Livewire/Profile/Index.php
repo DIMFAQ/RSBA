@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Profile;
 
+use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
@@ -63,7 +64,7 @@ class Index extends Component
                 ->send();
 
             DB::commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

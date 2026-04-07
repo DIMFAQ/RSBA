@@ -10,7 +10,7 @@
                 <div class="inline-block min-w-full py-2 lg:px-8">
 
                     <div class="overflow-hidden">
-                        <table class="text-surface min-w-full text-left text-sm font-light dark:text-white">
+                        <table class="text-surface min-w-full text-left text-sm dark:text-white">
                             <thead class="border-b border-neutral-200 font-semibold dark:border-white/10">
                                 <tr>
                                     <th scope="col" class="px-6 py-2">Pendidikan</th>

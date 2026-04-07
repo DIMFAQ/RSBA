@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Hutang;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Carbon\Carbon;
+use Filament\Actions\Action;
 use App\Models\Gudang\Pembelian;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -14,8 +17,9 @@ use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class ListHutang extends Component implements HasTable, HasForms
+class ListHutang extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -102,7 +106,7 @@ class ListHutang extends Component implements HasTable, HasForms
                     ->getStateUsing(
                         fn($record) =>
                         $record->tgl_pembayaran ?
-                            \Carbon\Carbon::parse($record->tgl_pembayaran)->diffForHumans() :
+                            Carbon::parse($record->tgl_pembayaran)->diffForHumans() :
                             ''
                     ),
 
@@ -122,7 +126,7 @@ class ListHutang extends Component implements HasTable, HasForms
                     ->searchable()
                     ->preload()
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('detail')
                     ->label('Detail Pembelian')
                     ->iconButton()

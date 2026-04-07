@@ -31,7 +31,7 @@ class Pencarian extends Component
         $this->dispatch('printNow');
         $distribusi = $this->distribusi;
 
-        $pdf = Pdf::loadView('livewire.distribusi.print-distribusi', ['distribusi' => $distribusi]);
+        $pdf = PDF::loadView('livewire.distribusi.print-distribusi', ['distribusi' => $distribusi]);
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();

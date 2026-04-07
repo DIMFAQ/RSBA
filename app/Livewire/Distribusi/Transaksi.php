@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Distribusi;
 
+use Throwable;
 use App\Livewire\Forms\Distribusi\TransaksiForm as DistibusiTransaksiForm;
 use Livewire\Component;
 use TallStackUi\Traits\Interactions;
@@ -186,7 +187,7 @@ class Transaksi extends Component
             $this->toast()
                 ->success('Berhasil', 'Barang berhasil didistribusikan.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->toast()
                 ->error("⚠️ Terjadi Kesalahan", "<i>{$e->getMessage()}</i> <br> Silahkan coba lagi.")
                 ->send();

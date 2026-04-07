@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Akreditasi;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Models\Akreditasi\AkreKegiatan;
-use Filament\Tables\Actions\Action;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Filament\Forms\Contracts\HasForms;
@@ -12,8 +14,9 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TableKegiatan extends Component implements HasTable, HasForms
+class TableKegiatan extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     public function table(Table $table): Table
@@ -37,7 +40,7 @@ class TableKegiatan extends Component implements HasTable, HasForms
                     ->label('Nilai'),
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('masuk')
                     ->iconButton()
                     ->icon('tabler-table')

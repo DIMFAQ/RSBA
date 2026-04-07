@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Pembelian\Permintaan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\BulkAction;
 use Livewire\Component;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Cache;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Model;
@@ -17,9 +19,10 @@ use App\Models\Gudang\PembelianRequestDetails;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class ListPermintaanBarang extends Component implements HasTable, HasForms
+class ListPermintaanBarang extends Component implements HasTable, HasForms, HasActions
 {
 
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     public function table(Table $table): Table
@@ -83,7 +86,7 @@ class ListPermintaanBarang extends Component implements HasTable, HasForms
                     ->relationship('request', 'id')
                     ->getOptionLabelFromRecordUsing(fn($record) => 'Request #' . $record->id),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkAction::make('buat_pembelian')
                     ->label('Buat Pembelian')
                     ->icon('tabler-shopping-cart-plus')
@@ -91,7 +94,7 @@ class ListPermintaanBarang extends Component implements HasTable, HasForms
                     ->modalHeading('Buat Transaksi Pembelian')
                     ->modalDescription('Anda akan melakukan transaksi pembelian item-item yang anda pilih.')
                     ->modalSubmitActionLabel('Buat Pembelian')
-                    ->form([
+                    ->schema([
                         Select::make('jenis_pembelian')
                             ->label('Jenis Pembelian')
                             ->options([
@@ -128,7 +131,7 @@ class ListPermintaanBarang extends Component implements HasTable, HasForms
                 fn(Model $record): bool => $this->getComputedStatus($record) === 'approved',
             )
             ->selectCurrentPageOnly()
-            ->actions([]);
+            ->recordActions([]);
     }
 
     // to update request.status

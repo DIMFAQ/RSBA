@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Cuti;
 
+use Throwable;
 use App\Models\Surat\CutiJenis;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -40,7 +41,7 @@ class Add extends Component
                 ->send();
 
             $this->dispatch('jenis-cuti-created');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Exception;
+
 trait AuthorizesFromRoute
 {
     public string $currentRouteName = '';
@@ -24,7 +26,7 @@ trait AuthorizesFromRoute
             if ($routeName && $routeName !== 'livewire.update') {
                 $this->currentRouteName = $routeName;
             }
-        } catch (\Exception) {
+        } catch (Exception) {
             // route tidak ditemukan
         }
     }

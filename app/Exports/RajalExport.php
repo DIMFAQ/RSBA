@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
@@ -21,7 +22,7 @@ class RajalExport implements WithMultipleSheets
         $this->batch = $batch;
     }
     /**
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function sheets(): array
     {

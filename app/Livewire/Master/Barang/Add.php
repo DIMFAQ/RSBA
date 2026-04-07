@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Barang;
 
+use Throwable;
 use App\Models\Master\Barang;
 use App\Models\Master\BarangKategori;
 use App\Models\Master\BarangSatuan;
@@ -65,7 +66,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Item barang berhasil dibuat.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

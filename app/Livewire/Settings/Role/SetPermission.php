@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings\Role;
 
+use Throwable;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Lazy;
@@ -57,7 +58,7 @@ class SetPermission  extends Component
             $this->toast()
                 ->success('Sukses', 'Setting permission role di update.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
             $this->toast()
                 ->error('Failed', 'Error :' . $e->getMessage())

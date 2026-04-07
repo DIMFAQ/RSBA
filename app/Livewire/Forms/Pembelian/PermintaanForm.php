@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Forms\Pembelian;
 
+use Throwable;
+use Exception;
 use App\Models\Gudang\PembelianRequest;
 use App\Models\Gudang\PembelianRequestDetails;
 use Livewire\Form;
@@ -68,17 +70,17 @@ class PermintaanForm extends Form
             DB::commit();
 
             $this->lastRequestId = $pembelianReq->id; //return id
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollback();
 
-            throw new \Exception($e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
     private function createDetail($pembelianReq, $items)
     {
         if (empty($items)) {
-            throw new \Exception("Tidak ada detail item pengajuan.");
+            throw new Exception("Tidak ada detail item pengajuan.");
         }
 
         foreach ($items as $item) {

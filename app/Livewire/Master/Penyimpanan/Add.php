@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Penyimpanan;
 
+use Throwable;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,7 @@ class Add extends Component
             $this->toast()
                 ->success('Berhasil', 'Tempat penyimpanan barang berhasil dibuat.')
                 ->send();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             $this->toast()

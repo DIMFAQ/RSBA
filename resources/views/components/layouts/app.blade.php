@@ -11,11 +11,11 @@
                 display: none !important;
             }
         </style>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-
         <tallstackui:script />
         @livewireStyles
         @filamentStyles
+
+        @vite('resources/css/app.css')
 
         {{-- inject style laravel --}}
         @stack('style')
@@ -57,6 +57,7 @@
         @livewireScripts
         @filamentScripts
 
+        @vite('resources/js/app.js')
         {{-- Inject Script Laravel --}}
         @stack('script')
     </body>

@@ -2,13 +2,15 @@
 
 namespace App\Livewire\Karyawan;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use Livewire\Component;
 use Filament\Tables\Table;
 use App\Models\Sdm\Karyawan;
 use App\Enums\StatusKaryawan;
 use App\Models\Sdm\Jabatan;
 use Filament\Forms\Components\Select;
-use Filament\Tables\Actions\Action;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -19,8 +21,9 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Locked;
 
-class TableResign extends Component implements HasForms, HasTable
+class TableResign extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithTable, InteractsWithForms;
 
     #[Locked]
@@ -97,7 +100,7 @@ class TableResign extends Component implements HasForms, HasTable
                 // Filter Jabatan
                 // FIXME tidak dapat filter jabatan saat ini saja
                 Filter::make('Jabatan')
-                    ->form([
+                    ->schema([
                         Select::make('Jabatan')
                             ->options(
                                 fn() => Jabatan::pluck('nama', 'id')->toArray()
@@ -121,7 +124,7 @@ class TableResign extends Component implements HasForms, HasTable
                         return $jabatanNama ? 'Jabatan : ' . $jabatanNama : null;
                     })
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('view-profile')
                     ->iconButton()
                     ->icon('tabler-printer')

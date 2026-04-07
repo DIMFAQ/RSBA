@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Akreditasi\Documents;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use App\Models\Akreditasi\AkreElement;
 use Livewire\Component;
 use Filament\Tables\Table;
@@ -9,18 +13,17 @@ use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Locked;
 use Livewire\WithoutUrlPagination;
-use Filament\Tables\Actions\Action;
 use TallStackUi\Traits\Interactions;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Actions\DeleteAction;
 use App\Models\Akreditasi\AkreElementDocuments;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
-class TableDocuments extends Component implements HasTable, HasForms
+class TableDocuments extends Component implements HasTable, HasForms, HasActions
 {
+    use InteractsWithActions;
     use WithFileUploads;
     use Interactions;
     use InteractsWithTable, InteractsWithForms;
@@ -124,7 +127,7 @@ class TableDocuments extends Component implements HasTable, HasForms
                     ->wrap()
                     ->html()
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('attach')
                     ->iconButton()
                     ->icon('tabler-file-export')
