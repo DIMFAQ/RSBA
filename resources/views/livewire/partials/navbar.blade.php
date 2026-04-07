@@ -1,5 +1,5 @@
 <div>
-    <nav class="flex h-16 items-center px-6 text-xl text-primary-700">
+    <nav class="text-primary-700 flex h-16 items-center px-6 text-xl">
         <div x-show="!isOpen()" class="flex flex-row items-center gap-2">
             <a x-show="!isOpen()" @click.prevent="handleOpen()" @keyup.enter="alert('Submitted!')" class="hover:text-danger-500" href="#">
                 <div x-data="{ isHover: false }">
@@ -8,20 +8,20 @@
                 </div>
             </a>
             <a href="">
-                <span class="ml-4 hidden font-semibold uppercase text-primary-500 lg:block">{{ $title }}</span>
+                <span class="text-primary-500 ml-4 hidden font-semibold uppercase lg:block">{{ $title }}</span>
             </a>
         </div>
 
         <div class="ml-auto flex">
             <div class="flex items-center">
                 <div class="me-6 hidden space-x-4 lg:block">
-                    <x-ts:button.circle flat outline x-on:click="$slideOpen('pesan-drawer')" class="relative">
+                    <x-ts:button.circle flat outline x-on:click="$tsui.open.slide('pesan-drawer')" class="relative">
                         <x-tabler-mail />
                         <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
 
                     </x-ts:button.circle>
 
-                    <x-ts:button.circle flat outline x-on:click="$slideOpen('notif-drawer')" class="relative">
+                    <x-ts:button.circle flat outline x-on:click="$tsui.open.slide('notif-drawer')" class="relative">
                         <x-tabler-bell />
                         <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
                     </x-ts:button.circle>

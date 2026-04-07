@@ -1,6 +1,6 @@
 <div class="w-full">
     <div class="mt-4 flex w-full flex-row">
-        <span class="gap-auto flex rounded-md px-3 py-1 font-semibold text-primary-500 hover:bg-red-200/75 hover:text-red-500" role="button" wire:click='directback'>
+        <span class="gap-auto text-primary-500 flex rounded-md px-3 py-1 font-semibold hover:bg-red-200/75 hover:text-red-500" role="button" wire:click='directback'>
             <x-tabler-chevron-left />
             {{ __('Kembali') }}
         </span>
@@ -12,7 +12,7 @@
         <div class="flex w-full flex-col rounded-lg bg-white lg:sticky lg:top-5 lg:w-1/4">
             <div class="flex flex-col items-center justify-center p-4">
                 <x-ts:avatar image="" class="h-40 w-40" />
-                <h2 class="text-2xl font-semibold text-primary-500">{{ $karyawan->nama }}</h2>
+                <h2 class="text-primary-500 text-2xl font-semibold">{{ $karyawan->nama }}</h2>
                 <h2 class="text-lg">{{ $karyawan->nip }}</h2>
             </div>
 
@@ -52,7 +52,7 @@
                 </x-ts:button>
 
                 {{-- action resign --}}
-                <x-ts:button sm x-on:click="$modalOpen('modal-resign-karyawan')" class="bg-warning-500 hover:bg-warning-400" icon="tabler.user-minus">
+                <x-ts:button sm x-on:click="$tsui.open.modal('modal-resign-karyawan')" class="bg-warning-500 hover:bg-warning-400" icon="tabler.user-minus">
                     Resign
                 </x-ts:button>
             </div>
@@ -83,7 +83,7 @@
 
 
     {{-- modal form resign --}}
-    <x-ts:modal id="modal-resign-karyawan" center title="Resign" x-on:karyawan-resign-updated.window="$modalClose('modal-resign-karyawan')">
+    <x-ts:modal id="modal-resign-karyawan" center title="Resign" x-on:karyawan-resign-updated.window="$tsui.close.modal('modal-resign-karyawan')">
         {{-- form --}}
         <livewire:Karyawan.Resign :id="$karyawan->id" :key="'modal-resign-' . Str::random(5)" />
     </x-ts:modal>

@@ -37,7 +37,7 @@
             </div>
         </div>
     @else
-        <div class="mb-2 flex flex-row items-center gap-2 rounded-lg bg-warning-100 p-1 text-warning-500 lg:w-fit">
+        <div class="bg-warning-100 text-warning-500 mb-2 flex flex-row items-center gap-2 rounded-lg p-1 lg:w-fit">
             <x-ts:icon name="tabler.info-circle" color='orange' class="h-6" />
             <span>Anda belum memiliki certificate tanda tangan.</span>
         </div>
@@ -50,7 +50,7 @@
         <livewire:Profile.SignatureCerts.Add :$users :key="'create-signature-' . auth()->id()" @cert-created="$refresh" />
     </x-filament::modal>
 
-    <x-ts:modal title="Password" wire="modalPassw" x-on:open="$focusOn('pkcs12_password')" center persistent blur>
+    <x-ts:modal title="Password" wire="modalPassw" x-on:open="$tsui.focus('pkcs12_password')" center persistent blur>
         <form wire:submit.prevent='parseCertificate' class="flex flex-col gap-2">
             <x-ts:password id="pkcs12_password" wire:model.defer='pkcs12_password' placeholder="Input passsword anda." />
 
