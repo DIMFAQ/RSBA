@@ -11,6 +11,11 @@ class JmPasien extends Model
     protected $guarded = [];
     protected $table = 'jm_pasien';
 
+    public function rincian(): HasOne
+    {
+        return $this->hasOne(JmRincian::class, 'jm_pasien_id', 'id');
+    }
+
     function dokter(): HasMany
     {
         return $this->hasMany(JmDokter::class, 'jm_pasien_id', 'id');

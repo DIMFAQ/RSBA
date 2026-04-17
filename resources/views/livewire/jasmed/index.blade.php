@@ -20,6 +20,12 @@
                     JKMD
                 </x-ts:button>
             @endcan
+
+            @can('verify-jasa')
+                <x-ts:button flat loading="navigateTo('verifikasi')" wire:click="navigateTo('verifikasi')" @class([$active => $content === 'verifikasi'])>
+                    Verifikasi
+                </x-ts:button>
+            @endcan
         </div>
     </div>
 
@@ -69,6 +75,12 @@
                         <div class="rounded-lg bg-white p-4">
                             <livewire:Jasmed.Jkmd.Ranap :key="Str::random()">
                         </div>
+                    </div>
+                @break
+
+                @case('verifikasi')
+                    <div class="w-full rounded-lg bg-white p-4">
+                        <livewire:Jasmed.Verify.Index key="verify-jasmed" />
                     </div>
                 @break
 
