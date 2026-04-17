@@ -52,7 +52,7 @@
             </div>
         @endauth
 
-
+        @vite('resources/js/filament-tallstack-fix.js')
 
         @livewireScripts
         @filamentScripts
