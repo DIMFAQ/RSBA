@@ -1,4 +1,5 @@
 import './bootstrap';
+import './filamentfixtallstack';
 
 
 // print area v1

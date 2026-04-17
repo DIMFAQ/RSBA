@@ -52,12 +52,11 @@
             </div>
         @endauth
 
-        @vite('resources/js/filament-tallstack-fix.js')
+        @vite('resources/js/app.js')
 
         @livewireScripts
         @filamentScripts
 
-        @vite('resources/js/app.js')
         {{-- Inject Script Laravel --}}
         @stack('script')
     </body>
