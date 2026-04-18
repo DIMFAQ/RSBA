@@ -9,7 +9,7 @@
         @endcan
 
         <div class="w-full rounded-md bg-white p-4">
-            <livewire:Surat.Cuti.TableCuti :key="Str::random()">
+            <livewire:Surat.Cuti.TableCuti :key="Str::random()" />
         </div>
 
     </div>

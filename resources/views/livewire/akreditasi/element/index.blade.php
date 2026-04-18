@@ -75,7 +75,7 @@
                     <div class="ms-4 flex flex-col gap-2 lg:flex-row">
                         {{-- Status & Nilai Container --}}
                         <div class="flex w-full flex-col lg:w-32">
-                            <livewire:Akreditasi.Element.Stats :babId="$item->id" :key="'stats-bab-' . $item->id">
+                            <livewire:Akreditasi.Element.Stats :babId="$item->id" :key="'stats-bab-' . $item->id" />
                         </div>
 
                         {{-- Konten Sub Bab --}}

@@ -181,11 +181,10 @@ class AddElementPenilaian extends Component implements HasForms, HasActions
                     'bulletList',
                     'orderedList',
                     'link',
-                    'quote',
+                    'blockquote',
                     'undo',
                     'redo'
                 ])
-                ->disableGrammarly()
                 ->columnSpanFull()
 
         ];

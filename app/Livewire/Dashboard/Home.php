@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Dashboard;
 
-use Livewire\Attributes\Isolate;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
 use Livewire\Component;

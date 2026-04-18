@@ -8,7 +8,6 @@ use Livewire\Form;
 use App\Models\Gudang\Stok;
 use App\Models\Master\Barang;
 use App\Models\Gudang\Distribusi;
-use Livewire\Attributes\Validate;
 use App\Models\Assets\AssetBarang;
 use Illuminate\Support\Facades\DB;
 use App\Models\Gudang\DistribusiDetail;

@@ -11,7 +11,6 @@ use Livewire\Component;
 use Filament\Tables\Table;
 use Livewire\Attributes\Locked;
 use App\Models\Assets\AssetBarang;
-use App\Models\Master\Barang;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;

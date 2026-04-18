@@ -1,14 +1,14 @@
 <div class="flex flex-col gap-2">
     {{-- action navbar --}}
-    <div class="w-full flex justify-end py-2 px-4 bg-white rounded-lg">
+    <div class="flex w-full justify-end rounded-lg bg-white px-4 py-2">
         <x-ts:button sm x-on:click="$dispatch('open-modal',{id:'modal-new-satuan'})" icon="tabler.plus">
             Tambah
         </x-ts:button>
     </div>
 
     {{-- table --}}
-    <div class="relative overflow-auto bg-white rounded-lg p-4">
-        <livewire:Master.Barang.Satuan.TableSatuan :key="Str::random()">
+    <div class="relative overflow-auto rounded-lg bg-white p-4">
+        <livewire:Master.Barang.Satuan.TableSatuan :key="Str::random()" />
     </div>
 
 

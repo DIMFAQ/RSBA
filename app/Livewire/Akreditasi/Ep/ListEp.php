@@ -3,7 +3,6 @@
 namespace App\Livewire\Akreditasi\Ep;
 
 use Livewire\Attributes\Lazy;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Lazy]

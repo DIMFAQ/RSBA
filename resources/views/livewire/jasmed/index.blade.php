@@ -40,10 +40,10 @@
 
                     <div class="flex w-full flex-col gap-2 lg:w-1/2">
                         <div class="rounded-lg bg-white p-4">
-                            <livewire:Jasmed.BpjsRajal :key="Str::random()">
+                            <livewire:Jasmed.BpjsRajal :key="Str::random()" />
                         </div>
                         <div class="rounded-lg bg-white p-4">
-                            <livewire:Jasmed.BpjsRanap :key="Str::random()">
+                            <livewire:Jasmed.BpjsRanap :key="Str::random()" />
                         </div>
                     </div>
                 @break
@@ -70,10 +70,10 @@
                     </div>
                     <div class="flex w-full flex-col gap-2 lg:w-1/2">
                         <div class="rounded-lg bg-white p-4">
-                            <livewire:Jasmed.Jkmd.Rajal :key="Str::random()">
+                            <livewire:Jasmed.Jkmd.Rajal :key="Str::random()" />
                         </div>
                         <div class="rounded-lg bg-white p-4">
-                            <livewire:Jasmed.Jkmd.Ranap :key="Str::random()">
+                            <livewire:Jasmed.Jkmd.Ranap :key="Str::random()" />
                         </div>
                     </div>
                 @break

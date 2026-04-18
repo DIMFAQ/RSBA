@@ -113,8 +113,8 @@ class DigitalSignatureService
     public function renewGenerate(
         User $user,
         string $existingPrivateKeyPath,
-        int $expiryDays = self::DEFAULT_EXPIRY_DAYS,
-        string $password
+        string $password,
+        int $expiryDays = self::DEFAULT_EXPIRY_DAYS
     ) {
         $sanDomains = $this->sanDomains;
 
@@ -153,10 +153,10 @@ class DigitalSignatureService
     public function signData(
         User $user,
         $data,
-        ?string $password = null,
         ?string $type,
         int $id,
-        string $algorithm = self::DEFAULT_ALGORITHM
+        string $algorithm = self::DEFAULT_ALGORITHM,
+        ?string $password = null,
     ): array {
 
         try {

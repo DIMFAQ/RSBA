@@ -8,7 +8,6 @@ use Illuminate\Support\Arr;
 use App\Models\Master\Barang;
 use Livewire\Attributes\Lazy;
 use Illuminate\Http\UploadedFile;
-use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
 use App\Livewire\Forms\Pembelian\PermintaanForm;
 use Livewire\WithFileUploads;

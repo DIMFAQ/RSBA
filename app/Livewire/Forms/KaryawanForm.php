@@ -3,7 +3,6 @@
 namespace App\Livewire\Forms;
 
 use Throwable;
-use Livewire\Attributes\Validate;
 use Carbon\Carbon;
 use Livewire\Form;
 use App\Models\Sdm\Karyawan;

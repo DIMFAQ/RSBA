@@ -3,7 +3,7 @@
         <span> Berikan Role :</span>
         <form wire:submit.prevent='submit' class="flex flex-col gap-2">
             @foreach ($roles as $item)
-                <div class="flex justify-between rounded-lg p-1 hover:bg-primary-100">
+                <div class="hover:bg-primary-100 flex justify-between rounded-lg p-1">
                     <x-ts:radio wire:model.defer="role" id="{{ $item->name }}" value="{{ $item->name }}" label="{{ $item->name }}" />
 
                     <x-ts:icon name="tabler.edit" class="h-5 w-5 text-indigo-400" role="button" wire:click="editPermission({{ $item->id }})" />
@@ -22,7 +22,7 @@
                 Edit Permission Role : <span class="text-primary-500">{{ $roleIdSelected?->name }}</span>
             </x-slot>
 
-            <livewire:Settings.Role.SetPermission :id="$roleIdSelected?->id" :key="Str::random()">
+            <livewire:Settings.Role.SetPermission :id="$roleIdSelected?->id" :key="Str::random()" />
         </x-filament::modal>
     </div>
 </div>

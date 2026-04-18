@@ -34,7 +34,7 @@ class AkreditasiController extends Controller
         return response()->json($chapters);
     }
 
-    public function babs($type = null, $chapter_id, Request $request): JsonResponse
+    public function babs($chapter_id, Request $request, $type = null): JsonResponse
     {
         $search = $request->input('search');
 

@@ -35,6 +35,7 @@ class Rincian extends Component
     public $bmhp;
     public $sewa_alat;
     public $obat_kronis;
+    public $obat_kemo;
     public $real_billing_jasa;
 
     protected JasaMedisBpjsService $jasaMedisBpjsService;
@@ -70,6 +71,7 @@ class Rincian extends Component
         $this->bmhp = $rincian->bmhp;
         $this->sewa_alat = $rincian->sewa_alat;
         $this->obat_kronis = $rincian->obat_kronis;
+        $this->obat_kemo = $rincian->obat_kemo;
         $this->real_billing_jasa = $rincian->real_billing_jasa;
     }
 

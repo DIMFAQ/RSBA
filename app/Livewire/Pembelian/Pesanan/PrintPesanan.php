@@ -4,7 +4,6 @@ namespace App\Livewire\Pembelian\Pesanan;
 
 use App\Models\Gudang\Pembelian;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
 class PrintPesanan extends Component

@@ -6,15 +6,15 @@
 
             <div class="grid w-full grid-cols-3 gap-2">
                 <div wire:key="chapter-select-{{ $kegiatan_id }}">
-                    <x-ts:select.styled wire:model.blur="chapter_id" searchable :request="route('api.akreditasi.chapters', ['kegiatan' => $kegiatan_id])" select="label:singkatan|value:id" placeholder="Chapter" />
+                    <x-ts:select.styled wire:model.live.blur="chapter_id" searchable :request="route('api.akreditasi.chapters', ['kegiatan' => $kegiatan_id])" select="label:singkatan|value:id" placeholder="Chapter" />
                 </div>
 
                 <div wire:key='sub-select-{{ $chapter_id }}'>
-                    <x-ts:select.styled wire:model.blur="sub_id" searchable :request="route('api.akreditasi.babs', ['type' => 'sub', 'chapter' => $chapter_id])" select="label:nama|value:id" :disabled="!$chapter_id" placeholder="Bab / Sub" />
+                    <x-ts:select.styled wire:model.live.blur="sub_id" searchable :request="route('api.akreditasi.babs', ['chapter' => $chapter_id, 'type' => 'sub'])" select="label:nama|value:id" :disabled="!$chapter_id" placeholder="Bab / Sub" />
                 </div>
 
                 <div wire:key="element-select-{{ $sub_id }}">
-                    <x-ts:select.styled wire:model.blur="element_id_link" searchable :request="route('api.akreditasi.elements', ['sub' => $sub_id])" select="label:label|value:id" :disabled="!$sub_id" placeholder="Element" />
+                    <x-ts:select.styled wire:model.live.blur="element_id_link" searchable :request="route('api.akreditasi.elements', ['sub' => $sub_id])" select="label:label|value:id" :disabled="!$sub_id" placeholder="Element" />
                 </div>
             </div>
             <div class="flex flex-col">

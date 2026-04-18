@@ -6,7 +6,6 @@ use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Computed;
-use Illuminate\Support\Facades\App;
 use App\Models\Gudang\PembelianRequest;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\Gudang\PembelianRequestDetails;

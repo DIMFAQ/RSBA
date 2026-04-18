@@ -70,7 +70,7 @@ Route::prefix('akreditasi')
     ->group(function () {
         Route::get('chapters/{kegiatan?}', [App\Http\Controllers\AkreditasiController::class, 'chapters'])->name('chapters');
 
-        Route::get('babs/{type?}/{chapter?}', [App\Http\Controllers\AkreditasiController::class, 'babs'])->name('babs');
+        Route::get('babs/{chapter?}/{type?}', [App\Http\Controllers\AkreditasiController::class, 'babs'])->name('babs');
 
         Route::get('elements/{sub?}', [App\Http\Controllers\AkreditasiController::class, 'elements'])->name('elements');
 

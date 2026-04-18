@@ -28,7 +28,10 @@ class TableDokter extends Component implements HasTable, HasForms, HasActions
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Dokter::query()->with('karyawan')->with('spesialis'))
+            ->query(
+                Dokter::query()->with(['karyawan', 'spesialis'])
+                    ->whereHas('karyawan', fn($query) => $query->where('resign', null))
+            )
             ->columns([
                 TextColumn::make('karyawan.nama')
                     ->label('Nama')

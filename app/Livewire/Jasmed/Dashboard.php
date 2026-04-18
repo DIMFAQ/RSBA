@@ -9,8 +9,6 @@ use App\Models\JmPasien;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 
-use function Laravel\Prompts\number;
-
 #[Lazy]
 class Dashboard extends Component
 {

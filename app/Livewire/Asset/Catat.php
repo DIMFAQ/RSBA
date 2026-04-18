@@ -7,7 +7,6 @@ use App\Livewire\Forms\Asset\AssetBarangForm;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
 use App\Models\Assets\AssetBarang;
-use Illuminate\Support\Facades\DB;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]

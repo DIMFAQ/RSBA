@@ -19,7 +19,7 @@
                         </x-ts:button>
                     @endif
 
-                    <span class="text-lg uppercase text-primary-500">
+                    <span class="text-primary-500 text-lg uppercase">
                         {{ $this->karyawan->nama }}
                     </span>
                     <span class="text-md">
@@ -60,7 +60,7 @@
                         <x-ts:icon name="tabler.home" class="h-5 w-5" />
                     </x-slot:left>
 
-                    <livewire:Profile.Home :id="$user?->karyawan_id" key="home">
+                    <livewire:Profile.Home :id="$user?->karyawan_id" key="home" />
                 </x-ts:tab.items>
 
                 <x-ts:tab.items tab="Identitas">
@@ -99,7 +99,7 @@
                     </x-slot:left>
 
                     {{-- load Jadwal & Cuti --}}
-                    <livewire:Profile.Cuti :id="$user?->karyawan_id" key="cuti-list">
+                    <livewire:Profile.Cuti :id="$user?->karyawan_id" key="cuti-list" />
                 </x-ts:tab.items>
             </x-ts:tab>
 

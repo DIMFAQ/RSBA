@@ -2,12 +2,12 @@
     {{ $this->table }}
 
     <x-filament::modal id="detil-surat-cuti">
-        <livewire:Surat.Cuti.DetilTanggalCuti :$surat :key="'detail-tgl-cuti-' . Str::random(3)">
+        <livewire:Surat.Cuti.DetilTanggalCuti :$surat :key="'detail-tgl-cuti-' . Str::random(3)" />
     </x-filament::modal>
 
 
     <x-filament::modal id="modal-status-cuti">
-        <livewire:Surat.Cuti.ViewStatus :$surat :key="'view-status-cuti-' . Str::random(3)">
+        <livewire:Surat.Cuti.ViewStatus :$surat :key="'view-status-cuti-' . Str::random(3)" />
     </x-filament::modal>
 
 

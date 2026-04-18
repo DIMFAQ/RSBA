@@ -1,7 +1,7 @@
 <div>
     <form wire:submit.prevent='submit' class="flex flex-col gap-2" x-data="listDetailInvoice">
-        <div class="flex flex-row gap-2">
-            <div class="flex w-full flex-col rounded-md border p-4 lg:w-1/4">
+        <div class="flex flex-col gap-4 lg:flex-row">
+            <div class="flex w-full flex-col lg:w-1/4">
                 <span class="text-xs italic text-indigo-500">Kepada</span>
                 <div class="flex w-full flex-col gap-2">
                     <x-ts:input placeholder="Vendor / Rekanan" />
@@ -10,9 +10,9 @@
                     <x-ts:textarea wire:model.defer='foot_note' placeholder="Catatan Kaki" />
                 </div>
             </div>
-            <div class="flex w-full flex-col gap-2 rounded-md border p-4 lg:w-3/4">
+            <div class="flex w-full flex-col gap-2 lg:w-3/4">
                 <span class="text-xs italic text-indigo-500">Detail Tagihan</span>
-                <div class="gap-2 rounded-lg border border-gray-100 bg-gray-50 px-4 py-2">
+                <div class="flex flex-col gap-2 rounded-lg border border-gray-100 bg-gray-50 px-4 py-2">
                     <template x-for="(item, index) in itemInvoice" :key="index">
                         <div class="flex w-full flex-row items-center gap-2">
                             <div class="w-1/4">

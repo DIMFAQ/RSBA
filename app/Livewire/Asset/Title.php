@@ -3,7 +3,6 @@
 namespace App\Livewire\Asset;
 
 use App\Models\Assets\AssetBarang;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;

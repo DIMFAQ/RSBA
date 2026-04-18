@@ -7,7 +7,7 @@
             Set Role <span class="text-primary-500">{{ $user?->karyawan->nama }}</span>
         </x-slot>
 
-        <livewire:User.SetRole @updated-role-user="$refresh" :id="$user?->id" :key="Str::random()">
+        <livewire:User.SetRole @updated-role-user="$refresh" :id="$user?->id" :key="Str::random()" />
     </x-filament::modal>
 
 
@@ -16,6 +16,6 @@
             User Permission <span class="text-primary-500">{{ $user?->karyawan->nama }}</span>
         </x-slot>
 
-        <livewire:User.PermissionEdit @updated-permission-user="$refresh" :id="$user?->id" :key="Str::random()">
+        <livewire:User.PermissionEdit @updated-permission-user="$refresh" :id="$user?->id" :key="Str::random()" />
     </x-filament::modal>
 </div>

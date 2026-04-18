@@ -27,7 +27,7 @@
     </x-filament::modal>
 
     <x-filament::modal id="modal-status-cuti">
-        <livewire:Surat.Cuti.ViewStatus :$surat :key="'view-status-cuti-' . Str::random(3)">
+        <livewire:Surat.Cuti.ViewStatus :$surat :key="'view-status-cuti-' . Str::random(3)" />
     </x-filament::modal>
 
     <div x-data x-on:trigger-print-cuti.window="$nextTick(() => printArea('print-cuti-approved'))">

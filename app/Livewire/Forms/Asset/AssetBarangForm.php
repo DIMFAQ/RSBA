@@ -6,7 +6,6 @@ use Throwable;
 use Exception;
 use App\Models\Assets\AssetBarang;
 use Livewire\Form;
-use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\DB;
 
 class AssetBarangForm extends Form

@@ -7,11 +7,9 @@ use Carbon\Carbon;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Lazy;
-use App\Models\SignatureCerts;
 use App\Services\DigitalSignatureService;
 use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
-use Illuminate\Support\Facades\Crypt;
 
 #[Lazy]
 class Index extends Component

@@ -145,11 +145,10 @@ class AddBab extends Component implements HasForms, HasActions
                     'bulletList',
                     'orderedList',
                     'link',
-                    'quote',
+                    'blockquote',
                     'undo',
                     'redo'
                 ])
-                ->disableGrammarly()
                 ->columnSpanFull(),
 
             RichEditor::make('maksud_tujuan')
@@ -164,11 +163,10 @@ class AddBab extends Component implements HasForms, HasActions
                     'bulletList',
                     'orderedList',
                     'link',
-                    'quote',
+                    'blockquote',
                     'undo',
                     'redo'
                 ])
-                ->disableGrammarly()
                 ->columnSpanFull(),
         ];
     }

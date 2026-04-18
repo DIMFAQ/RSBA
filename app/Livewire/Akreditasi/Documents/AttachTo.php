@@ -8,7 +8,6 @@ use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Illuminate\Support\Facades\DB;
 use App\Models\Akreditasi\AkreDocuments;
-use Livewire\Attributes\Computed;
 use TallStackUi\Traits\Interactions;
 
 #[Lazy]

@@ -4,7 +4,6 @@ namespace App\Livewire\Gudang;
 
 use App\Models\Master\Barang;
 use Livewire\Attributes\Lazy;
-use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
