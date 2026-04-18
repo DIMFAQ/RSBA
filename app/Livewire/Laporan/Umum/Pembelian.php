@@ -33,8 +33,8 @@ class Pembelian extends Component
     #[Locked]
     public $total = 0;
 
-    #[On('cariPembelian')]
-    public function cariDataBeli($periode, $items, $vendor, $jenis)
+    #[On('cariLaporanPembelian')]
+    public function cariDataBeli(array $periode, array $items = [], $vendor = null, $jenis = null): void
     {
         $this->init = false;
         $this->getDataBeli($periode, $items, $vendor, $jenis);

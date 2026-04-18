@@ -2,12 +2,10 @@
 
 namespace App\Livewire\Laporan\Umum;
 
-use Livewire\Component;
+use App\Traits\AuthorizesFromRoute;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
-use App\Livewire\Laporan\Umum\Pembelian as PembelianLaporan;
-use App\Livewire\Laporan\Umum\Distribusi as DistribusiLaporan;
-use App\Traits\AuthorizesFromRoute;
+use Livewire\Component;
 
 #[Title('Laporan Umum')]
 #[Lazy]
@@ -41,23 +39,23 @@ class Index extends Component
     {
         $this->validateOnly('periode', ['periode' => 'required|array']);
         $this->dispatch(
-            'cariPembelian',
+            'cariLaporanPembelian',
             periode: $this->periode,
             items: $this->items,
             vendor: $this->vendor,
             jenis: $this->jenis,
-        )->to(PembelianLaporan::class);
+        );
     }
 
     public function cariDistribusi(): void
     {
         $this->validateOnly('periode', ['periode' => 'required|array']);
         $this->dispatch(
-            'cariDistribusi',
+            'cariLaporanDistribusi',
             periode: $this->periode,
             items: $this->items,
             ruangan: $this->ruangan,
-        )->to(DistribusiLaporan::class);
+        );
     }
 
     public function render()

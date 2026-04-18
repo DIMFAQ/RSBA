@@ -31,7 +31,7 @@ class Distribusi extends Component
     #[Locked]
     public $total = 0;
 
-    #[On('cariDistribusi')]
+    #[On('cariLaporanDistribusi')]
     function cariDataDistribusi($periode, $items, $ruangan)
     {
         $this->init = false;

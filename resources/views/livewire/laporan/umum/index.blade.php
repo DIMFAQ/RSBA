@@ -33,8 +33,8 @@
                         <x-ts:button sm outline type="submit" icon="tabler.zoom" loading="cariPembelian" position="left">Cari</x-ts:button>
                     </div>
                 </form>
-                <div class="w-full rounded-lg bg-white px-4 py-2">
-                    <livewire:Laporan.Umum.Pembelian key="pembelian.laporan" />
+                <div class="flex w-full rounded-lg bg-white px-4 py-2">
+                    <livewire:Laporan.Umum.Pembelian key="laporan-pembelian" />
                 </div>
             </div>
         </x-ts:tab.items>
@@ -46,7 +46,7 @@
                 <x-ts:icon name="tabler.shopping-cart-share" class="h-5 w-5" />
             </x-slot:left>
 
-            <div class="flex flex-col gap-2">
+            <div class="flex w-full flex-col gap-2">
                 <form wire:submit.prevent='cariDistribusi' class="flex w-full flex-col items-center justify-between gap-3 rounded-lg bg-white px-4 py-2 lg:grid lg:grid-cols-6">
                     <div class="w-full lg:col-span-2">
                         <x-ts:date range wire:model.lazy='periode' placeholder="Periode Distribusi" />
@@ -72,7 +72,7 @@
 
                 </form>
                 <div class="w-full rounded-lg bg-white px-4 py-2">
-                    <livewire:Laporan.Umum.Distribusi key="distribusi.laporan" />
+                    <livewire:Laporan.Umum.Distribusi key="laporan-distribusi" />
                 </div>
             </div>
         </x-ts:tab.items>
