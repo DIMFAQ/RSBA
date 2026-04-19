@@ -1,6 +1,5 @@
 import './bootstrap';
-import './filamentfixtallstack';
-
+// import './filamentfixtallstack';
 
 // print area v1
 // window.printArea = function (elementId) {
