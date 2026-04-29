@@ -9,7 +9,6 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -40,17 +39,36 @@ class ListDokterJasa extends Component implements HasActions, HasSchemas, HasTab
 
     function baseJasaQuery(): Builder
     {
-        return JmJasa::whereHas(
-            'prosentase.pasien',
-            function ($query) {
-                $query
-                    ->where('tgl_checkout', 'like', "$this->periode%")
-                    ->when($this->layanan, fn($q) => $q->where('layanan', $this->layanan))
-                    ->when($this->cabar,   fn($q) => $q->where('cabar',   $this->cabar))
-                    ->when($this->kelompok,   fn($q) => $q->where('kelompok',   $this->kelompok))
-                    ->when($this->batch,   fn($q) => $q->where('batch',   $this->batch));
-            }
-        );
+        return JmJasa::query()
+            ->whereHas(
+                'prosentase.pasien',
+                function ($query) {
+                    $query
+                        ->where('tgl_checkout', 'like', "$this->periode%")
+                        ->when($this->layanan, fn($q) => $q->where('layanan', $this->layanan))
+                        ->when($this->cabar, fn($q) => $q->where('cabar', $this->cabar))
+                        ->when($this->kelompok, fn($q) => $q->where('kelompok', $this->kelompok))
+                        ->when($this->batch, fn($q) => $q->where('batch', $this->batch));
+                }
+            )
+            ->with(
+                [
+                    'prosentase:id,jm_pasien_id',
+                    'prosentase.pasien' => function ($query) {
+                        $query->select(
+                            'id',
+                            'nama_pasien',
+                            'no_rekmedis',
+                            'tgl_checkout',
+                            'sep',
+                            'layanan',
+                            'cabar',
+                            'kelompok',
+                            'batch'
+                        );
+                    }
+                ],
+            );
     }
 
     protected ?array $dokterOptions = null;
@@ -72,26 +90,29 @@ class ListDokterJasa extends Component implements HasActions, HasSchemas, HasTab
                 $this->baseJasaQuery()
             )
             ->columns([
-                TextColumn::make('dokter'),
-                TextColumn::make('prosentase.pasien.nama_pasien')->searchable(),
-                TextColumn::make('prosentase.pasien.no_rekmedis')->searchable(),
-                TextColumn::make('prosentase.pasien.sep')->searchable(),
-                TextColumn::make('prosentase.pasien.tgl_checkout'),
+                TextColumn::make('dokter')
+                    ->label('Dokter'),
+                TextColumn::make('prosentase.pasien.nama_pasien')
+                    ->label('Nama Pasien')
+                    ->searchable(),
+                TextColumn::make('prosentase.pasien.no_rekmedis')
+                    ->label('No Rekmedis')
+                    ->searchable(),
+                TextColumn::make('prosentase.pasien.sep')
+                    ->label('Sep')
+                    ->searchable(),
+                TextColumn::make('prosentase.pasien.tgl_checkout')
+                    ->label('tgl Checkout'),
                 TextColumn::make('status'),
                 TextColumn::make('jasa')
+                    ->sortable()
+                    ->color(
+                        fn($state) => $state > 0 ?: 'danger'
+                    )
                     ->numeric(
                         decimalPlaces: 0,
-                        thousandsSeparator: '.'
+                        decimalSeparator: "."
                     )
-                    ->summarize(
-                        Sum::make()
-                            ->label('Total Jasa')
-                            ->numeric(
-                                decimalPlaces: 0,
-                                thousandsSeparator: '.'
-                            )
-                    )
-                    ->sortable()
 
             ])
             ->filters([

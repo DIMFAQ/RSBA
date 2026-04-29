@@ -15,13 +15,13 @@
         <div class="ml-auto flex">
             <div class="flex items-center">
                 <div class="me-6 hidden space-x-4 lg:block">
-                    <x-ts:button.circle flat outline x-on:click="$tsui.open.slide('pesan-drawer')" class="relative">
+                    <x-ts:button.circle flat outline x-on:click="$dispatch('open-modal',{id:'pesan-drawer'})" class="relative">
                         <x-tabler-mail />
                         <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
 
                     </x-ts:button.circle>
 
-                    <x-ts:button.circle flat outline x-on:click="$tsui.open.slide('notif-drawer')" class="relative">
+                    <x-ts:button.circle flat outline x-on:click="$dispatch('open-modal',{id:'notif-drawer'})" class="relative">
                         <x-tabler-bell />
                         <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
                     </x-ts:button.circle>
@@ -65,30 +65,34 @@
 
 
         {{-- drawer notification --}}
-        <x-ts:slide id="notif-drawer" blur="md">
-            <x-slot:title class="flex gap-2 text-lg">
-                <x-tabler-bell class="size-7" />
-                Notification
-            </x-slot:title>
+        <x-filament::modal slide-over id="notif-drawer">
+            <x-slot:heading>
+                <div class="flex flex-row items-center gap-2 text-lg text-indigo-500">
+                    <x-tabler-bell class="size-6" />
+                    Notification
+                </div>
+            </x-slot:heading>
 
             <livewire:Profile.Notif :key="auth()->user()->id" />
-        </x-ts:slide>
+        </x-filament::modal>
 
 
         {{-- drawer Pesan --}}
-        <x-ts:slide id="pesan-drawer" blur="md">
-            <x-slot:title class="flex gap-2 text-lg">
-                <x-tabler-mail class="size-7" />
-                Pesan
-            </x-slot:title>
-            <div class="scrollbar-hidden relative h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
+        <x-filament::modal slide-over id="pesan-drawer">
+            <x-slot:heading>
+                <div class="flex flex-row items-center gap-2 text-lg text-indigo-500">
+                    <x-tabler-mail class="size-6" />
+                    Pesan
+                </div>
+            </x-slot:heading>
+            <div class="scrollbar-hidden relative max-h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
                 <livewire:Profile.Pesan.ListPesan :key="auth()->user()->id" />
             </div>
-            <div class="absolute bottom-4 flex w-full gap-2">
+            <x-slot name="footerActions">
                 <a href="{{ route('profile.pesan') }}" wire:navigate>
                     <span role="button" class="rounded-lg p-2 text-sm italic hover:bg-indigo-50 hover:text-indigo-500"> Lihat Semua Pesan</span>
                 </a>
-            </div>
-        </x-ts:slide>
+            </x-slot>
+        </x-filament::modal>
     </nav>
 </div>

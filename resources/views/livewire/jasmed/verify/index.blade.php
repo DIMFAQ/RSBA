@@ -9,7 +9,7 @@
     </div>
 
     <div>
-        <x-ts:tab selected="Prosentase" x-on:navigate="$wire.set('tab',$event.detail.select)">
+        <x-ts:tab selected="Prosentase">
 
             <x-ts:tab.items tab="Prosentase">
                 <livewire:Jasmed.Verify.ListJasmedVerify :$periode :$layanan :$cabar :$kelompok :$batch :key="'table-list-verify-' . md5($periode . $layanan . $cabar . $kelompok . $batch . $tab)" />
