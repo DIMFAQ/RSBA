@@ -2,25 +2,24 @@
 
 namespace App\Livewire\Gudang;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
-use Carbon\Carbon;
-use Filament\Support\Enums\IconSize;
-use Filament\Actions\ActionGroup;
-use Livewire\Component;
-use Filament\Tables\Table;
 use App\Models\Master\Barang;
-use Livewire\Attributes\Locked;
 use App\Models\Master\BarangKategori;
+use Carbon\Carbon;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\Locked;
+use Livewire\Component;
 
 class TableGudang extends Component implements HasTable, HasForms, HasActions
 {
@@ -82,7 +81,6 @@ class TableGudang extends Component implements HasTable, HasForms, HasActions
 
 
                 IconColumn::make('stok_indicator') // Kolom untuk indikator stok rendah
-                    ->size(IconSize::Medium)
                     ->label('')
                     ->getStateUsing(
                         fn($record) => $record->stoks_sum_stok < $record->min_stok ? 'tabler-trending-down' : null
@@ -129,7 +127,8 @@ class TableGudang extends Component implements HasTable, HasForms, HasActions
                     ->label('Kategori')
                     ->options(
                         fn(): array => BarangKategori::pluck('nama', 'id')->toArray()
-                    ),
+                    )
+                    ->searchable(),
 
 
             ])

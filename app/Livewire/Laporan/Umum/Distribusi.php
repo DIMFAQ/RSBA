@@ -31,10 +31,15 @@ class Distribusi extends Component
     #[Locked]
     public $total = 0;
 
-    #[On('cariLaporanDistribusi')]
-    function cariDataDistribusi($periode, $items, $ruangan)
+    #[On('filterDistribusiLaporan')]
+    function cariDataDistribusi($data)
     {
         $this->init = false;
+
+        $periode = $data['periode'];
+        $items = $data['items'];
+        $ruangan = $data['ruangan'];
+
         $this->getDataDistribusi($periode, $items, $ruangan);
     }
 
