@@ -148,7 +148,7 @@
                     @else
                         @if ($hasIcon)
                             <div class="fi-modal-icon-ctn">
-                                <div {{ new ComponentAttributeBag()->color(IconComponent::class, $iconColor)->class(['fi-modal-icon-bg']) }}>
+                                <div {{ (new ComponentAttributeBag)->color(IconComponent::class, $iconColor)->class(['fi-modal-icon-bg']) }}>
                                     {{ \Filament\Support\generate_icon_html($icon, $iconAlias, size: \Filament\Support\Enums\IconSize::Large) }}
                                 </div>
                             </div>
