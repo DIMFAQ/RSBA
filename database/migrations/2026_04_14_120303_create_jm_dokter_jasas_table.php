@@ -26,7 +26,7 @@ return new class extends Migration
         });
 
         DB::unprepared("
-        CREATE VIEW view_jm_dokter_jasa AS
+        CREATE OR REPLACE VIEW view_jm_dokter_jasa AS
         SELECT 
             j.jm_prosentase_id,
             j.dokter,
