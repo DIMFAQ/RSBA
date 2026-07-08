@@ -53,4 +53,9 @@ class SuratSp3 extends Model
     {
         return $this->hasMany(SuratSp3Approval::class, 'surat_sp3_id', 'id');
     }
+
+    public function penyetuju()
+    {
+        return $this->belongsTo(Karyawan::class, 'disetujui', 'id');
+    }
 }
