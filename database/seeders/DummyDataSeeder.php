@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Sdm\Karyawan;
@@ -15,7 +16,7 @@ class DummyDataSeeder extends Seeder
     public function run(): void
     {
         // 1. Disable Foreign Key Checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
 
         // 2. Truncate Tables
         $tables = [
@@ -50,6 +51,8 @@ class DummyDataSeeder extends Seeder
             'dokter',
             'jm_pasien',
             'jm_dokter',
+            'um_pembelian_requests',
+            'um_pembelian_requests_det',
         ];
 
         foreach ($tables as $table) {
@@ -57,7 +60,7 @@ class DummyDataSeeder extends Seeder
         }
 
         // 3. Re-enable Foreign Key Checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         // 4. Seed Ruangan
         $ruangans = [
@@ -82,7 +85,7 @@ class DummyDataSeeder extends Seeder
         $bagianIds = DB::table('bagian')->pluck('id', 'nama')->toArray();
 
         // 6. Seed Jabatan (Needs self-referencing disable/enable)
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         $jabatans = [
             ['id' => 1, 'nama' => 'Direktur Utama', 'kode_surat' => 'DIR', 'parent_id' => 1, 'bagian_id' => $bagianIds['SDM'], 'created_at' => now(), 'updated_at' => now()],
             ['id' => 2, 'nama' => 'Kepala Bagian SDM', 'kode_surat' => 'KABAG-SDM', 'parent_id' => 1, 'bagian_id' => $bagianIds['SDM'], 'created_at' => now(), 'updated_at' => now()],
@@ -93,7 +96,7 @@ class DummyDataSeeder extends Seeder
             ['id' => 7, 'nama' => 'Staff Pelaksana Keuangan', 'kode_surat' => 'STF-KEU', 'parent_id' => 4, 'bagian_id' => $bagianIds['Keuangan'], 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('sdm_jabatan')->insert($jabatans);
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         // 7. Map existing seeded users to Karyawan Jabatans
         $karyawanSdm = Karyawan::where('nama', 'Staff SDM')->first();
@@ -560,6 +563,49 @@ class DummyDataSeeder extends Seeder
             'status' => 'dpjp',
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+
+        // 19. Seed Pembelian Requests
+        $userSdm = User::where('email', 'sdm@rsba.com')->first();
+        
+        $req1Id = DB::table('um_pembelian_requests')->insertGetId([
+            'user_req_id' => $userSdm->id ?? 1,
+            'note' => 'Pengajuan Kertas A4 untuk operasional kantor SDM',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'created_at' => now()->subDays(2),
+            'updated_at' => now()->subDays(2),
+        ]);
+        
+        DB::table('um_pembelian_requests_det')->insert([
+            'pembelian_req_id' => $req1Id,
+            'barang_id' => $barangIds['Kertas A4 80gr'],
+            'jml_req' => 10,
+            'jml_disetujui' => 0,
+            'harga_est' => 50000.00,
+            'keterangan' => 'Stok kertas menipis',
+            'created_at' => now()->subDays(2),
+            'updated_at' => now()->subDays(2),
+        ]);
+
+        $req2Id = DB::table('um_pembelian_requests')->insertGetId([
+            'user_req_id' => $userSdm->id ?? 1,
+            'note' => 'Kebutuhan darurat obat Paracetamol untuk apotek',
+            'priority' => 'darurat',
+            'status' => 'pending',
+            'created_at' => now()->subDays(1),
+            'updated_at' => now()->subDays(1),
+        ]);
+        
+        DB::table('um_pembelian_requests_det')->insert([
+            'pembelian_req_id' => $req2Id,
+            'barang_id' => $barangIds['Paracetamol 500mg'],
+            'jml_req' => 50,
+            'jml_disetujui' => 0,
+            'harga_est' => 15000.00,
+            'keterangan' => 'Permintaan mendesak',
+            'created_at' => now()->subDays(1),
+            'updated_at' => now()->subDays(1),
         ]);
     }
 }

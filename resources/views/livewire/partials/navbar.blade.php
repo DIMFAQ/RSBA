@@ -1,10 +1,11 @@
 <div>
     <nav class="text-primary-700 flex h-16 items-center px-6 text-xl">
-        <div x-show="!isOpen()" class="flex flex-row items-center gap-2">
-            <a x-show="!isOpen()" @click.prevent="handleOpen()" @keyup.enter="alert('Submitted!')" class="hover:text-danger-500" href="#">
+        <div class="flex flex-row items-center gap-2">
+            <a @click.prevent="toggle()" @keyup.enter="alert('Submitted!')" class="hover:text-danger-500" href="#">
                 <div x-data="{ isHover: false }">
                     <x-tabler-menu-2 x-show="!isHover" @mouseover="isHover = true" />
-                    <x-tabler-layout-sidebar-left-expand x-show="isHover" @mouseleave="isHover = false" />
+                    <x-tabler-layout-sidebar-left-expand x-show="isHover && !isOpen()" @mouseleave="isHover = false" />
+                    <x-tabler-layout-sidebar-left-collapse x-show="isHover && isOpen()" @mouseleave="isHover = false" />
                 </div>
             </a>
             <a href="">

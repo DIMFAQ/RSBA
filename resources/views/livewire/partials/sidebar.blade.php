@@ -58,6 +58,13 @@
                     this.open.navbar = true
                 },
 
+                toggle() {
+                    if (this.isAboveBreakpoint) {
+                        this.open.sidebar = !this.open.sidebar
+                    }
+                    this.open.navbar = !this.open.navbar
+                },
+
 
                 handleClose() {
                     if (this.isAboveBreakpoint) {
