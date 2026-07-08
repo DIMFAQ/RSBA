@@ -101,10 +101,47 @@ class DummyDataSeeder extends Seeder
         $karyawanKeuangan = Karyawan::where('nama', 'Staff Keuangan')->first();
         $karyawanAdmin = Karyawan::where('nama', 'Super Admin')->first();
 
+        // 7b. Create Kepala Bagian karyawan so persetujuan atasan is populated
+        $kabagSdm = Karyawan::firstOrCreate(
+            ['nip' => '6060606060'],
+            [
+                'nik' => '6060606060606060', 'nama' => 'Kepala Bagian SDM',
+                'tgl_lahir' => '1980-05-15', 'hp' => '081200000001',
+                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Kota A',
+                'agama' => 'islam', 'status' => 'tetap',
+                'tgl_masuk' => '2015-01-01', 'cuti' => 0,
+            ]
+        );
+        $kabagUmum = Karyawan::firstOrCreate(
+            ['nip' => '7070707070'],
+            [
+                'nik' => '7070707070707070', 'nama' => 'Kepala Bagian Umum',
+                'tgl_lahir' => '1979-03-20', 'hp' => '081200000002',
+                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Kota B',
+                'agama' => 'islam', 'status' => 'tetap',
+                'tgl_masuk' => '2014-06-01', 'cuti' => 0,
+            ]
+        );
+        $kabagKeuangan = Karyawan::firstOrCreate(
+            ['nip' => '8080808080'],
+            [
+                'nik' => '8080808080808080', 'nama' => 'Kepala Bagian Keuangan',
+                'tgl_lahir' => '1982-11-10', 'hp' => '081200000003',
+                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Kota C',
+                'agama' => 'islam', 'status' => 'tetap',
+                'tgl_masuk' => '2016-03-01', 'cuti' => 0,
+            ]
+        );
+
         $karyawanJabatans = [];
         if ($karyawanAdmin) {
             $karyawanJabatans[] = ['jabatan_id' => 1, 'karyawan_id' => $karyawanAdmin->id, 'tgl_mulai' => '2020-01-01', 'created_at' => now(), 'updated_at' => now()];
         }
+        // Kepala Bagian
+        $karyawanJabatans[] = ['jabatan_id' => 2, 'karyawan_id' => $kabagSdm->id, 'tgl_mulai' => '2015-01-01', 'created_at' => now(), 'updated_at' => now()];
+        $karyawanJabatans[] = ['jabatan_id' => 3, 'karyawan_id' => $kabagUmum->id, 'tgl_mulai' => '2014-06-01', 'created_at' => now(), 'updated_at' => now()];
+        $karyawanJabatans[] = ['jabatan_id' => 4, 'karyawan_id' => $kabagKeuangan->id, 'tgl_mulai' => '2016-03-01', 'created_at' => now(), 'updated_at' => now()];
+        // Staff
         if ($karyawanSdm) {
             $karyawanJabatans[] = ['jabatan_id' => 5, 'karyawan_id' => $karyawanSdm->id, 'tgl_mulai' => '2021-06-01', 'created_at' => now(), 'updated_at' => now()];
         }
