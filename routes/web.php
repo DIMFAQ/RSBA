@@ -15,7 +15,6 @@ Route::middleware('auth')
     ->group(function () {
 
         Route::get('/', App\Livewire\Profile\Index::class)->name('index');
-        Route::get('/pesan', App\Livewire\Profile\Pesan\Index::class)->name('pesan');
         Route::get('/notif', App\Livewire\Profile\Notif::class)->name('notif');
         Route::get('/setting', App\Livewire\Profile\Setting::class)->name('setting');
     });

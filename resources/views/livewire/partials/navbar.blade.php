@@ -15,16 +15,25 @@
         <div class="ml-auto flex">
             <div class="flex items-center">
                 <div class="me-6 hidden space-x-4 lg:block">
-                    <x-ts:button.circle flat outline x-on:click="$dispatch('open-modal',{id:'pesan-drawer'})" class="relative">
-                        <x-tabler-mail />
-                        <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
+                    <x-ts:dropdown position="bottom-end" width="2xl">
+                        <x-slot:action>
+                            <x-ts:button.circle flat outline class="relative" x-on:click="show = !show">
+                                <x-tabler-bell />
+                                <span class="absolute right-0.5 top-1 block h-1.5 w-1.5 rounded-full bg-red-500 ring-2 ring-red-300"></span>
+                            </x-ts:button.circle>
+                        </x-slot:action>
 
-                    </x-ts:button.circle>
-
-                    <x-ts:button.circle flat outline x-on:click="$dispatch('open-modal',{id:'notif-drawer'})" class="relative">
-                        <x-tabler-bell />
-                        <span class="absolute right-0.5 top-1 block h-1 w-1 rounded-full bg-red-500 ring-2 ring-red-300"></span>
-                    </x-ts:button.circle>
+                        <div class="w-full p-4 max-h-96 overflow-y-auto scrollbar-hidden">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-2 mb-3">
+                                <span class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                                    <x-tabler-bell class="size-4 text-indigo-500" />
+                                    Notifikasi
+                                </span>
+                                <a href="{{ route('profile.notif') }}" class="text-xs font-semibold text-indigo-600 hover:underline">Lihat Semua</a>
+                            </div>
+                            <livewire:Profile.Notif :key="auth()->user()->id" />
+                        </div>
+                    </x-ts:dropdown>
                 </div>
                 <x-ts:dropdown>
                     <x-slot:action>
@@ -39,9 +48,6 @@
 
                     <a href="{{ route('profile.index') }}" wire:navigate>
                         <x-ts:dropdown.items icon="tabler.user" text="Profile" />
-                    </a>
-                    <a href="{{ route('profile.pesan') }}" wire:navigate>
-                        <x-ts:dropdown.items icon="tabler.mail" text="Pesan" />
                     </a>
 
                     <a href="{{ route('profile.notif') }}" wire:navigate>
@@ -64,35 +70,9 @@
         </div>
 
 
-        {{-- drawer notification --}}
-        <x-filament::modal slide-over id="notif-drawer">
-            <x-slot:heading>
-                <div class="flex flex-row items-center gap-2 text-lg text-indigo-500">
-                    <x-tabler-bell class="size-6" />
-                    Notification
-                </div>
-            </x-slot:heading>
-
-            <livewire:Profile.Notif :key="auth()->user()->id" />
-        </x-filament::modal>
 
 
-        {{-- drawer Pesan --}}
-        <x-filament::modal slide-over id="pesan-drawer">
-            <x-slot:heading>
-                <div class="flex flex-row items-center gap-2 text-lg text-indigo-500">
-                    <x-tabler-mail class="size-6" />
-                    Pesan
-                </div>
-            </x-slot:heading>
-            <div class="scrollbar-hidden relative max-h-screen w-full flex-col gap-4 overflow-y-auto pb-16">
-                <livewire:Profile.Pesan.ListPesan :key="auth()->user()->id" />
-            </div>
-            <x-slot name="footerActions">
-                <a href="{{ route('profile.pesan') }}" wire:navigate>
-                    <span role="button" class="rounded-lg p-2 text-sm italic hover:bg-indigo-50 hover:text-indigo-500"> Lihat Semua Pesan</span>
-                </a>
-            </x-slot>
-        </x-filament::modal>
+
+
     </nav>
 </div>
