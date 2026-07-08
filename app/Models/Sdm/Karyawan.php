@@ -74,7 +74,7 @@ class Karyawan extends Model
     {
         return $this->belongsToMany(Jabatan::class, KaryawanJabatan::class)
             ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
-            ->orderBy('pivot_created_at', 'desc');
+            ->orderByPivot('created_at', 'desc');
     }
 
 
@@ -83,7 +83,7 @@ class Karyawan extends Model
     {
         return $this->belongsToMany(Jabatan::class, 'sdm_kary_jabatan', 'karyawan_id', 'jabatan_id')
             ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
-            ->orderBy('pivot_created_at', 'desc')
+            ->orderByPivot('created_at', 'desc')
             ->limit(1);
     }
 
