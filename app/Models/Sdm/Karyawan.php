@@ -98,17 +98,61 @@ class Karyawan extends Model
         return implode(' ', $parts);
     }
 
-    public function getSisaCutiAttribute(): int
+    public function getSisaCutiUntukJenis(int $jenisCutiId): int
     {
-        $jenis = CutiJenis::find(1);
-        if (!$jenis) return 0;
+        $jenis = CutiJenis::find($jenisCutiId);
+        if (!$jenis) {
+            return 0;
+        }
 
-        $tanggalMasuk = Carbon::parse($this->tgl_masuk);
+        $quota = $jenis->lama;
+
+        if (empty($this->tgl_masuk)) {
+            return 0;
+        }
+
+        $tglMasuk = Carbon::parse($this->tgl_masuk);
         $now = Carbon::now();
 
-        if ($now->lt($tanggalMasuk->copy()->addYear())) return -1; // belum genap 1 tahun return negatif
+        // Cuti Tahunan (ID = 1) requires 1 year of service
+        if ($jenisCutiId === 1 && $now->lt($tglMasuk->copy()->addYear())) {
+            return -1;
+        }
 
-        return max(0, $jenis->lama - $this->cuti);
+        // Determine start and end date of the period based on $jenis->periode
+        if ($jenis->periode === 'Y') {
+            // Anniversary reset
+            $anniversaryThisYear = $tglMasuk->copy()->year($now->year);
+            if ($now->gte($anniversaryThisYear)) {
+                $startDate = $anniversaryThisYear;
+                $endDate = $anniversaryThisYear->copy()->addYear();
+            } else {
+                $startDate = $anniversaryThisYear->copy()->subYear();
+                $endDate = $anniversaryThisYear;
+            }
+        } elseif ($jenis->periode === 'M') {
+            // Monthly reset
+            $startDate = $now->copy()->startOfMonth();
+            $endDate = $now->copy()->endOfMonth();
+        } else {
+            // Lifetime or no reset
+            $startDate = Carbon::parse('1970-01-01');
+            $endDate = Carbon::parse('2099-12-31');
+        }
+
+        // Sum the used leave for this specific type that is not rejected in this period
+        $used = $this->suratCuti()
+            ->where('urgensi_id', $jenisCutiId)
+            ->where('status', '!=', 'rejected')
+            ->whereBetween('tgl_mulai', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->sum('lama_cuti');
+
+        return max(0, $quota - $used);
+    }
+
+    public function getSisaCutiAttribute(): int
+    {
+        return $this->getSisaCutiUntukJenis(1); // 1 = Cuti Tahunan
     }
 
     // Relation cuti

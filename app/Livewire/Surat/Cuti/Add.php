@@ -44,14 +44,12 @@ class Add extends Component
     public function updatedFormJenisCuti($value)
     {
         $this->form->tgl_cuti = [];
-        $cutiDiambil = $this->karyawan?->cuti;
-
-        $jenis  = CutiJenis::findOrFail($value);
-
-        $this->form->sisa_cuti = $jenis->lama;
-        if ($jenis->periode) {
-            $this->form->sisa_cuti = $jenis->lama - $cutiDiambil;
+        if (!$this->karyawan) {
+            $this->form->sisa_cuti = 0;
+            return;
         }
+        $sisa = $this->karyawan->getSisaCutiUntukJenis((int)$value);
+        $this->form->sisa_cuti = $sisa < 0 ? 0 : $sisa;
     }
 
     // simpan data
