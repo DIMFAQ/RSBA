@@ -6,7 +6,11 @@
                 <x-ts:input wire:model.lazy="form.nip" placeholder="NIP [Auto Generate]" readonly />
             </div>
             <div class="w-full lg:w-1/4">
-                <x-ts:date wire:model.lazy='form.tgl_masuk' placeholder="Tgl. Masuk" />
+                @if($canEditTglMasuk)
+                    <x-ts:date wire:model.lazy='form.tgl_masuk' placeholder="Tgl. Masuk" />
+                @else
+                    <x-ts:input wire:model.lazy='form.tgl_masuk' placeholder="Tgl. Masuk" disabled readonly class="bg-gray-100 cursor-not-allowed" />
+                @endif
             </div>
         </div>
 

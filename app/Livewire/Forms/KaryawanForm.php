@@ -196,6 +196,10 @@ class KaryawanForm extends Form
             'dom_alamat' => $this->dom_alamat
         ];
 
+        if (auth()->user()->hasRole('Staff-SDM') || auth()->user()->hasRole('Super-Admin')) {
+            $data['tgl_masuk'] = $this->tgl_masuk;
+        }
+
         $this->karyawan->update($data);
     }
 
