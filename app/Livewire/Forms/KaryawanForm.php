@@ -50,6 +50,7 @@ class KaryawanForm extends Form
     public $tgl_status;
 
     public $ruangan;
+    public $kategori_kerja;
 
     function mount($karyawan)
     {
@@ -111,6 +112,8 @@ class KaryawanForm extends Form
         $this->status = $karyawan->status;
         $this->jabatan = $karyawan->jabatan[0]->id ?? '';
         $this->dinas = $karyawan->resign ?? '';
+        $this->ruangan = $karyawan->ruangan_id;
+        $this->kategori_kerja = $karyawan->kategori_kerja?->value ?? 'reguler';
     }
 
     // simpan data
@@ -145,6 +148,8 @@ class KaryawanForm extends Form
             "agama" => $this->agama,
             "suku" => $this->suku,
             "npwp" => $this->npwp,
+            "ruangan_id" => empty($this->ruangan) ? null : $this->ruangan,
+            "kategori_kerja" => empty($this->kategori_kerja) ? 'reguler' : $this->kategori_kerja,
             "cuti" => 0
 
         ];
