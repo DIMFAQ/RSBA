@@ -18,6 +18,7 @@ Route::middleware('auth')
         Route::get('/pesan', App\Livewire\Profile\Pesan\Index::class)->name('pesan');
         Route::get('/notif', App\Livewire\Profile\Notif::class)->name('notif');
         Route::get('/setting', App\Livewire\Profile\Setting::class)->name('setting');
+        Route::get('/jadwal-tugas-saya', App\Livewire\Profile\JadwalTugasSaya::class)->name('jadwal-tugas-saya');
     });
 
 Route::prefix('dashboard')
