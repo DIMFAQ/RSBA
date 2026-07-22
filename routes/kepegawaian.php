@@ -59,7 +59,16 @@ Route::prefix('surat')
         Route::get('cuti', App\Livewire\Surat\Cuti\Index::class)->name('cuti');
         // Route::get('cuti/approval/{id?}', App\Livewire\Surat\Cuti\Approval::class)->name('cuti.approval');
 
+<<<<<<< HEAD
         Route::get('sp3', App\Livewire\Surat\Sp3\Index::class)->name('sp3');
+=======
+// Cuti Bersama
+Route::prefix('cuti-bersama')
+    ->name('cuti-bersama.')
+    ->group(function () {
+        Route::redirect('/', '/kepegawaian/surat/cuti?tab=cuti-bersama')->name('index');
+        Route::get('/{id}', App\Livewire\Kepegawaian\CutiBersama\Show::class)->name('show');
+>>>>>>> 9206642 (feat(ui): gabungkan Cuti Bersama ke dalam halaman Izin & Cuti dengan 2-Tab Layout)
     });
 
 
