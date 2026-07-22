@@ -34,7 +34,7 @@ class Index extends Component implements HasForms, HasTable, HasActions
     public function table(Table $table): Table
     {
         $query = JadwalKerja::query()
-            ->with(['ruangan', 'pembuat']);
+            ->with(['ruangan', 'pembuat', 'diketahuiOleh', 'disetujuiOleh']);
 
 <<<<<<< HEAD
         // Jika Anda ingin mempertahankan hak akses, Anda bisa menambah logika pengecekan di sini
@@ -67,7 +67,9 @@ class Index extends Component implements HasForms, HasTable, HasActions
                     ->badge()
                     ->color(fn ($state) => $state->color())
                     ->formatStateUsing(fn ($state) => $state->nama()),
-                TextColumn::make('pembuat.nama')->label('Dibuat Oleh'),
+                TextColumn::make('diketahuiOleh.nama')->label('Diketahui (Kabid)')->placeholder('—')->toggleable(),
+                TextColumn::make('disetujuiOleh.nama')->label('Disetujui (Wadir)')->placeholder('—')->toggleable(),
+                TextColumn::make('pembuat.nama')->label('Dibuat Oleh')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([
                 Action::make('kelola')
@@ -84,7 +86,15 @@ class Index extends Component implements HasForms, HasTable, HasActions
                     ->requiresConfirmation()
                     ->action(fn (JadwalKerja $record) => $record->delete())
                     ->successNotificationTitle('Jadwal berhasil dihapus')
+<<<<<<< HEAD
                     ->visible(fn (JadwalKerja $record): bool => $record->status === \App\Enums\StatusJadwalKerja::DRAFT),
+=======
+                    ->visible(fn (JadwalKerja $record): bool => 
+                        in_array($record->status, [\App\Enums\StatusJadwalKerja::DRAFT, \App\Enums\StatusJadwalKerja::DITOLAK]) && 
+                        (Auth::user()?->hasRole(['Super-Admin', 'Staff-SDM']) || 
+                         (Auth::user()?->isKoordinator() && in_array($record->ruangan_id, Auth::user()->getRuanganKoordinatorIds() ?? [])))
+                    ),
+>>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
             ]);
     }
 
