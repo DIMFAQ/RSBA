@@ -11,6 +11,35 @@ Route::prefix('karyawan')
         Route::get('/edit/{id}', App\Livewire\Karyawan\Edit::class)->name('edit');
     });
 
+<<<<<<< HEAD
+=======
+// Jadwal Kerja
+Route::prefix('jadwal-kerja')
+    ->name('jadwal-kerja.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Kepegawaian\JadwalKerja\Index::class)->name('index');
+        Route::get('/tukar-dokter', App\Livewire\Kepegawaian\JadwalKerja\TukarJadwal::class)->name('tukar-dokter');
+        Route::get('/kelola/{id}', App\Livewire\Kepegawaian\JadwalKerja\Kelola::class)->name('kelola');
+    });
+
+// Absensi
+Route::prefix('absensi')
+    ->name('absensi.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Kepegawaian\AbsensiContainer::class)->name('index');
+        Route::get('/import', App\Livewire\Kepegawaian\Absensi\Import::class)->name('import');
+        Route::get('/duplicate-report/{logId?}', App\Livewire\Kepegawaian\Absensi\DuplicateTapReport::class)->name('duplicate-report');
+        Route::get('/rekonsiliasi/{batchId}', App\Livewire\Kepegawaian\Absensi\Rekonsiliasi::class)->name('rekonsiliasi');
+        Route::get('/rekap', App\Livewire\Kepegawaian\Absensi\Rekap::class)->name('rekap');
+    });
+
+// Konfigurasi Jadwal
+Route::prefix('konfigurasi-jadwal')
+    ->name('konfigurasi-jadwal.')
+    ->group(function () {
+        Route::get('/', App\Livewire\Kepegawaian\KonfigurasiJadwal::class)->name('index');
+    });
+>>>>>>> 253fd8c (feat(absensi): add duplicate tap report page and csv export functionality)
 
 // Master data
 Route::prefix('master')
