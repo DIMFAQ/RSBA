@@ -148,7 +148,40 @@ class Sidebar extends Component
                 ? $user->getAllPermissions()->pluck('name')->toArray()
                 : $user->permissions->pluck('name')->toArray();
 
+<<<<<<< HEAD
             return array_values(array_filter($all, fn($p) => str_starts_with($p, 'view')));
+=======
+            $permissions = array_values(array_filter($all, fn($p) => str_starts_with($p, 'view')));
+
+            // Tambahkan permission view koordinator jika user adalah koordinator
+            if ($user && $user->isKoordinator()) {
+                $permissions = array_merge($permissions, [
+                    'view-kepegawaian-jadwal-kerja',
+                    'view-kepegawaian-konfigurasi-jadwal',
+                ]);
+            }
+
+            // Filter ketersediaan menu Jadwal Kerja sesuai wewenang user
+            if ($user && $user->can('view-kepegawaian-jadwal-kerja')) {
+                if (!in_array('view-kepegawaian-jadwal-kerja', $permissions)) {
+                    $permissions[] = 'view-kepegawaian-jadwal-kerja';
+                }
+            } else {
+                $permissions = array_values(array_filter($permissions, fn($p) => $p !== 'view-kepegawaian-jadwal-kerja'));
+            }
+
+            // Allow users with assigned ruangan to view the asset & pengajuan menu
+            if ($user?->karyawan?->ruangan_id) {
+                if (!in_array('view-umum-asset', $permissions)) {
+                    $permissions[] = 'view-umum-asset';
+                }
+                if (!in_array('view-umum-pengajuan', $permissions)) {
+                    $permissions[] = 'view-umum-pengajuan';
+                }
+            }
+
+            return $permissions;
+>>>>>>> 57adf2c (fix(auth): update absensi control authorization to use Spatie view-kepegawaian-absensi permission)
         });
     }
 
