@@ -142,8 +142,12 @@
                 </button>
             </div>
             
+<<<<<<< HEAD
             <div x-show="showSummary" x-transition x-cloak class="overflow-x-auto rounded-lg border border-gray-200 pb-36">
 >>>>>>> 76d7dfa (feat(absensi): redesign rekap tab grid cards, daily overtime details table, and custom paginators)
+=======
+            <div x-show="showSummary" x-transition x-cloak class="overflow-x-auto rounded-lg border border-gray-200 pb-2">
+>>>>>>> ee7dc17 (feat(absensi): add date sorting, custom rounded-square pagination, and clean professional dropdown labels)
                 <table class="w-full text-sm text-left text-gray-500 whitespace-nowrap">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
