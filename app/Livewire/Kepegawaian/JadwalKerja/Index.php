@@ -46,15 +46,47 @@ class Index extends Component implements HasForms, HasTable, HasActions
 =======
         $user = Auth::user();
         if ($user) {
+<<<<<<< HEAD
             $ruanganIds = $user->getRuanganKoordinatorIds();
             // null = Super-Admin/Staff-SDM, akses semua ruangan
             // [] kosong = tidak punya akses ruangan sama sekali
             if ($ruanganIds !== null) {
+=======
+            if ($user->hasRole(['Super-Admin', 'Staff-SDM'])) {
+                // Super-Admin & Staff-SDM dapat melihat semua ruangan
+            } elseif ($user->isKoordinatorDokter()) {
+                $ruanganIds = $user->getRuanganKoordinatorIds() ?? [];
+                if (empty($ruanganIds)) {
+                    $query->whereRaw('0 = 1');
+                } else {
+                    $query->whereIn('ruangan_id', $ruanganIds)->where('tipe', 'dokter');
+                }
+            } elseif ($user->isKoordinatorKaryawan()) {
+                $ruanganIds = $user->getRuanganKoordinatorIds() ?? [];
+                $ownRuanganId = $user->karyawan?->ruangan_id;
+                if ($ownRuanganId && !in_array($ownRuanganId, $ruanganIds)) {
+                    $ruanganIds[] = $ownRuanganId;
+                }
+                
+>>>>>>> 8685ac3 (feat(sdm): pemisahan sdm_jadwal_kerja tipe karyawan dan dokter)
                 if (empty($ruanganIds)) {
                     $query->whereRaw('0 = 1'); // tidak ada ruangan yg bisa diakses
                 } else {
-                    $query->whereIn('ruangan_id', $ruanganIds);
+                    $query->whereIn('ruangan_id', $ruanganIds)->where('tipe', 'karyawan');
                 }
+<<<<<<< HEAD
+=======
+            } else {
+                // User biasa: hanya melihat ruangan tempat dia ditugaskan (teman seruangan)
+                $ownRuanganId = $user->karyawan?->ruangan_id;
+                $isDokter = $user->isDokter();
+                if ($ownRuanganId) {
+                    $query->where('ruangan_id', $ownRuanganId)
+                        ->where('tipe', $isDokter ? 'dokter' : 'karyawan');
+                } else {
+                    $query->whereRaw('0 = 1');
+                }
+>>>>>>> 8685ac3 (feat(sdm): pemisahan sdm_jadwal_kerja tipe karyawan dan dokter)
             }
         }
 >>>>>>> aad182c (feat: implement koordinator as supplementary assignment/task instead of role)
@@ -63,6 +95,11 @@ class Index extends Component implements HasForms, HasTable, HasActions
             ->query($query)
             ->columns([
                 TextColumn::make('ruangan.nama')->label('Ruangan (Tim)')->searchable()->sortable(),
+                TextColumn::make('tipe')
+                    ->label('Tipe')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => ucfirst($state))
+                    ->color(fn ($state) => $state === 'dokter' ? 'info' : 'success'),
                 TextColumn::make('bulan')->label('Bulan')->formatStateUsing(fn ($state) => date('F', mktime(0, 0, 0, $state, 1)))->sortable(),
                 TextColumn::make('tahun')->label('Tahun')->sortable(),
                 TextColumn::make('status')
