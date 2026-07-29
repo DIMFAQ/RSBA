@@ -20,6 +20,9 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+
 #[Lazy]
 #[Title('Master Koordinator Bagian')]
 class Index extends Component implements HasForms, HasTable, HasActions
@@ -37,6 +40,7 @@ class Index extends Component implements HasForms, HasTable, HasActions
     {
         return $table
 <<<<<<< HEAD
+<<<<<<< HEAD
             ->query(BagianKoordinator::query()->with(['bagian', 'karyawan']))
 =======
             ->query(RuanganKoordinator::query()->with(['ruangan', 'karyawan', 'user']))
@@ -44,10 +48,54 @@ class Index extends Component implements HasForms, HasTable, HasActions
             ->columns([
                 TextColumn::make('bagian.nama')->label('Bagian')->searchable()->sortable(),
                 TextColumn::make('karyawan.nama')->label('Koordinator (Karyawan)')->searchable()->sortable(),
+=======
+            ->query(RuanganKoordinator::query()->with(['ruangan', 'karyawan.dokterRecord.spesialis', 'user']))
+            ->columns([
+                TextColumn::make('ruangan.nama')->label('Ruangan')->searchable()->sortable(),
+                TextColumn::make('karyawan.nama')
+                    ->label('Koordinator (Karyawan)')
+                    ->formatStateUsing(fn(RuanganKoordinator $record) => $record->karyawan?->full_nama ?? '-')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('tipe_koordinator')
+                    ->label('Tipe')
+                    ->badge()
+                    ->getStateUsing(fn(RuanganKoordinator $record) => $record->karyawan?->dokterRecord ? 'Dokter' : 'Non-Dokter')
+                    ->color(fn(string $state): string => match ($state) {
+                        'Dokter' => 'info',
+                        'Non-Dokter' => 'gray',
+                    }),
+>>>>>>> 5e91fa1 (feat(dokter): penyesuaian koordinator ruangan dan master bagian koordinator)
                 TextColumn::make('user.email')->label('Akun Login')->placeholder('-')->searchable()->sortable(),
                 IconColumn::make('aktif')->boolean(),
             ])
+            ->filters([
+                SelectFilter::make('tipe_koordinator')
+                    ->label('Tipe Koordinator')
+                    ->options([
+                        'dokter' => 'Dokter',
+                        'non_dokter' => 'Non-Dokter',
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        $value = $data['value'] ?? null;
+                        if ($value === 'dokter') {
+                            return $query->whereHas('karyawan.dokterRecord');
+                        }
+                        if ($value === 'non_dokter') {
+                            return $query->whereDoesntHave('karyawan.dokterRecord');
+                        }
+                    })
+            ])
             ->recordActions([
+                Action::make('koor-ruangan')
+                    ->iconButton()
+                    ->icon('tabler-building-hospital')
+                    ->tooltip('Atur Ruangan Koordinasi (Multi-Ruangan)')
+                    ->color('info')
+                    ->action(function (RuanganKoordinator $record, $livewire) {
+                        $livewire->dispatch('load-koor-ruangan', karyawanId: $record->karyawan_id);
+                        $livewire->dispatch('open-modal', id: 'modal-koor-ruangan');
+                    }),
                 Action::make('edit')
                     ->iconButton()
                     ->icon('tabler-edit')
