@@ -50,17 +50,14 @@ class Sidebar extends Component
             $userViewPermissions = $this->getCachedUserViewPermissions($userId);
 
             return collect($allMenus)
-                ->map(function ($groupedMenus, $groupName) use ($userViewPermissions) {
-                    $filtered = collect($groupedMenus)
+                ->map(function ($groupedMenus) use ($userViewPermissions) {
+                    return collect($groupedMenus)
                         ->map(fn($menu) => $this->filterMenuWithViewPermissions($menu, $userViewPermissions))
                         ->filter()
                         ->values()
                         ->toArray();
-
-                    return count($filtered) > 0 ? [$groupName => $filtered] : null;
                 })
-                ->filter()
-                ->collapse()
+                ->filter(fn($group) => count($group) > 0)
                 ->toArray();
         });
     }
