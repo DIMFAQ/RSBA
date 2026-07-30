@@ -80,8 +80,8 @@ class User extends Authenticatable
      */
     public function isKoordinator(): bool
     {
-        // Super-Admin dan Staff-SDM selalu lolos — tidak perlu cek tabel koordinator
-        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+        // Super-Admin, Staff-SDM, dan Manajemen Wadir selalu lolos
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             return true;
         }
         return $this->koordinatorRuangans()->exists();
@@ -89,11 +89,11 @@ class User extends Authenticatable
 
     /**
      * Dapatkan daftar ruangan_id yang dikoordinasi user ini
-     * Return null jika Super-Admin/Staff-SDM (artinya akses semua ruangan)
+     * Return null jika Super-Admin/Staff-SDM/Wadir (artinya akses semua ruangan)
      */
     public function getRuanganKoordinatorIds(): ?array
     {
-        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             return null; // null = akses semua ruangan
         }
         return $this->koordinatorRuangans()->pluck('ruangan_id')->toArray();

@@ -17,24 +17,30 @@ class KonfigurasiJadwal extends Component
 
     public function mount()
     {
-        // Cek jika tab koordinator diakses oleh non-admin/non-sdm, kembalikan ke default
-        if ($this->tab === 'koordinator' && !auth()->user()?->hasRole(['Super-Admin', 'Staff-SDM'])) {
+        $user = auth()->user();
+        if ($this->tab === 'koordinator' && !$user?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             $this->tab = 'aturan-jadwal';
         }
     }
 
     public function updatedTab($value)
     {
-        if ($value === 'koordinator' && !auth()->user()?->hasRole(['Super-Admin', 'Staff-SDM'])) {
+        $user = auth()->user();
+        if ($value === 'koordinator' && !$user?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             $this->tab = 'aturan-jadwal';
         }
     }
 
     public function render()
     {
-        // Izinkan semua koordinator, Staff-SDM, dan Super-Admin
+        $user = auth()->user();
+        $canAccess = $user?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])
+            || $user?->isKoordinator()
+            || $user?->can('view-kepegawaian-konfigurasi-jadwal')
+            || $user?->can('view-kepegawaian-jadwal-kerja');
+
         abort_unless(
-            auth()->user()?->isKoordinator(),
+            $canAccess,
             403,
             "Anda tidak memiliki hak akses ke halaman Konfigurasi Jadwal."
         );
@@ -42,3 +48,4 @@ class KonfigurasiJadwal extends Component
         return view('livewire.kepegawaian.konfigurasi-jadwal');
     }
 }
+
