@@ -1,4 +1,4 @@
-﻿@props(['menu', 'active'])
+@props(['menu', 'active'])
 
 @php
     $baseClass = $active ?? false

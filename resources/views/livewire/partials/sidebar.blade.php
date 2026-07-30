@@ -1,4 +1,4 @@
-﻿<div x-show="isOpen()" class="fixed inset-0 z-50 md:z-30 flex h-screen bg-slate-900 bg-opacity-30 md:static md:bg-transparent">
+<div x-show="isOpen()" class="fixed inset-0 z-50 md:z-30 flex h-screen bg-slate-900 bg-opacity-30 md:static md:bg-transparent">
     
     @php
         $authUser = auth()->user();
