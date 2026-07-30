@@ -67,8 +67,6 @@ trait AuthorizesFromRoute
     {
         $permission = $this->buildPermission();
 
-<<<<<<< HEAD
-=======
         // Bypassing permission check untuk Koordinator Ruangan pada menu utama kepegawaian
         if (auth()->user()?->isKoordinator() && in_array($permission, [
             'view-kepegawaian-jadwal-kerja',
@@ -77,7 +75,6 @@ trait AuthorizesFromRoute
             return;
         }
 
->>>>>>> 57adf2c (fix(auth): update absensi control authorization to use Spatie view-kepegawaian-absensi permission)
         abort_unless(
             auth()->user()?->can($permission),
             403,
@@ -85,3 +82,4 @@ trait AuthorizesFromRoute
         );
     }
 }
+

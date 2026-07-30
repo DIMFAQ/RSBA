@@ -24,8 +24,6 @@ class Rekap extends Component
     public $karyawan_id = null;
     public $tanggal_spesifik = null;
     public $mode = 'bulanan'; // 'bulanan', 'harian'
-<<<<<<< HEAD
-=======
     public $statusFilter = '';
     public $perPage = 15;
 
@@ -39,7 +37,6 @@ class Rekap extends Component
     public $showHistoryModal = false;
     public $historyLogs = [];
     public $historyRecordInfo = '';
->>>>>>> a665c2e (feat(absensi): optimize rekap view DOM, add global audit log modal with search and pagination)
 
     // Properties for Manual Correction
     public $editingRecordId = null;
@@ -54,24 +51,6 @@ class Rekap extends Component
     public $historySearch = '';
 
     // Reset pagination when filter updates
-<<<<<<< HEAD
-<<<<<<< HEAD
-    public function updatedRuanganId() { $this->resetPage('dailyPage'); }
-    public function updatedKaryawanId() { $this->resetPage('dailyPage'); }
-    public function updatedTanggalSpesifik() { $this->resetPage('dailyPage'); }
-    public function updatedMode() { $this->resetPage('dailyPage'); }
-    public function updatedBulan() { $this->resetPage('dailyPage'); }
-    public function updatedTahun() { $this->resetPage('dailyPage'); }
-=======
-    public function updatedRuanganId() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
-    public function updatedKaryawanId() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
-    public function updatedTanggalSpesifik() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
-    public function updatedMode() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
-    public function updatedBulan() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
-    public function updatedTahun() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
-    public function updatedStatusFilter() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); }
->>>>>>> 76d7dfa (feat(absensi): redesign rekap tab grid cards, daily overtime details table, and custom paginators)
-=======
     public function updatedRuanganId() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); $this->resetPage('historyLogPage'); }
     public function updatedKaryawanId() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); $this->resetPage('historyLogPage'); }
     public function updatedTanggalSpesifik() { $this->resetPage('dailyPage'); $this->resetPage('rekapKaryawanPage'); $this->resetPage('historyLogPage'); }
@@ -173,7 +152,6 @@ class Rekap extends Component
         $this->selectedOtDetails = $details;
         $this->showOtModal = true;
     }
->>>>>>> a665c2e (feat(absensi): optimize rekap view DOM, add global audit log modal with search and pagination)
 
     public function editRecord($id)
     {
@@ -198,13 +176,6 @@ class Rekap extends Component
     {
         $record = JadwalKerjaDetail::with('shift')->findOrFail($this->editingRecordId);
         
-<<<<<<< HEAD
-        $record->update([
-            'status_kehadiran' => $this->editStatus ?: 'belum_dicek',
-            'absen_masuk_at' => $this->editAbsenMasuk ?: null,
-            'absen_keluar_at' => $this->editAbsenKeluar ?: null,
-            'catatan' => $this->editCatatan ?: null,
-=======
         $absenMasukLama = $record->absen_masuk_at;
         $absenKeluarLama = $record->absen_keluar_at;
         $statusLama = $record->status_kehadiran instanceof \App\Enums\StatusKehadiran 
@@ -269,7 +240,6 @@ class Rekap extends Component
             'menit_terlambat' => $menitTerlambat,
             'menit_pulang_cepat' => $menitPulangCepat,
             'menit_overtime' => $menitOvertime,
->>>>>>> a665c2e (feat(absensi): optimize rekap view DOM, add global audit log modal with search and pagination)
             'updated_by' => auth()->id() ?? 1,
         ]);
 
@@ -290,12 +260,31 @@ class Rekap extends Component
 
     public function render()
     {
-        $ruangans = Ruangan::orderBy('nama')->get();
-        $karyawans = Karyawan::orderBy('nama')->get();
+        $user = auth()->user();
+        $allowedRuanganIds = $user?->getRuanganKoordinatorIds(); // null = semua, [] = tidak ada
 
-        // 1. Build Base Query without relations to avoid N+1 and Memory Leaks during aggregation
+        // Filter ruangan dropdown berdasarkan akses koordinator
+        $ruangans = $allowedRuanganIds !== null
+            ? Ruangan::whereIn('id', $allowedRuanganIds)->orderBy('nama')->get()
+            : Ruangan::orderBy('nama')->get();
+
+        // Filter karyawan dropdown berdasarkan ruangan yang bisa diakses
+        $karyawans = $allowedRuanganIds !== null
+            ? Karyawan::whereIn('ruangan_id', $allowedRuanganIds)->orderBy('nama')->get()
+            : Karyawan::orderBy('nama')->get();
+
+        // 1. Build Base Query
         $baseQuery = JadwalKerjaDetail::query()
             ->whereNotNull('status_kehadiran');
+
+        // Enforce ruangan scope for koordinator
+        if ($allowedRuanganIds !== null) {
+            if (empty($allowedRuanganIds)) {
+                $baseQuery->whereRaw('0 = 1');
+            } else {
+                $baseQuery->whereHas('jadwalKerja', fn($q) => $q->whereIn('ruangan_id', $allowedRuanganIds));
+            }
+        }
 
         if ($this->mode === 'bulanan') {
             $baseQuery->whereMonth('tanggal', $this->bulan)
@@ -318,9 +307,6 @@ class Rekap extends Component
             $baseQuery->where('karyawan_id', $this->karyawan_id);
         }
 
-<<<<<<< HEAD
-        // 2. Memory-efficient Overall Summary Aggregation
-=======
         // 2. Fetch the paginated Karyawan list
         $karyawanQuery = Karyawan::query();
         if ($this->karyawan_id) {
@@ -346,113 +332,6 @@ class Rekap extends Component
 
         $currentPageKaryawanIds = $paginatedKaryawans->pluck('id')->toArray();
 
-<<<<<<< HEAD
-        // 3. Overall Summary Calculations (for the top cards)
->>>>>>> 76d7dfa (feat(absensi): redesign rekap tab grid cards, daily overtime details table, and custom paginators)
-        $summary = [
-            'hadir' => 0,
-            'terlambat' => 0,
-            'pulang_cepat' => 0,
-            'tidak_hadir' => 0,
-            'cuti' => 0,
-            'izin' => 0,
-            'perlu_verifikasi' => 0,
-            'total_overtime_menit' => 0,
-        ];
-
-<<<<<<< HEAD
-        $summaryRaw = (clone $baseQuery)
-            ->select('status_kehadiran', DB::raw('count(*) as total'))
-            ->groupBy('status_kehadiran')
-            ->get();
-
-        foreach ($summaryRaw as $row) {
-            $statusVal = $row->status_kehadiran instanceof \App\Enums\StatusKehadiran 
-                ? $row->status_kehadiran->value 
-                : $row->status_kehadiran;
-            if (isset($summary[$statusVal])) {
-                $summary[$statusVal] = (int) $row->total;
-            }
-        }
-
-        // 3. Memory-efficient Per-Employee Summary Aggregation
-        $rekapRaw = (clone $baseQuery)
-            ->select('karyawan_id', 'status_kehadiran', DB::raw('count(*) as total'))
-            ->groupBy('karyawan_id', 'status_kehadiran')
-            ->get();
-
-        $rekapKaryawan = [];
-        foreach ($rekapRaw as $row) {
-            $kId = $row->karyawan_id;
-            $statusVal = $row->status_kehadiran instanceof \App\Enums\StatusKehadiran 
-                ? $row->status_kehadiran->value 
-                : $row->status_kehadiran;
-
-            if (!isset($rekapKaryawan[$kId])) {
-                $rekapKaryawan[$kId] = [
-                    'hadir' => 0,
-                    'terlambat' => 0,
-                    'pulang_cepat' => 0,
-                    'tidak_hadir' => 0,
-                    'cuti' => 0,
-                    'izin' => 0,
-                    'perlu_verifikasi' => 0,
-                ];
-=======
-        // Overall raw details select (for overall summary counts and overtime sum)
-        $overallRaw = (clone $baseQuery)
-            ->leftJoin('sdm_jadwal_shift', 'sdm_jadwal_kerja_detail.shift_id', '=', 'sdm_jadwal_shift.id')
-            ->select([
-                'sdm_jadwal_kerja_detail.status_kehadiran',
-                'sdm_jadwal_kerja_detail.catatan',
-                'sdm_jadwal_kerja_detail.absen_masuk_at',
-                'sdm_jadwal_kerja_detail.absen_keluar_at',
-                'sdm_jadwal_kerja_detail.shift_id',
-                'sdm_jadwal_kerja_detail.tanggal',
-                'sdm_jadwal_shift.jam_masuk as shift_jam_masuk',
-                'sdm_jadwal_shift.jam_keluar as shift_jam_keluar',
-                'sdm_jadwal_shift.lintas_hari as shift_lintas_hari'
-            ])
-            ->toBase()
-            ->get();
-
-        foreach ($overallRaw as $row) {
-            $statusVal = $row->status_kehadiran;
-            if (isset($summary[$statusVal])) {
-                $summary[$statusVal]++;
-            }
-
-            // Parse minutes from catatan
-            $menit = 0;
-            if ($statusVal === 'terlambat' && $row->catatan) {
-                if (preg_match('/Terlambat (-?\d+) menit/i', $row->catatan, $matches)) {
-                    $menit = abs((int) $matches[1]);
-                    $summary['menit_terlambat'] += $menit;
-                }
-            } elseif ($statusVal === 'pulang_cepat' && $row->catatan) {
-                if (preg_match('/Pulang cepat (-?\d+) menit/i', $row->catatan, $matches)) {
-                    $menit = abs((int) $matches[1]);
-                    $summary['menit_pulang_cepat'] += $menit;
-                }
-            }
-
-            // Overtime Calculation
-            if ($row->absen_masuk_at && $row->absen_keluar_at) {
-                $masuk = Carbon::parse($row->absen_masuk_at);
-                $keluar = Carbon::parse($row->absen_keluar_at);
-
-                if ($row->shift_id && $row->shift_jam_keluar) {
-                    $jamKeluar = Carbon::parse($row->shift_jam_keluar);
-                    $targetCheckout = Carbon::parse(Carbon::parse($row->tanggal)->format('Y-m-d') . ' ' . $jamKeluar->format('H:i:s'));
-                    if ($row->shift_lintas_hari || $jamKeluar->lt(Carbon::parse($row->shift_jam_masuk))) {
-                        $targetCheckout->addDay();
-                    }
-                    if ($keluar->gt($targetCheckout)) {
-                        $summary['total_overtime_menit'] += abs($keluar->diffInMinutes($targetCheckout));
-                    }
-                } else {
-                    $summary['total_overtime_menit'] += abs($keluar->diffInMinutes($masuk));
-=======
         // 3. Overall Summary Calculations (for the top cards via high performance SQL aggregation)
         $summaryQuery = (clone $baseQuery)
             ->leftJoin('sdm_jadwal_shift', 'sdm_jadwal_kerja_detail.shift_id', '=', 'sdm_jadwal_shift.id');
@@ -496,7 +375,6 @@ class Rekap extends Component
                     $summary['menit_terlambat'] += abs((int)$m[1]);
                 } elseif ($row->status_kehadiran === 'pulang_cepat' && $row->catatan && preg_match('/Pulang cepat (-?\d+) menit/i', $row->catatan, $m)) {
                     $summary['menit_pulang_cepat'] += abs((int)$m[1]);
->>>>>>> a665c2e (feat(absensi): optimize rekap view DOM, add global audit log modal with search and pagination)
                 }
             }
         }
@@ -547,12 +425,9 @@ class Rekap extends Component
 
             if (!isset($rekapKaryawan[$kId])) {
                 continue;
->>>>>>> 76d7dfa (feat(absensi): redesign rekap tab grid cards, daily overtime details table, and custom paginators)
             }
+
             if (isset($rekapKaryawan[$kId][$statusVal])) {
-<<<<<<< HEAD
-                $rekapKaryawan[$kId][$statusVal] = (int) $row->total;
-=======
                 $rekapKaryawan[$kId][$statusVal]++;
             }
 
@@ -572,7 +447,6 @@ class Rekap extends Component
                 $rekapKaryawan[$kId]['menit_terlambat'] += $menit;
             } elseif ($statusVal === 'pulang_cepat') {
                 $rekapKaryawan[$kId]['menit_pulang_cepat'] += $menit;
->>>>>>> 76d7dfa (feat(absensi): redesign rekap tab grid cards, daily overtime details table, and custom paginators)
             }
 
             // Overtime Calculation
@@ -608,18 +482,6 @@ class Rekap extends Component
             }
         }
 
-<<<<<<< HEAD
-        // Eager-hydrate Karyawan models in a single query
-        $karyawanIds = array_keys($rekapKaryawan);
-        $karyawansMap = Karyawan::whereIn('id', $karyawanIds)->get()->keyBy('id');
-        foreach ($rekapKaryawan as $kId => &$rk) {
-            $rk['karyawan'] = $karyawansMap->get($kId);
-        }
-        unset($rk);
-
-        // 4. Paginated Daily Records (limited to 15 per page to save memory)
-        $records = (clone $baseQuery)
-=======
         // 5. Paginated Daily Records (limited to 15 per page to save memory)
         $recordsQuery = clone $baseQuery;
         if ($this->statusFilter) {
@@ -627,7 +489,6 @@ class Rekap extends Component
         }
 
         $records = $recordsQuery
->>>>>>> 76d7dfa (feat(absensi): redesign rekap tab grid cards, daily overtime details table, and custom paginators)
             ->with(['karyawan', 'shift', 'karyawan.ruangan', 'jadwalKerja', 'jadwalKerja.ruangan'])
             ->orderBy('tanggal', 'desc')
             ->paginate(15, ['*'], 'dailyPage');
