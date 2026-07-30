@@ -64,4 +64,104 @@ class User extends Authenticatable
     {
         return $this->hasMany(SuratSp3Approval::class, 'disetujui', 'id');
     }
+
+    // -------------------------------------------------------------------------
+    // Helper methods required by Sidebar & Jadwal Kerja permission filtering
+    // -------------------------------------------------------------------------
+
+    /**
+     * Relasi ke tabel penugasan koordinator (via user_id)
+     */
+    public function koordinatorRuangans(): HasMany
+    {
+        // Tabel ini mungkin belum ada di branch ini — gunakan try/catch di caller
+        return $this->hasMany(\App\Models\Sdm\RuanganKoordinator::class, 'user_id')->where('aktif', true);
+    }
+
+    /**
+     * Cek apakah user ini merupakan koordinator di ruangan manapun
+     */
+    public function isKoordinator(): bool
+    {
+        // Super-Admin dan Staff-SDM selalu lolos
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+            return true;
+        }
+
+        try {
+            return $this->koordinatorRuangans()->exists();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Dapatkan daftar ruangan_id yang dikoordinasi user ini.
+     * Return null jika Super-Admin/Staff-SDM (artinya akses semua ruangan)
+     */
+    public function getRuanganKoordinatorIds(): ?array
+    {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+            return null;
+        }
+
+        try {
+            return $this->koordinatorRuangans()->pluck('ruangan_id')->toArray();
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Cek apakah karyawan dari user ini adalah Dokter
+     */
+    public function isDokter(): bool
+    {
+        if (!$this->karyawan_id) {
+            return false;
+        }
+
+        try {
+            return \App\Models\Sdm\Dokter::where('karyawan_id', $this->karyawan_id)->exists();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Cek apakah user ini merupakan Dokter atau Pengawas (Wadir/SDM/Super-Admin)
+     */
+    public function isDokterOrApprover(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Wakil-Direktur', 'Staff-SDM']) || $this->can('approve-jadwal-wadir')) {
+            return true;
+        }
+        if ($this->hasRole(['Koordinator-Dokter', 'Dokter'])) {
+            return true;
+        }
+        return $this->isDokter();
+    }
+
+    /**
+     * Cek apakah user ini adalah Koordinator yang berprofesi Dokter
+     */
+    public function isKoordinatorDokter(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+            return false;
+        }
+        return $this->isKoordinator() && $this->isDokter();
+    }
+
+    /**
+     * Cek apakah user ini adalah Koordinator Ruangan Karyawan (Non-Dokter)
+     */
+    public function isKoordinatorKaryawan(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+            return false;
+        }
+        return $this->isKoordinator() && !$this->isDokter();
+    }
 }
+
