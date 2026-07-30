@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Exports;
+
+use Illuminate\Support\Collection;
+use App\Models\JmJasa;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\FromCollection;
+
+class RekapJasaDokter implements FromCollection, WithHeadings, WithTitle
+{
+
+    private $periode;
+    private $cabar;
+    private $kelompok;
+    private $pelayanan;
+    private $batch;
+
+    public function __construct($periode, $cabar, $kelompok, $pelayanan, $batch)
+    {
+        $this->periode = $periode;
+        $this->cabar = $cabar;
+        $this->kelompok  = $kelompok;
+        $this->pelayanan = $pelayanan;
+        $this->batch = $batch;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function collection()
+    {
+        [$tahun, $bulan] = explode('-', $this->periode);
+
+        $query = JmJasa::select(
+            'no_rekmedis',
+            'nama_pasien',
+            'tgl_checkout',
+            'status',
+            DB::raw('ROUND(jasa) as jasa'),
+            'dokter'
+        )
+            ->leftJoin('jm_prosentase', 'jm_jasa.jm_prosentase_id', '=', 'jm_prosentase.id')
+            ->leftJoin('jm_pasien', 'jm_prosentase.jm_pasien_id', '=', 'jm_pasien.id')
+            ->whereYear('jm_pasien.tgl_checkout', $tahun)
+            ->whereMonth('jm_pasien.tgl_checkout', $bulan)
+            ->where('jm_pasien.layanan', $this->pelayanan)
+            ->where('jm_pasien.batch', $this->batch)
+            ->where('jm_pasien.cabar', $this->cabar);
+
+        if ($this->kelompok) {
+            $query->where('jm_pasien.kelompok', $this->kelompok);
+        }
+
+        // return 
+        return $query->get();
+    }
+
+    public function headings(): array
+    {
+        return [
+            'No. Rekmedis',
+            'Nama Pasien',
+            'Tanggal',
+            'Status',
+            'Jasa',
+            'Dokter'
+        ];
+    }
+
+    public function title(): string
+    {
+        return 'Jasa Dokter';
+    }
+}
