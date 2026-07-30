@@ -8,6 +8,7 @@ use App\Models\Sdm\Karyawan;
 use Livewire\Attributes\Lazy;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\On;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -33,6 +34,12 @@ class Index extends Component
         $this->user = Auth::user();
     }
 
+    #[On('updated-karywan')]
+    public function refreshProfile()
+    {
+        // Triggers re-render and re-evaluates the computed 'karyawan' property.
+    }
+
 
     #[Computed]
     public function karyawan()
@@ -49,7 +56,7 @@ class Index extends Component
     function updateAvatar()
     {
         $this->validate([
-            'profileTmp' => 'required|image|max:250', // 300kb Max
+            'profileTmp' => 'required|image|max:500', // 500kb Max
         ]);
 
         DB::beginTransaction();
@@ -58,6 +65,10 @@ class Index extends Component
 
             Karyawan::where('id', $this->user->karyawan_id)
                 ->update(['foto' => $path]);
+
+            // Clear cache for updated avatar image & navbar data
+            app(\App\Http\Controllers\ProfileImageCacheController::class)->clearCache($this->user->id);
+            \Illuminate\Support\Facades\Cache::forget("navbar-user:" . $this->user->id);
 
             $this->toast()
                 ->success('Berhasil !', 'Profile foto berhasil diupdate.')
@@ -77,6 +88,7 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.profile.index');
+        return view('livewire.profile.index')
+            ->title('Profile');
     }
 }
