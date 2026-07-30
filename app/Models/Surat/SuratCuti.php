@@ -45,8 +45,6 @@ class SuratCuti extends Model
     {
         return $this->hasMany(SuratCutiApproval::class, 'surat_cuti_id', 'id');
     }
-<<<<<<< HEAD
-=======
 
     public function cutiBersama()
     {
@@ -89,5 +87,4 @@ class SuratCuti extends Model
             }
         }
     }
->>>>>>> 543c2f5 (feat(cuti-bersama): implement core architecture, models, and services for cuti bersama v2)
 }

@@ -46,8 +46,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
         </svg>
     </div>
-@else
-    <a href="{{ !empty($menu['route']) ? route($menu['route']) : '' }}" {{ $attributes->merge(['class' => $class]) }} wire:navigate>
+    @php
+        $url = '#';
+        if (!empty($menu['route'])) {
+            $url = \Illuminate\Support\Facades\Route::has($menu['route'])
+                ? route($menu['route'])
+                : url($menu['route']);
+        }
+    @endphp
+    <a href="{{ $url }}" {{ $attributes->merge(['class' => $class]) }} wire:navigate>
 
         <div class="flex items-center gap-2">
             {{-- icons --}}
