@@ -10,7 +10,7 @@ use Livewire\Component;
 use Livewire\Attributes\Title;
 use TallStackUi\Traits\Interactions;
 
-#[Title('Jadwal Tugas Saya')]
+#[Title('Jadwal Kerja Saya')]
 class JadwalTugasSaya extends Component
 {
     use Interactions;
@@ -30,17 +30,23 @@ class JadwalTugasSaya extends Component
         
         $details = [];
         if ($karyawanId) {
-            // Kita join dengan jadwalKerja untuk memfilter bulan, tahun dan pastikan status published/locked
-            // StatusJadwalKerja Enum tidak perlu di value() kalau di Laravel 11/12 bisa langsung di query tapi mari asumsikan kita get value
-            $statusPublished = StatusJadwalKerja::PUBLISHED->value ?? 'published';
-            $statusLocked = StatusJadwalKerja::LOCKED->value ?? 'locked';
-            
+            \App\Models\Sdm\JadwalKerja::ensureEmployeeDetailsExist($karyawanId, $this->bulan, $this->tahun);
+
+            $karyawan = \App\Models\Sdm\Karyawan::find($karyawanId);
+            $isReguler = $karyawan && $karyawan->kategori_kerja === \App\Enums\KategoriKerja::REGULER;
+
+            $allowedStatuses = [
+                StatusJadwalKerja::PUBLISHED->value ?? 'published',
+                StatusJadwalKerja::LOCKED->value ?? 'locked',
+                StatusJadwalKerja::DRAFT->value ?? 'draft',
+            ];
+
             $details = JadwalKerjaDetail::with(['shift', 'jadwalKerja.ruangan'])
                 ->where('karyawan_id', $karyawanId)
-                ->whereHas('jadwalKerja', function($q) use ($statusPublished, $statusLocked) {
+                ->whereHas('jadwalKerja', function($q) use ($allowedStatuses) {
                     $q->where('bulan', $this->bulan)
                       ->where('tahun', $this->tahun)
-                      ->whereIn('status', [$statusPublished, $statusLocked]);
+                      ->whereIn('status', $allowedStatuses);
                 })
                 ->orderBy('tanggal', 'asc')
                 ->get();
@@ -51,7 +57,7 @@ class JadwalTugasSaya extends Component
             'label' => date('F', mktime(0, 0, 0, $m, 1))
         ])->toArray();
 
-        $tahunOptions = collect(range(date('Y') - 1, date('Y') + 1))->map(fn($y) => [
+        $tahunOptions = collect(range(date('Y') + 1, 2008))->map(fn($y) => [
             'value' => $y,
             'label' => (string) $y
         ])->toArray();
