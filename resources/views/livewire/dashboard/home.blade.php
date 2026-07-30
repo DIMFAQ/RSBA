@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <!-- Welcome Header Section -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 shadow-lg text-white">
+    <div class="relative overflow-hidden rounded-2xl p-8 shadow-lg text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);">
         <div class="absolute right-0 top-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl"></div>
         <div class="absolute bottom-0 left-0 -ml-20 -mb-20 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl"></div>
 
@@ -32,9 +32,9 @@
     @if(!empty($rekapAbsen))
         <!-- Personal Attendance Recap Card -->
         <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col 2xl:flex-row items-center justify-between gap-6">
                 <!-- Left: Title and Circle Gauge -->
-                <div class="flex items-center gap-6">
+                <div class="flex flex-col sm:flex-row items-center gap-6">
                     <!-- Gauge Circle -->
                     <div class="relative flex items-center justify-center h-24 w-24 flex-shrink-0">
                         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -46,22 +46,47 @@
                             <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Hadir</p>
                         </div>
                     </div>
-                    <div>
-                        <div class="flex flex-wrap items-center gap-3">
+                    <div class="text-center sm:text-left">
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                             <h2 class="text-lg font-bold text-slate-800">Rekap Absensi Saya</h2>
                             
                             <!-- Month & Year Selectors -->
-                            <div class="flex items-center gap-1.5">
-                                <select wire:model.live="selectedBulan" class="text-xs rounded-lg border-gray-200 bg-slate-50 py-0.5 px-2 text-slate-700 font-medium focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
-                                    @for($m = 1; $m <= 12; $m++)
-                                        <option value="{{ $m }}">{{ \Carbon\Carbon::create(2026, $m, 1)->translatedFormat('F') }}</option>
-                                    @endfor
-                                </select>
-                                <select wire:model.live="selectedTahun" class="text-xs rounded-lg border-gray-200 bg-slate-50 py-0.5 px-2 text-slate-700 font-medium focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
-                                    @for($y = 2025; $y <= 2027; $y++)
-                                        <option value="{{ $y }}">{{ $y }}</option>
-                                    @endfor
-                                </select>
+                            <div class="flex items-center gap-1.5" x-data="{ openBulan: false, openTahun: false }">
+                                <!-- Month Selector Dropdown -->
+                                <div class="relative">
+                                    <button type="button" @click="openBulan = !openBulan" @click.away="openBulan = false"
+                                        class="flex items-center gap-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 font-semibold shadow-2xs hover:bg-slate-100 transition-colors duration-200">
+                                        <span>{{ \Carbon\Carbon::create(2026, $selectedBulan, 1)->translatedFormat('F') }}</span>
+                                        <x-tabler-chevron-down class="h-3.5 w-3.5 text-slate-400" />
+                                    </button>
+                                    <div x-show="openBulan" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute left-0 top-full z-50 mt-1 max-h-48 w-32 overflow-y-auto rounded-lg border border-slate-100 bg-white py-1.5 shadow-lg" style="display: none;">
+                                        @for($m = 1; $m <= 12; $m++)
+                                            <button type="button" wire:click="$set('selectedBulan', {{ $m }})" @click="openBulan = false"
+                                                class="w-full px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors {{ $selectedBulan == $m ? 'bg-indigo-50 text-indigo-600 font-bold' : '' }}">
+                                                {{ \Carbon\Carbon::create(2026, $m, 1)->translatedFormat('F') }}
+                                            </button>
+                                        @endfor
+                                    </div>
+                                </div>
+
+                                <!-- Year Selector Dropdown -->
+                                <div class="relative">
+                                    <button type="button" @click="openTahun = !openTahun" @click.away="openTahun = false"
+                                        class="flex items-center gap-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 font-semibold shadow-2xs hover:bg-slate-100 transition-colors duration-200">
+                                        <span>{{ $selectedTahun }}</span>
+                                        <x-tabler-chevron-down class="h-3.5 w-3.5 text-slate-400" />
+                                    </button>
+                                    <div x-show="openTahun" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute left-0 top-full z-50 mt-1 max-h-48 w-24 overflow-y-auto rounded-lg border border-slate-100 bg-white py-1.5 shadow-lg" style="display: none;">
+                                        @for($y = date('Y') + 1; $y >= 2008; $y--)
+                                            <button type="button" wire:click="$set('selectedTahun', {{ $y }})" @click="openTahun = false"
+                                                class="w-full px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors {{ $selectedTahun == $y ? 'bg-indigo-50 text-indigo-600 font-bold' : '' }}">
+                                                {{ $y }}
+                                            </button>
+                                        @endfor
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <p class="text-xs text-slate-500 mt-1">Periode: <span class="font-semibold text-slate-700">{{ $rekapAbsen['bulan_nama'] }}</span></p>
@@ -70,46 +95,40 @@
                 </div>
                 
                 <!-- Right: Stats Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full md:w-auto flex-grow max-w-4xl">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full 2xl:w-auto flex-grow max-w-5xl">
                     <!-- Hadir (Tepat Waktu) -->
                     <div class="rounded-xl bg-emerald-50/50 border border-emerald-100/50 p-4 text-center">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Tepat Waktu</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Tepat Waktu</span>
                         <h4 class="text-2xl font-bold text-emerald-800 mt-1">{{ $rekapAbsen['hadir'] }}</h4>
-                        <p class="text-[10px] text-emerald-500 font-medium">Hari</p>
+                        <p class="text-[10px] text-emerald-600 font-semibold">Hari</p>
                     </div>
 
                     <!-- Terlambat -->
                     <div class="rounded-xl bg-amber-50/50 border border-amber-100/50 p-4 text-center">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-amber-600">Terlambat</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Terlambat</span>
                         <h4 class="text-2xl font-bold text-amber-800 mt-1">{{ $rekapAbsen['terlambat'] }}</h4>
-                        <p class="text-[10px] text-amber-500 font-medium">{{ $rekapAbsen['menit_terlambat'] }} Menit</p>
+                        <p class="text-[10px] text-amber-600 font-semibold">{{ $rekapAbsen['menit_terlambat'] }} Menit</p>
                     </div>
 
-                    <!-- Lembur -->
-                    <div class="rounded-xl bg-indigo-50/50 border border-indigo-100/50 p-4 text-center">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-indigo-600 font-bold">Lembur</span>
-                        <h4 class="text-2xl font-bold text-indigo-800 mt-1">{{ $rekapAbsen['menit_lembur'] }}</h4>
-                        <p class="text-[10px] text-indigo-500 font-medium">
-                            @if($rekapAbsen['menit_lembur'] >= 60)
-                                {{ floor($rekapAbsen['menit_lembur'] / 60) }}j {{ $rekapAbsen['menit_lembur'] % 60 }}m
-                            @else
-                                Menit
-                            @endif
-                        </p>
+                    <!-- Pulang Cepat -->
+                    <div class="rounded-xl bg-orange-50/50 border border-orange-100/50 p-4 text-center">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-orange-700">Pulang Cepat</span>
+                        <h4 class="text-2xl font-bold text-orange-800 mt-1">{{ $rekapAbsen['pulang_cepat'] }}</h4>
+                        <p class="text-[10px] text-orange-600 font-semibold">{{ $rekapAbsen['menit_pulang_cepat'] }} Menit</p>
                     </div>
 
                     <!-- Cuti / Izin -->
                     <div class="rounded-xl bg-sky-50/50 border border-sky-100/50 p-4 text-center">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-sky-600">Cuti & Izin</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-sky-700">Cuti & Izin</span>
                         <h4 class="text-2xl font-bold text-sky-800 mt-1">{{ $rekapAbsen['cuti_izin'] }}</h4>
-                        <p class="text-[10px] text-sky-500 font-medium">Hari</p>
+                        <p class="text-[10px] text-sky-600 font-semibold">Hari</p>
                     </div>
 
                     <!-- Alpa / Tidak Hadir -->
                     <div class="rounded-xl bg-rose-50/50 border border-rose-100/50 p-4 text-center">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-rose-600 font-bold">Mangkir / Alpa</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-700">Tidak Hadir</span>
                         <h4 class="text-2xl font-bold text-rose-800 mt-1">{{ $rekapAbsen['tidak_hadir'] }}</h4>
-                        <p class="text-[10px] text-rose-500 font-medium">Hari</p>
+                        <p class="text-[10px] text-rose-600 font-semibold">Hari</p>
                     </div>
                 </div>
             </div>
@@ -281,7 +300,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-sm font-bold text-slate-800">{{ formatRupiah($purchase['total'], true, false) }}</p>
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold tracking-wider uppercase {{ $purchase['status_pembayaran'] === 'lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100' }}">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase {{ $purchase['status_pembayaran'] === 'lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100' }}">
                                     {{ $purchase['status_pembayaran'] ?? 'tempo' }}
                                 </span>
                             </div>
@@ -378,13 +397,22 @@
                 </a>
             @endif
 
-            <a href="{{ route('dashboard.kamar') }}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-amber-100 hover:bg-amber-50/30 transition-all text-center">
+            <a href="{{ route('dashboard.display-monitor.admin') }}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-amber-100 hover:bg-amber-50/30 transition-all text-center">
                 <span class="rounded-lg bg-amber-50 p-2.5 text-amber-600 mb-2">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                     </svg>
                 </span>
-                <span class="text-xs font-semibold text-slate-700">Ketersediaan Kamar</span>
+                <span class="text-xs font-semibold text-slate-700">Display Monitor Admin</span>
+            </a>
+
+            <a href="{{ route('dashboard.poli.admin') }}" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 hover:border-violet-100 hover:bg-violet-50/30 transition-all text-center">
+                <span class="rounded-lg bg-violet-50 p-2.5 text-violet-600 mb-2">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </span>
+                <span class="text-xs font-semibold text-slate-700">Poli Admin</span>
             </a>
         </div>
     </div>

@@ -57,7 +57,7 @@ class Home extends Component
                     $this->loadUmumData();
                 } elseif ($user->hasRole('Keuangan')) {
                     $this->loadKeuanganData();
-                } elseif ($user->hasRole('Koordinator')) {
+                } elseif ($user->isKoordinator()) {
                     $this->loadKoordinatorData();
                 } else {
                     $this->loadGuestData();
@@ -124,25 +124,24 @@ class Home extends Component
 
     private function loadKoordinatorData()
     {
-        $karyawan = Auth::user()->karyawan;
-        $ruanganId = $karyawan ? $karyawan->ruangan_id : null;
+        $ruanganIds = Auth::user()->getRuanganKoordinatorIds();
 
-        if ($ruanganId) {
-            $ruangan = \App\Models\Ruangan::find($ruanganId);
-            $namaRuangan = $ruangan ? $ruangan->nama : 'Ruangan';
+        if ($ruanganIds && count($ruanganIds) > 0) {
+            $ruanganNames = \App\Models\Ruangan::whereIn('id', $ruanganIds)->pluck('nama')->toArray();
+            $namaRuangan = implode(', ', $ruanganNames);
             
             $this->stats = [
                 'ruangan_nama' => $namaRuangan,
-                'karyawan_count' => Karyawan::where('ruangan_id', $ruanganId)->count(),
+                'karyawan_count' => Karyawan::whereIn('ruangan_id', $ruanganIds)->count(),
                 'pending_cuti' => SuratCuti::whereIn('status', [StatusApproval::PENDING, StatusApproval::WAITING])
-                    ->whereHas('karyawan', function($q) use ($ruanganId) {
-                        $q->where('ruangan_id', $ruanganId);
+                    ->whereHas('karyawan', function($q) use ($ruanganIds) {
+                        $q->whereIn('ruangan_id', $ruanganIds);
                     })->count(),
             ];
 
             $this->recentCuti = SuratCuti::with('karyawan')
-                ->whereHas('karyawan', function($q) use ($ruanganId) {
-                    $q->where('ruangan_id', $ruanganId);
+                ->whereHas('karyawan', function($q) use ($ruanganIds) {
+                    $q->whereIn('ruangan_id', $ruanganIds);
                 })
                 ->latest()
                 ->take(5)
@@ -150,8 +149,11 @@ class Home extends Component
                 ->toArray();
         } else {
             $this->stats = [
+                'ruangan_nama' => 'Tidak ada ruangan',
                 'karyawan_count' => 0,
+                'pending_cuti' => 0,
             ];
+            $this->recentCuti = [];
         }
     }
 
@@ -185,6 +187,8 @@ class Home extends Component
         $totalHadir = 0;
         $totalTerlambat = 0;
         $menitTerlambat = 0;
+        $totalPulangCepat = 0;
+        $menitPulangCepat = 0;
         $menitLembur = 0;
         $totalCutiIzin = 0;
         $totalTidakHadir = 0;
@@ -225,6 +229,12 @@ class Home extends Component
                         $menitTerlambat += abs((int) $matches[1]);
                     }
                     break;
+                case \App\Enums\StatusKehadiran::PULANG_CEPAT:
+                    $totalPulangCepat++;
+                    if (preg_match('/Pulang cepat (-?\d+) menit/i', $d->catatan, $matches)) {
+                        $menitPulangCepat += abs((int) $matches[1]);
+                    }
+                    break;
                 case \App\Enums\StatusKehadiran::CUTI:
                 case \App\Enums\StatusKehadiran::IZIN:
                     $totalCutiIzin++;
@@ -238,13 +248,13 @@ class Home extends Component
             }
         }
 
-        $totalSudahLewat = $totalHadir + $totalTerlambat + $totalCutiIzin + $totalTidakHadir;
+        $totalSudahLewat = $totalHadir + $totalTerlambat + $totalPulangCepat + $totalCutiIzin + $totalTidakHadir;
         $persenKehadiran = $totalSudahLewat > 0 
-            ? round((($totalHadir + $totalTerlambat) / $totalSudahLewat) * 100) 
-            : 100;
+            ? round((($totalHadir + $totalTerlambat + $totalPulangCepat) / $totalSudahLewat) * 100) 
+            : 0;
 
         // Mendapatkan nama bulan lokalisasi Indonesia
-        $dateObj = \Carbon\Carbon::create($currentYear, $currentMonth, 1);
+        $dateObj = Carbon::create($currentYear, $currentMonth, 1);
         $bulanNama = $dateObj->translatedFormat('F Y');
 
         $this->rekapAbsen = [
@@ -253,6 +263,8 @@ class Home extends Component
             'hadir' => $totalHadir,
             'terlambat' => $totalTerlambat,
             'menit_terlambat' => $menitTerlambat,
+            'pulang_cepat' => $totalPulangCepat,
+            'menit_pulang_cepat' => $menitPulangCepat,
             'menit_lembur' => $menitLembur,
             'cuti_izin' => $totalCutiIzin,
             'tidak_hadir' => $totalTidakHadir,
