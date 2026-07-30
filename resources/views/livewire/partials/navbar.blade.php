@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <nav class="text-primary-700 flex h-16 items-center px-6 text-xl">
         <div class="flex flex-row items-center gap-2">
             <a @click.prevent="toggle()" @keyup.enter="alert('Submitted!')" class="hover:text-danger-500" href="#">
