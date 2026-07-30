@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Models\Ruangan;
+use App\Models\Sdm\Dokter as MasterDokter;
 use App\Services\DmsMiddlewareClient;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -20,22 +22,27 @@ class PoliAdmin extends Component
     public string $successMessage = '';
     public string $errorMessage = '';
 
-    // Cached data
+    // Cached data from middleware & master
     public array $polyclinics = [];
     public array $doctors = [];
     public array $queueItems = [];
+    public array $masterDoctors = [];
+    public array $masterRuangans = [];
 
-    // Poli form
+    // Poli form (Selection from Master Ruangan)
     public string $editingPoliId = '';
+    public string $selectedRuanganId = '';
     public string $poliCode = '';
     public string $poliName = '';
 
-    // Doctor form
+    // Doctor form (Selection from Master Dokter)
     public string $selectedPoliId = '';
     public string $editingDoctorId = '';
+    public string $selectedMasterDoctorId = '';
     public string $doctorName = '';
     public $doctorPhoto = null; // Livewire file upload
     public string $doctorSpecialty = '';
+    public string $doctorCode = '';
     public int $doctorSortOrder = 0;
     public bool $doctorIsActive = true;
 
@@ -45,10 +52,11 @@ class PoliAdmin extends Component
     public string $patientName = '';
 
     /**
-     * Load initial data.
+     * Load initial data from Master tables and Middleware Client.
      */
     public function mount(DmsMiddlewareClient $client): void
     {
+        $this->loadMasterData();
         $this->polyclinics = $client->getPolyclinics();
     }
 
@@ -57,12 +65,65 @@ class PoliAdmin extends Component
         return view('livewire.dashboard.poli-admin')->title('Manajemen Poliklinik');
     }
 
+    public function loadMasterData(): void
+    {
+        // Load Master Dokter from SDM
+        $this->masterDoctors = MasterDokter::with(['karyawan', 'spesialis'])
+            ->get()
+            ->map(function ($doc) {
+                $karyawanName = $doc->karyawan?->full_nama ?? $doc->karyawan?->nama ?? 'Dokter tanpa nama';
+                $spesialisName = $doc->spesialis?->nama ?? $doc->spesialis?->spesialisasi ?? 'Dokter Umum';
+                $nip = $doc->karyawan?->nip ?? $doc->karyawan?->nik ?? 'DOC-' . $doc->id;
+
+                return [
+                    'id' => (string) $doc->id,
+                    'name' => $karyawanName,
+                    'specialty' => $spesialisName,
+                    'code' => $nip,
+                ];
+            })->toArray();
+
+        // Load Master Ruangan (Poliklinik)
+        $this->masterRuangans = Ruangan::where('is_active', 1)
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'id' => (string) $r->id,
+                    'name' => $r->nama,
+                    'code' => 'POLI-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $r->nama), 0, 8)),
+                ];
+            })->toArray();
+    }
+
     public function setTab(string $tab): void
     {
         $this->activeTab = $tab;
         $this->resetErrorBag();
         $this->successMessage = '';
         $this->errorMessage = '';
+    }
+
+    // ──── Master Ruangan Selection ──────────────────────────────────────────
+
+    public function updatedSelectedRuanganId(string $value): void
+    {
+        $ruangan = collect($this->masterRuangans)->firstWhere('id', $value);
+        if ($ruangan) {
+            $this->poliName = $ruangan['name'];
+            $this->poliCode = $ruangan['code'];
+        }
+    }
+
+    // ──── Master Doctor Selection ───────────────────────────────────────────
+
+    public function updatedSelectedMasterDoctorId(string $value): void
+    {
+        $doc = collect($this->masterDoctors)->firstWhere('id', $value);
+        if ($doc) {
+            $this->doctorName = $doc['name'];
+            $this->doctorSpecialty = $doc['specialty'];
+            $this->doctorCode = $doc['code'];
+        }
     }
 
     // ──── Poli CRUD ─────────────────────────────────────────────────────────────
@@ -78,6 +139,7 @@ class PoliAdmin extends Component
             $data = [
                 'code' => strtoupper($this->poliCode),
                 'name' => $this->poliName,
+                'ruangan_code' => $this->selectedRuanganId ?: null,
             ];
 
             if ($this->editingPoliId) {
@@ -85,7 +147,7 @@ class PoliAdmin extends Component
                 $this->successMessage = "Poliklinik {$this->poliName} berhasil diperbarui!";
             } else {
                 $client->createPolyclinic($data);
-                $this->successMessage = "Poliklinik {$this->poliName} berhasil ditambahkan!";
+                $this->successMessage = "Poliklinik {$this->poliName} berhasil ditambahkan dari Master Ruangan!";
             }
 
             $this->resetPoliForm();
@@ -102,6 +164,7 @@ class PoliAdmin extends Component
             $this->editingPoliId = $poli['id'];
             $this->poliCode = $poli['code'];
             $this->poliName = $poli['name'];
+            $this->selectedRuanganId = $poli['ruangan_code'] ?? '';
         }
     }
 
@@ -118,7 +181,7 @@ class PoliAdmin extends Component
 
     public function resetPoliForm(): void
     {
-        $this->reset(['editingPoliId', 'poliCode', 'poliName']);
+        $this->reset(['editingPoliId', 'selectedRuanganId', 'poliCode', 'poliName']);
     }
 
     // ──── Doctor CRUD ───────────────────────────────────────────────────────────
@@ -137,16 +200,21 @@ class PoliAdmin extends Component
     {
         $this->validate([
             'selectedPoliId' => 'required|string',
-            'doctorName' => 'required|string|max:255',
-            'doctorPhoto' => 'nullable|image|max:2048',
-            'doctorSpecialty' => 'nullable|string|max:255',
+            'selectedMasterDoctorId' => 'required|string',
             'doctorSortOrder' => 'required|integer|min:0',
         ]);
 
         try {
+            $masterDoc = collect($this->masterDoctors)->firstWhere('id', $this->selectedMasterDoctorId);
+            $name = $masterDoc['name'] ?? $this->doctorName;
+            $specialty = $masterDoc['specialty'] ?? $this->doctorSpecialty;
+            $code = $masterDoc['code'] ?? $this->doctorCode;
+
             $data = [
-                'name' => $this->doctorName,
-                'specialty' => $this->doctorSpecialty ?: null,
+                'name' => $name,
+                'specialty' => $specialty,
+                'doctor_code' => $code,
+                'master_doctor_uuid' => $this->selectedMasterDoctorId,
                 'is_active' => $this->doctorIsActive,
                 'sort_order' => $this->doctorSortOrder,
             ];
@@ -157,10 +225,10 @@ class PoliAdmin extends Component
 
             if ($this->editingDoctorId) {
                 $client->updatePolyclinicDoctor($this->selectedPoliId, $this->editingDoctorId, $data);
-                $this->successMessage = "Dokter {$this->doctorName} berhasil diperbarui!";
+                $this->successMessage = "Dokter {$name} berhasil diperbarui!";
             } else {
                 $client->createPolyclinicDoctor($this->selectedPoliId, $data);
-                $this->successMessage = "Dokter {$this->doctorName} berhasil ditambahkan!";
+                $this->successMessage = "Dokter {$name} berhasil ditambahkan dari Master SDM!";
             }
 
             $this->resetDoctorForm();
@@ -179,6 +247,7 @@ class PoliAdmin extends Component
             $this->doctorSpecialty = $doctor['specialty'] ?? '';
             $this->doctorSortOrder = $doctor['sort_order'] ?? 0;
             $this->doctorIsActive = $doctor['is_active'] ?? true;
+            $this->selectedMasterDoctorId = $doctor['master_doctor_uuid'] ?? '';
         }
     }
 
@@ -210,7 +279,7 @@ class PoliAdmin extends Component
 
     public function resetDoctorForm(): void
     {
-        $this->reset(['editingDoctorId', 'doctorName', 'doctorPhoto', 'doctorSpecialty', 'doctorSortOrder']);
+        $this->reset(['editingDoctorId', 'selectedMasterDoctorId', 'doctorName', 'doctorPhoto', 'doctorSpecialty', 'doctorCode', 'doctorSortOrder']);
         $this->doctorIsActive = true;
     }
 
@@ -242,50 +311,6 @@ class PoliAdmin extends Component
             ]);
             $this->successMessage = "Pasien {$this->patientName} berhasil ditambahkan ke antrian!";
             $this->patientName = '';
-            $this->loadQueue($client);
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
-        }
-    }
-
-    public function callPatient(DmsMiddlewareClient $client, string $id): void
-    {
-        try {
-            $client->updateQueueStatus($this->queuePoliId, $id, 'dilayani');
-            $this->successMessage = 'Pasien berhasil dipanggil!';
-            $this->loadQueue($client);
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
-        }
-    }
-
-    public function completePatient(DmsMiddlewareClient $client, string $id): void
-    {
-        try {
-            $client->updateQueueStatus($this->queuePoliId, $id, 'selesai');
-            $this->successMessage = 'Pasien selesai dilayani!';
-            $this->loadQueue($client);
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
-        }
-    }
-
-    public function skipPatient(DmsMiddlewareClient $client, string $id): void
-    {
-        try {
-            $client->updateQueueStatus($this->queuePoliId, $id, 'terlewat');
-            $this->successMessage = 'Pasien dilewati!';
-            $this->loadQueue($client);
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
-        }
-    }
-
-    public function requeuePatient(DmsMiddlewareClient $client, string $id): void
-    {
-        try {
-            $client->requeuePatient($this->queuePoliId, $id);
-            $this->successMessage = 'Pasien berhasil dipanggil ulang (turun 2 posisi)!';
             $this->loadQueue($client);
         } catch (\Exception $e) {
             $this->errorMessage = $e->getMessage();
@@ -331,8 +356,19 @@ class PoliAdmin extends Component
     }
 
     /**
-     * Refresh data on demand (e.g., from JS polling).
+     * Manual Sync Master Data on-demand.
      */
+    public function syncMasterData(DmsMiddlewareClient $client): void
+    {
+        try {
+            $this->loadMasterData();
+            $this->polyclinics = $client->getPolyclinics();
+            $this->successMessage = 'Master Data SDM Dokter & Ruangan Poliklinik berhasil disinkronisasi!';
+        } catch (\Exception $e) {
+            $this->errorMessage = 'Gagal sinkronisasi: ' . $e->getMessage();
+        }
+    }
+
     #[On('poli-data-changed')]
     public function refreshData(DmsMiddlewareClient $client): void
     {
