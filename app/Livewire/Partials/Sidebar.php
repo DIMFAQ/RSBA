@@ -101,12 +101,13 @@ class Sidebar extends Component
                 ->orderBy('nama')
                 ->get()
                 ->map(fn($menu) => [
-                    'id'         => $menu->id,
-                    'nama'       => $menu->nama,
-                    'route'      => $menu->route ?? '',
-                    'icon'       => $menu->icon ?? '',
-                    'permission' => $menu->permission ?? '',
-                    'group'      => $menu->group?->nama() ?? '',
+                    'id'           => $menu->id,
+                    'nama'         => $menu->nama,
+                    'route'        => $menu->route ?? '',
+                    'route_params' => $menu->route_params ?? [],
+                    'icon'         => $menu->icon ?? '',
+                    'permission'   => $menu->permission ?? '',
+                    'group'        => $menu->group?->nama() ?? '',
                     'submenus'   => $menu->submenus
                         ->sortBy(fn($sub) => trim($sub->nama) === 'Rekap Bulanan' ? '00_rekap_bulanan' : $sub->nama)
                         ->map(fn($sub) => [
