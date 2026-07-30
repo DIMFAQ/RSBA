@@ -5,13 +5,23 @@ namespace App\Livewire\Dashboard;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use App\Models\Sdm\Karyawan;
+use App\Models\User;
+use App\Models\Master\Supplier;
+use App\Models\Master\Barang;
+use App\Models\Gudang\Pembelian;
+use App\Models\Surat\SuratCuti;
+use App\Models\Surat\SuratSp3;
+use App\Models\Maintenance\Jadwal;
+use App\Models\Assets\AssetBarang;
+use App\Enums\StatusApproval;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 #[Title('Dashboard')]
 #[Lazy]
 class Home extends Component
 {
-<<<<<<< HEAD
-=======
     public array $stats = [];
     public array $rekapAbsen = [];
     public array $recentCuti = [];
@@ -177,6 +187,8 @@ class Home extends Component
         $totalHadir = 0;
         $totalTerlambat = 0;
         $menitTerlambat = 0;
+        $totalPulangCepat = 0;
+        $menitPulangCepat = 0;
         $menitLembur = 0;
         $totalCutiIzin = 0;
         $totalTidakHadir = 0;
@@ -217,6 +229,12 @@ class Home extends Component
                         $menitTerlambat += abs((int) $matches[1]);
                     }
                     break;
+                case \App\Enums\StatusKehadiran::PULANG_CEPAT:
+                    $totalPulangCepat++;
+                    if (preg_match('/Pulang cepat (-?\d+) menit/i', $d->catatan, $matches)) {
+                        $menitPulangCepat += abs((int) $matches[1]);
+                    }
+                    break;
                 case \App\Enums\StatusKehadiran::CUTI:
                 case \App\Enums\StatusKehadiran::IZIN:
                     $totalCutiIzin++;
@@ -230,13 +248,13 @@ class Home extends Component
             }
         }
 
-        $totalSudahLewat = $totalHadir + $totalTerlambat + $totalCutiIzin + $totalTidakHadir;
+        $totalSudahLewat = $totalHadir + $totalTerlambat + $totalPulangCepat + $totalCutiIzin + $totalTidakHadir;
         $persenKehadiran = $totalSudahLewat > 0 
-            ? round((($totalHadir + $totalTerlambat) / $totalSudahLewat) * 100) 
-            : 100;
+            ? round((($totalHadir + $totalTerlambat + $totalPulangCepat) / $totalSudahLewat) * 100) 
+            : 0;
 
         // Mendapatkan nama bulan lokalisasi Indonesia
-        $dateObj = \Carbon\Carbon::create($currentYear, $currentMonth, 1);
+        $dateObj = Carbon::create($currentYear, $currentMonth, 1);
         $bulanNama = $dateObj->translatedFormat('F Y');
 
         $this->rekapAbsen = [
@@ -245,6 +263,8 @@ class Home extends Component
             'hadir' => $totalHadir,
             'terlambat' => $totalTerlambat,
             'menit_terlambat' => $menitTerlambat,
+            'pulang_cepat' => $totalPulangCepat,
+            'menit_pulang_cepat' => $menitPulangCepat,
             'menit_lembur' => $menitLembur,
             'cuti_izin' => $totalCutiIzin,
             'tidak_hadir' => $totalTidakHadir,
@@ -258,7 +278,6 @@ class Home extends Component
         $this->stats = [];
     }
 
->>>>>>> aad182c (feat: implement koordinator as supplementary assignment/task instead of role)
     public function render()
     {
         return view('livewire.dashboard.home');

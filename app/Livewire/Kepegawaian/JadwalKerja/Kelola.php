@@ -25,12 +25,9 @@ class Kelola extends Component
     public $dates = [];
     public $shiftOptions = [];
     public $isReadOnly = false;
-<<<<<<< HEAD
-=======
     public $cutiDates = [];
     public $catatanRevisiInput = '';
     public $showRevisiModal = false;
->>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
 
     public function mount($id, AturanJadwalService $service)
     {
@@ -42,8 +39,6 @@ class Kelola extends Component
             'disetujuiOleh'
         ])->findOrFail($id);
 
-<<<<<<< HEAD
-=======
         $karyawanIds = $this->jadwalKerja->details->pluck('karyawan_id')->unique()->toArray();
         $approvedCutis = \App\Models\Surat\SuratCuti::whereIn('karyawan_id', $karyawanIds)
             ->where('status', 'approved')
@@ -97,7 +92,6 @@ class Kelola extends Component
 
         abort_unless($canView, 403, 'Anda tidak memiliki akses ke jadwal ruangan ini.');
 
->>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
         // Populate valid shifts using service (includes jam override)
         $validShifts = $service->shiftValidUntukRuangan($this->jadwalKerja->ruangan_id);
         $this->shiftOptions = $validShifts->map(function ($rs) {
@@ -105,19 +99,16 @@ class Kelola extends Component
             return [
                 'id' => $shift->id,
                 'kode' => $shift->kode,
+                'nama' => $shift->nama,
                 'warna' => $shift->warna ?? '#e2e8f0',
                 'jam_masuk' => $rs->jam_masuk_efektif,
                 'jam_keluar' => $rs->jam_keluar_efektif,
             ];
         })->toArray();
 
-<<<<<<< HEAD
-        $this->isReadOnly = $this->jadwalKerja->status === StatusJadwalKerja::LOCKED;
-=======
         // Read-only mode is active if status is not draft/ditolak, unless user is Super-Admin
         $isEditableStatus = in_array($this->jadwalKerja->status, [StatusJadwalKerja::DRAFT, StatusJadwalKerja::DITOLAK]);
         $this->isReadOnly = (!$isEditableStatus && !($user && $user->hasRole('Super-Admin'))) || !$canManage;
->>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
 
         // Populate dates for header
         $daysInMonth = Carbon::create($this->jadwalKerja->tahun, $this->jadwalKerja->bulan, 1)->daysInMonth;
@@ -125,15 +116,12 @@ class Kelola extends Component
             $this->dates[] = Carbon::create($this->jadwalKerja->tahun, $this->jadwalKerja->bulan, $d);
         }
 
-<<<<<<< HEAD
-=======
         $user = Auth::user();
         $isKoorDokter = $user?->isKoordinatorDokter() ?? false;
         $isKoorKaryawan = $user?->isKoordinatorKaryawan() ?? false;
 
         $this->syncDetails($daysInMonth, $isKoorDokter, $isKoorKaryawan);
 
->>>>>>> 8685ac3 (feat(sdm): pemisahan sdm_jadwal_kerja tipe karyawan dan dokter)
         // Group details by Karyawan
         $grouped = $this->jadwalKerja->details->groupBy('karyawan_id');
 
@@ -159,7 +147,7 @@ class Kelola extends Component
             ];
 
             foreach ($details as $detail) {
-                $day = Carbon::parse($detail->tanggal)->day;
+                $day = $detail->tanggal->day;
                 $row['details'][$day] = $detail;
 
                 // Init state
@@ -170,13 +158,7 @@ class Kelola extends Component
         }
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    private function syncDetails($daysInMonth)
-=======
     private function syncDetails($daysInMonth, bool $isKoorDokter = false, bool $isKoorKaryawan = false)
->>>>>>> 8685ac3 (feat(sdm): pemisahan sdm_jadwal_kerja tipe karyawan dan dokter)
     {
         $karyawansQuery = \App\Models\Sdm\Karyawan::where('ruangan_id', $this->jadwalKerja->ruangan_id)
             ->whereNull('resign_at');
@@ -269,7 +251,6 @@ class Kelola extends Component
         }
     }
 
->>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
     public function save()
     {
         $this->authorize('kelola', $this->jadwalKerja);
@@ -284,14 +265,6 @@ class Kelola extends Component
             $logCount = 0;
 
             foreach ($this->state as $detailId => $shiftId) {
-<<<<<<< HEAD
-                // Konversi empty string/null/0 ke null
-                $shiftId = empty($shiftId) ? null : (int) $shiftId;
-                
-                $detail = JadwalKerjaDetail::find($detailId);
-                
-                // Cek apakah ada perubahan shift
-=======
                 $detail = JadwalKerjaDetail::find($detailId);
 
                 $dateStr = $detail->tanggal->format('Y-m-d');
@@ -302,7 +275,6 @@ class Kelola extends Component
                     $shiftId = empty($shiftId) ? null : (int) $shiftId;
                 }
 
->>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
                 if ($detail->shift_id !== $shiftId) {
                     \App\Models\Sdm\JadwalKerjaLog::create([
                         'jadwal_kerja_id' => $this->jadwalKerja->id,

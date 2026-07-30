@@ -31,6 +31,141 @@ class Index extends Component implements HasForms, HasTable, HasActions
 
     protected $listeners = ['jadwal-kerja-generated' => '$refresh'];
 
+    public function mount()
+    {
+        $this->autoGenerateRegulerSchedules();
+    }
+
+    public function autoGenerateRegulerSchedules()
+    {
+        $shiftReguler = \App\Models\Sdm\JadwalShift::where('kode', 'REGULER')->where('aktif', true)->first();
+        if (!$shiftReguler) {
+            return;
+        }
+
+        $now = \Carbon\Carbon::now();
+        $targetMonths = [
+            $now,
+            $now->copy()->addMonth()
+        ];
+
+        $karyawans = \App\Models\Sdm\Karyawan::whereNull('resign_at')->get();
+        $grouped = $karyawans->groupBy('ruangan_id');
+
+        $regulerOnlyRuanganIds = [];
+        foreach ($grouped as $ruanganId => $members) {
+            if (!$ruanganId) continue;
+            
+            $allReguler = $members->every(function ($k) {
+                return $k->kategori_kerja === \App\Enums\KategoriKerja::REGULER;
+            });
+
+            if ($allReguler && !$members->isEmpty()) {
+                $regulerOnlyRuanganIds[] = $ruanganId;
+            }
+        }
+
+        if (empty($regulerOnlyRuanganIds)) {
+            return;
+        }
+
+        foreach ($targetMonths as $target) {
+            $month = $target->month;
+            $year = $target->year;
+
+            foreach ($regulerOnlyRuanganIds as $ruanganId) {
+                $exists = \App\Models\Sdm\JadwalKerja::where('ruangan_id', $ruanganId)
+                    ->where('bulan', $month)
+                    ->where('tahun', $year)
+                    ->exists();
+
+                if ($exists) {
+                    continue;
+                }
+
+                \Illuminate\Support\Facades\DB::beginTransaction();
+                try {
+                    $jadwalKerja = \App\Models\Sdm\JadwalKerja::create([
+                        'ruangan_id' => $ruanganId,
+                        'bulan' => $month,
+                        'tahun' => $year,
+                        'status' => \App\Enums\StatusJadwalKerja::PUBLISHED,
+                        'dibuat_oleh' => auth()->id() ?? 1,
+                    ]);
+
+                    $daysInMonth = $target->daysInMonth;
+                    $startDate = \Carbon\Carbon::create($year, $month, 1)->format('Y-m-d');
+                    $endDate = \Carbon\Carbon::create($year, $month, $daysInMonth)->format('Y-m-d');
+
+                    $approvedCutis = \App\Models\Surat\SuratCuti::where('status', 'approved')
+                        ->where(function($q) use ($startDate, $endDate) {
+                            $q->whereBetween('tgl_mulai', [$startDate, $endDate])
+                              ->orWhereBetween('tgl_akhir', [$startDate, $endDate])
+                              ->orWhere(function($sub) use ($startDate, $endDate) {
+                                  $sub->where('tgl_mulai', '<=', $startDate)
+                                      ->where('tgl_akhir', '>=', $endDate);
+                              });
+                        })
+                        ->get();
+
+                    $cutiMap = [];
+                    foreach ($approvedCutis as $sc) {
+                        $dates = json_decode($sc->tgl_cuti, true);
+                        if (is_array($dates)) {
+                            foreach ($dates as $d) {
+                                $cutiMap[$sc->karyawan_id][$d] = [
+                                    'status' => (int)$sc->urgensi_id === 4 ? \App\Enums\StatusKehadiran::IZIN : \App\Enums\StatusKehadiran::CUTI,
+                                    'catatan' => $sc->jenis?->nama . ' resmi (' . $sc->no_surat . ')'
+                                ];
+                            }
+                        }
+                    }
+
+                    $details = [];
+                    $roomMembers = $grouped[$ruanganId];
+                    foreach ($roomMembers as $karyawan) {
+                        for ($d = 1; $d <= $daysInMonth; $d++) {
+                            $date = \Carbon\Carbon::create($year, $month, $d);
+                            $dateStr = $date->format('Y-m-d');
+
+                            $shiftId = null;
+                            if ($date->dayOfWeekIso >= 1 && $date->dayOfWeekIso <= 5) {
+                                $shiftId = $shiftReguler->id;
+                            }
+
+                            $statusKehadiran = 'belum_dicek';
+                            $catatan = null;
+                            $actualShiftId = $shiftId;
+
+                            if (isset($cutiMap[$karyawan->id][$dateStr])) {
+                                $statusKehadiran = $cutiMap[$karyawan->id][$dateStr]['status']->value;
+                                $catatan = $cutiMap[$karyawan->id][$dateStr]['catatan'];
+                                $actualShiftId = null;
+                            }
+
+                            $details[] = [
+                                'jadwal_kerja_id' => $jadwalKerja->id,
+                                'karyawan_id' => $karyawan->id,
+                                'shift_id' => $actualShiftId,
+                                'tanggal' => $dateStr,
+                                'status_kehadiran' => $statusKehadiran,
+                                'catatan' => $catatan,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+                    }
+
+                    \App\Models\Sdm\JadwalKerjaDetail::insert($details);
+                    \Illuminate\Support\Facades\DB::commit();
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\DB::rollBack();
+                    report($e);
+                }
+            }
+        }
+    }
+
     public function table(Table $table): Table
     {
         $query = JadwalKerja::query()
@@ -39,23 +174,8 @@ class Index extends Component implements HasForms, HasTable, HasActions
             ->orderBy('bulan', 'desc')
             ->orderBy('id', 'desc');
 
-<<<<<<< HEAD
-        // Jika Anda ingin mempertahankan hak akses, Anda bisa menambah logika pengecekan di sini
-        // Misalnya mengecek apakah user punya wewenang untuk ruangan ini.
-        // Untuk sementara, kita abaikan pengecekan spesifik (semua user yang bisa masuk menu bisa lihat semua jadwal).
-=======
         $user = Auth::user();
         if ($user) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-            $ruanganIds = $user->getRuanganKoordinatorIds();
-            // null = Super-Admin/Staff-SDM, akses semua ruangan
-            // [] kosong = tidak punya akses ruangan sama sekali
-            if ($ruanganIds !== null) {
-=======
-            if ($user->hasRole(['Super-Admin', 'Staff-SDM'])) {
-                // Super-Admin & Staff-SDM dapat melihat semua ruangan
-=======
             $isApprover = $user->hasRole([
                 'Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Kepala-Bidang',
                 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Wadir-Keuangan', 'Direktur'
@@ -63,7 +183,6 @@ class Index extends Component implements HasForms, HasTable, HasActions
 
             if ($isApprover) {
                 // Super-Admin, SDM, Wadir, dan Kabid dapat melihat seluruh daftar jadwal ruangan
->>>>>>> 420fcdd (feat: implement Kelola component for employee work schedule management and update Vite configuration)
             } elseif ($user->isKoordinatorDokter()) {
                 $ruanganIds = $user->getRuanganKoordinatorIds() ?? [];
                 if (empty($ruanganIds)) {
@@ -78,14 +197,11 @@ class Index extends Component implements HasForms, HasTable, HasActions
                     $ruanganIds[] = $ownRuanganId;
                 }
                 
->>>>>>> 8685ac3 (feat(sdm): pemisahan sdm_jadwal_kerja tipe karyawan dan dokter)
                 if (empty($ruanganIds)) {
-                    $query->whereRaw('0 = 1'); // tidak ada ruangan yg bisa diakses
+                    $query->whereRaw('0 = 1');
                 } else {
                     $query->whereIn('ruangan_id', $ruanganIds)->where('tipe', 'karyawan');
                 }
-<<<<<<< HEAD
-=======
             } else {
                 // User biasa: hanya melihat ruangan tempat dia ditugaskan (teman seruangan)
                 $ownRuanganId = $user->karyawan?->ruangan_id;
@@ -96,10 +212,8 @@ class Index extends Component implements HasForms, HasTable, HasActions
                 } else {
                     $query->whereRaw('0 = 1');
                 }
->>>>>>> 8685ac3 (feat(sdm): pemisahan sdm_jadwal_kerja tipe karyawan dan dokter)
             }
         }
->>>>>>> aad182c (feat: implement koordinator as supplementary assignment/task instead of role)
 
         return $table
             ->query($query)
@@ -123,11 +237,6 @@ class Index extends Component implements HasForms, HasTable, HasActions
             ])
             ->recordActions([
                 Action::make('kelola')
-<<<<<<< HEAD
-                    ->label('Kelola')
-                    ->iconButton()
-                    ->icon('tabler-list-details')
-=======
                     ->label(fn (JadwalKerja $record): string => 
                         Auth::user()?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Kepala-Bidang', 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Wadir-Keuangan', 'Direktur']) || 
                         (Auth::user()?->isKoordinator() && in_array($record->ruangan_id, Auth::user()->getRuanganKoordinatorIds() ?? []))
@@ -141,7 +250,6 @@ class Index extends Component implements HasForms, HasTable, HasActions
                             ? 'tabler-list-details' 
                             : 'tabler-eye'
                     )
->>>>>>> 420fcdd (feat: implement Kelola component for employee work schedule management and update Vite configuration)
                     ->color('primary')
                     ->url(fn (JadwalKerja $record): string => route('kepegawaian.jadwal-kerja.kelola', ['id' => $record->id])),
                 Action::make('delete')
@@ -152,15 +260,11 @@ class Index extends Component implements HasForms, HasTable, HasActions
                     ->requiresConfirmation()
                     ->action(fn (JadwalKerja $record) => $record->delete())
                     ->successNotificationTitle('Jadwal berhasil dihapus')
-<<<<<<< HEAD
-                    ->visible(fn (JadwalKerja $record): bool => $record->status === \App\Enums\StatusJadwalKerja::DRAFT),
-=======
                     ->visible(fn (JadwalKerja $record): bool => 
                         in_array($record->status, [\App\Enums\StatusJadwalKerja::DRAFT, \App\Enums\StatusJadwalKerja::DITOLAK]) && 
                         (Auth::user()?->hasRole(['Super-Admin', 'Staff-SDM']) || 
                          (Auth::user()?->isKoordinator() && in_array($record->ruangan_id, Auth::user()->getRuanganKoordinatorIds() ?? [])))
                     ),
->>>>>>> 339c4c4 (feat(jadwal-kerja): implementasi UI dan Livewire multi-tier approval dengan stepper dinamis)
             ]);
     }
 

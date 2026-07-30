@@ -7,7 +7,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Action;
 use Throwable;
 use Livewire\Component;
-use App\Models\Sdm\BagianKoordinator;
+use App\Models\Sdm\RuanganKoordinator;
 use App\Traits\AuthorizesFromRoute;
 use Filament\Tables\Table;
 use Livewire\Attributes\Lazy;
@@ -24,7 +24,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 
 #[Lazy]
-#[Title('Master Koordinator Bagian')]
+#[Title('Master Koordinator Ruangan')]
 class Index extends Component implements HasForms, HasTable, HasActions
 {
     use InteractsWithActions;
@@ -34,21 +34,11 @@ class Index extends Component implements HasForms, HasTable, HasActions
 
     public ?int $editingId = null;
 
-    protected $listeners = ['bagian-koordinator-updated' => '$refresh', 'new-bagian-koordinator-created' => '$refresh'];
+    protected $listeners = ['ruangan-koordinator-updated' => '$refresh', 'new-ruangan-koordinator-created' => '$refresh'];
 
     public function table(Table $table): Table
     {
         return $table
-<<<<<<< HEAD
-<<<<<<< HEAD
-            ->query(BagianKoordinator::query()->with(['bagian', 'karyawan']))
-=======
-            ->query(RuanganKoordinator::query()->with(['ruangan', 'karyawan', 'user']))
->>>>>>> aad182c (feat: implement koordinator as supplementary assignment/task instead of role)
-            ->columns([
-                TextColumn::make('bagian.nama')->label('Bagian')->searchable()->sortable(),
-                TextColumn::make('karyawan.nama')->label('Koordinator (Karyawan)')->searchable()->sortable(),
-=======
             ->query(RuanganKoordinator::query()->with(['ruangan', 'karyawan.dokterRecord.spesialis', 'user']))
             ->columns([
                 TextColumn::make('ruangan.nama')->label('Ruangan')->searchable()->sortable(),
@@ -65,7 +55,6 @@ class Index extends Component implements HasForms, HasTable, HasActions
                         'Dokter' => 'info',
                         'Non-Dokter' => 'gray',
                     }),
->>>>>>> 5e91fa1 (feat(dokter): penyesuaian koordinator ruangan dan master bagian koordinator)
                 TextColumn::make('user.email')->label('Akun Login')->placeholder('-')->searchable()->sortable(),
                 IconColumn::make('aktif')->boolean(),
             ])
@@ -100,16 +89,16 @@ class Index extends Component implements HasForms, HasTable, HasActions
                     ->iconButton()
                     ->icon('tabler-edit')
                     ->color('warning')
-                    ->action(function (BagianKoordinator $record, $livewire) {
+                    ->action(function (RuanganKoordinator $record, $livewire) {
                         $livewire->editingId = $record->id;
-                        $livewire->dispatch('open-modal', id: 'edit-bagian-koordinator');
+                        $livewire->dispatch('open-modal', id: 'edit-ruangan-koordinator');
                     }),
                 Action::make('delete')
                     ->iconButton()
                     ->icon('tabler-trash')
                     ->color('danger')
                     ->action(
-                        fn(BagianKoordinator $record, $livewire) => $livewire->delete($record->getKey())
+                        fn(RuanganKoordinator $record, $livewire) => $livewire->delete($record->getKey())
                     )
             ]);
     }
@@ -125,7 +114,7 @@ class Index extends Component implements HasForms, HasTable, HasActions
 
     public function confirmhapus($id)
     {
-        $record = BagianKoordinator::findOrFail($id);
+        $record = RuanganKoordinator::findOrFail($id);
 
         try {
             $record->delete();

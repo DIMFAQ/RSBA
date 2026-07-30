@@ -3,11 +3,7 @@
         @csrf
 
         <div class="flex w-full flex-col gap-2">
-<<<<<<< HEAD
-            <x-ts:select.styled wire:model.defer="bagian_id" label="Bagian" placeholder="Pilih Bagian" :options="$bagianOptions" select="label:label|value:value" searchable />
-=======
             <x-ts:select.styled wire:model.live="ruangan_id" label="Ruangan" placeholder="Pilih Ruangan" :options="$ruanganOptions" select="label:label|value:value" searchable />
->>>>>>> aad182c (feat: implement koordinator as supplementary assignment/task instead of role)
             
             {{-- Filter Kategori --}}
             <div class="flex items-center gap-1.5 my-1">
@@ -32,7 +28,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-4">
-            <x-ts:button md outline @click="$dispatch('close-modal',{id:'new-bagian-koordinator'})">Tutup</x-ts:button>
+            <x-ts:button md outline @click="$dispatch('close-modal',{id:'new-ruangan-koordinator'})">Tutup</x-ts:button>
             <x-ts:button loading="submit" md type="submit">Simpan</x-ts:button>
         </div>
     </form>
