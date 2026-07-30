@@ -26,6 +26,7 @@ class PoliAdmin extends Component
     public array $polyclinics = [];
     public array $doctors = [];
     public array $queueItems = [];
+    public array $queueAvailableDoctors = [];
     public array $masterDoctors = [];
     public array $masterRuangans = [];
 
@@ -232,7 +233,12 @@ class PoliAdmin extends Component
             }
 
             $this->resetDoctorForm();
+            $this->polyclinics = $client->getPolyclinics();
             $this->loadDoctors($client);
+
+            if ($this->queuePoliId) {
+                $this->loadQueue($client);
+            }
         } catch (\Exception $e) {
             $this->errorMessage = $e->getMessage();
         }
@@ -259,7 +265,12 @@ class PoliAdmin extends Component
                 $client->updatePolyclinicDoctor($this->selectedPoliId, $id, [
                     'is_active' => !$doctor['is_active'],
                 ]);
+                $this->polyclinics = $client->getPolyclinics();
                 $this->loadDoctors($client);
+
+                if ($this->queuePoliId) {
+                    $this->loadQueue($client);
+                }
             } catch (\Exception $e) {
                 $this->errorMessage = $e->getMessage();
             }
@@ -271,7 +282,12 @@ class PoliAdmin extends Component
         try {
             $client->deletePolyclinicDoctor($this->selectedPoliId, $id);
             $this->successMessage = 'Dokter berhasil dihapus!';
+            $this->polyclinics = $client->getPolyclinics();
             $this->loadDoctors($client);
+
+            if ($this->queuePoliId) {
+                $this->loadQueue($client);
+            }
         } catch (\Exception $e) {
             $this->errorMessage = $e->getMessage();
         }
@@ -285,13 +301,23 @@ class PoliAdmin extends Component
 
     // ──── Queue Management ──────────────────────────────────────────────────────
 
+    public function updatedQueuePoliId(DmsMiddlewareClient $client): void
+    {
+        $this->queueDoctorId = '';
+        $this->loadQueue($client);
+    }
+
     public function loadQueue(DmsMiddlewareClient $client): void
     {
         if (!$this->queuePoliId) {
             $this->queueItems = [];
+            $this->queueAvailableDoctors = [];
             return;
         }
 
+        // Directly fetch fresh list of doctors for the selected polyclinic
+        $this->queueAvailableDoctors = $client->getPolyclinicDoctors($this->queuePoliId);
+        
         $doctorId = $this->queueDoctorId ?: null;
         $this->queueItems = $client->getPolyclinicQueue($this->queuePoliId, $doctorId);
     }
@@ -363,6 +389,12 @@ class PoliAdmin extends Component
         try {
             $this->loadMasterData();
             $this->polyclinics = $client->getPolyclinics();
+            if ($this->selectedPoliId) {
+                $this->loadDoctors($client);
+            }
+            if ($this->queuePoliId) {
+                $this->loadQueue($client);
+            }
             $this->successMessage = 'Master Data SDM Dokter & Ruangan Poliklinik berhasil disinkronisasi!';
         } catch (\Exception $e) {
             $this->errorMessage = 'Gagal sinkronisasi: ' . $e->getMessage();

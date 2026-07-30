@@ -302,11 +302,7 @@
                         <select wire:model.live="queueDoctorId" wire:change="loadQueue"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                             <option value="">Semua Dokter</option>
-                            @php
-                                $selectedPoli = collect($polyclinics)->firstWhere('id', $queuePoliId);
-                                $availableDoctors = $selectedPoli['doctors'] ?? [];
-                            @endphp
-                            @foreach($availableDoctors as $doc)
+                            @foreach($queueAvailableDoctors as $doc)
                                 <option value="{{ $doc['id'] }}">{{ $doc['name'] }}</option>
                             @endforeach
                         </select>
@@ -324,7 +320,7 @@
                             <select wire:model="queueDoctorId" required
                                 class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                                 <option value="">— Pilih Dokter —</option>
-                                @foreach($availableDoctors as $doc)
+                                @foreach($queueAvailableDoctors as $doc)
                                     <option value="{{ $doc['id'] }}">{{ $doc['name'] }}</option>
                                 @endforeach
                             </select>
