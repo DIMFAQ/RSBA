@@ -1,4 +1,4 @@
-﻿<nav class="flex flex-col gap-4">
+<nav class="flex flex-col gap-4">
     {{ $slot }}
 
     {{-- Menus with submenus --}}
