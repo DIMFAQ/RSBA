@@ -6,6 +6,9 @@ export default defineConfig({
     server: {
         port: 5173, // Fixed port
         strictPort: true, // Fail if the port is already in use
+        watch: {
+            ignored: ['**/storage/**', '**/.git/**', '**/vendor/**']
+        }
     },
     plugins: [
         laravel({
