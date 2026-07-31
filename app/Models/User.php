@@ -84,7 +84,26 @@ class User extends Authenticatable
         if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             return true;
         }
-        return $this->koordinatorRuangans()->exists();
+
+        if ($this->koordinatorRuangans()->exists()) {
+            return true;
+        }
+
+        // Auto-check dari Jabatan Level 4 (Koordinator) / is_penyusun_jadwal
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            $hasKoorJabatan = $karyawan->jabatan()
+                ->whereHas('tingkat', function ($q) {
+                    $q->where('is_penyusun_jadwal', true)->orWhere('urutan', 4);
+                })
+                ->exists();
+
+            if ($hasKoorJabatan) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -96,15 +115,36 @@ class User extends Authenticatable
         if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             return null; // null = akses semua ruangan
         }
-        return $this->koordinatorRuangans()->pluck('ruangan_id')->toArray();
+
+        $idsFromPivot = $this->koordinatorRuangans()->pluck('ruangan_id')->toArray();
+
+        // Auto-check ruangan dari sdm_kary_ruangan atau ruangan_id utama jika user memegang Jabatan Level 4
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            $hasKoorJabatan = $karyawan->jabatan()
+                ->whereHas('tingkat', function ($q) {
+                    $q->where('is_penyusun_jadwal', true)->orWhere('urutan', 4);
+                })
+                ->exists();
+
+            if ($hasKoorJabatan) {
+                $assignedRooms = $karyawan->ruangans()->pluck('ruangan.id')->toArray();
+                if ($karyawan->ruangan_id) {
+                    $assignedRooms[] = $karyawan->ruangan_id;
+                }
+                return array_unique(array_merge($idsFromPivot, $assignedRooms));
+            }
+        }
+
+        return $idsFromPivot;
     }
 
     /**
-     * Cek apakah user ini merupakan Dokter atau Pengawas (Wadir/SDM/Super-Admin)
+     * Cek apakah user ini merupakan Dokter atau Manajemen Medis/SDM (Wadir/SDM/Super-Admin)
      */
     public function isDokterOrApprover(): bool
     {
-        if ($this->hasRole(['Super-Admin', 'Wakil-Direktur', 'Staff-SDM']) || $this->can('approve-jadwal-wadir')) {
+        if ($this->hasRole(['Super-Admin', 'Wakil-Direktur', 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Staff-SDM', 'Direktur'])) {
             return true;
         }
 

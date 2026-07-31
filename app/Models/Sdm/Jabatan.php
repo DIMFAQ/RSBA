@@ -33,4 +33,24 @@ class Jabatan extends Model
     {
         return $this->belongsTo(Bagian::class);
     }
+
+    function tingkat(): BelongsTo
+    {
+        return $this->belongsTo(JabatanTingkat::class, 'tingkat_id');
+    }
+
+    public function isKoordinator(): bool
+    {
+        return $this->tingkat?->is_penyusun_jadwal || $this->tingkat_id === 4;
+    }
+
+    public function isKepalaDept(): bool
+    {
+        return $this->tingkat_id === 3;
+    }
+
+    public function isWadir(): bool
+    {
+        return $this->tingkat_id === 2;
+    }
 }

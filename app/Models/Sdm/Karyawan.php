@@ -94,6 +94,30 @@ class Karyawan extends Model
             ->limit(1);
     }
 
+    // Get History Ruangan
+    public function historyRuangan()
+    {
+        return $this->belongsToMany(\App\Models\Ruangan::class, 'sdm_kary_ruangan', 'karyawan_id', 'ruangan_id')
+            ->using(KaryawanRuangan::class)
+            ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir', 'is_utama', 'keterangan')
+            ->orderByPivot('created_at', 'desc');
+    }
+
+    // Get Ruangan Aktif (Multi-Ruangan)
+    public function ruangans()
+    {
+        return $this->belongsToMany(\App\Models\Ruangan::class, 'sdm_kary_ruangan', 'karyawan_id', 'ruangan_id')
+            ->using(KaryawanRuangan::class)
+            ->withPivot('id', 'tgl_mulai', 'tgl_berakhir', 'is_utama', 'keterangan')
+            ->wherePivotNull('tgl_berakhir');
+    }
+
+    // Get Ruangan Utama (Primary Room)
+    public function ruanganUtama()
+    {
+        return $this->belongsTo(\App\Models\Ruangan::class, 'ruangan_id');
+    }
+
     public function getFullNamaAttribute(): string
     {
         $parts = array_filter([
