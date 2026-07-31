@@ -3,7 +3,9 @@
         @csrf
 
         <div class="flex w-full flex-col gap-2">
-            <x-ts:select.styled wire:model.defer="bagian_id" label="Bagian" placeholder="Pilih Bagian" :options="$bagianOptions" select="label:label|value:value" searchable />
+            <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+                🏛️ <span>Tingkat Aturan: <strong>Aturan Umum RSBA</strong> (Berlaku untuk seluruh pegawai)</span>
+            </div>
             
             <x-ts:select.styled wire:model.defer="kode" label="Kode Aturan" placeholder="Pilih Aturan" :options="$kodeOptions" select="label:label|value:value" searchable />
 

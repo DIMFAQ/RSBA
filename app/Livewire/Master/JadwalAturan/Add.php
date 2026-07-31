@@ -21,7 +21,7 @@ class Add extends Component
     public $aktif = true;
 
     protected $rules = [
-        'bagian_id' => 'required|exists:bagian,id',
+        'bagian_id' => 'nullable',
         'kode' => 'required|string',
         'nilai' => 'required|string',
         'aktif' => 'boolean'
@@ -30,29 +30,32 @@ class Add extends Component
     public function submit()
     {
         $this->validate();
-
-        $exists = JadwalAturan::where('bagian_id', $this->bagian_id)
-            ->where('kode', $this->kode)
-            ->exists();
-
-        if ($exists) {
-            $this->toast()->error('Error', 'Aturan dengan kode tersebut sudah ada untuk bagian ini.')->send();
-            return;
-        }
+        $targetBagianId = $this->bagian_id ?: null;
 
         try {
-            JadwalAturan::create([
-                'bagian_id' => $this->bagian_id,
-                'kode' => $this->kode,
-                'nilai' => $this->nilai,
-                'aktif' => $this->aktif,
-            ]);
+            $existing = JadwalAturan::where('bagian_id', $targetBagianId)
+                ->where('kode', $this->kode)
+                ->first();
+
+            if ($existing) {
+                $existing->update([
+                    'nilai' => $this->nilai,
+                    'aktif' => $this->aktif,
+                ]);
+                $this->toast()->success('Berhasil', 'Aturan Jadwal berhasil diperbarui / di-override.')->send();
+            } else {
+                JadwalAturan::create([
+                    'bagian_id' => $targetBagianId,
+                    'kode' => $this->kode,
+                    'nilai' => $this->nilai,
+                    'aktif' => $this->aktif,
+                ]);
+                $this->toast()->success('Berhasil', 'Aturan Jadwal berhasil ditambahkan.')->send();
+            }
 
             $this->dispatch('new-jadwal-aturan-created');
             $this->dispatch('close-modal', id: 'new-jadwal-aturan');
 
-            $this->toast()->success('Berhasil', 'Aturan Jadwal berhasil ditambahkan.')->send();
-            
             $this->reset(['bagian_id', 'kode', 'nilai']);
             $this->aktif = true;
         } catch (Throwable $e) {
@@ -67,8 +70,11 @@ class Add extends Component
             'label' => $enum->nama()
         ])->toArray();
 
+        $bagianOptions = Bagian::select('id', 'nama')->get()->map(fn($item) => ['value' => $item->id, 'label' => $item->nama])->toArray();
+        array_unshift($bagianOptions, ['value' => '', 'label' => 'Aturan Umum RSBA (Semua Departemen)']);
+
         return view('livewire.master.jadwal-aturan.add', [
-            'bagianOptions' => Bagian::select('id', 'nama')->get()->map(fn($item) => ['value' => $item->id, 'label' => $item->nama])->toArray(),
+            'bagianOptions' => $bagianOptions,
             'kodeOptions' => $kodeOptions,
         ]);
     }

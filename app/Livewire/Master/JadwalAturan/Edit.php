@@ -43,7 +43,7 @@ class Edit extends Component
     public function rules()
     {
         return [
-            'bagian_id' => 'required|exists:bagian,id',
+            'bagian_id' => 'nullable',
             'kode' => 'required|string',
             'nilai' => 'required|string',
             'aktif' => 'boolean'
@@ -54,29 +54,33 @@ class Edit extends Component
     {
         $this->validate();
 
-        if ($this->record->bagian_id != $this->bagian_id || $this->record->kode != $this->kode) {
-            $exists = JadwalAturan::where('bagian_id', $this->bagian_id)
-                ->where('kode', $this->kode)
-                ->exists();
-
-            if ($exists) {
-                $this->toast()->error('Error', 'Aturan dengan kode tersebut sudah ada untuk bagian ini.')->send();
-                return;
-            }
-        }
+        $targetBagianId = $this->bagian_id ?: null;
 
         try {
-            $this->record->update([
-                'bagian_id' => $this->bagian_id,
-                'kode' => $this->kode,
-                'nilai' => $this->nilai,
-                'aktif' => $this->aktif,
-            ]);
+            $existing = JadwalAturan::where('bagian_id', $targetBagianId)
+                ->where('kode', $this->kode)
+                ->where('id', '!=', $this->record->id)
+                ->first();
+
+            if ($existing) {
+                $existing->update([
+                    'nilai' => $this->nilai,
+                    'aktif' => $this->aktif,
+                ]);
+                $this->record->delete();
+                $this->toast()->success('Berhasil', 'Aturan Jadwal berhasil diperbarui / di-override.')->send();
+            } else {
+                $this->record->update([
+                    'bagian_id' => $targetBagianId,
+                    'kode' => $this->kode,
+                    'nilai' => $this->nilai,
+                    'aktif' => $this->aktif,
+                ]);
+                $this->toast()->success('Berhasil', 'Aturan Jadwal berhasil diperbarui.')->send();
+            }
 
             $this->dispatch('jadwal-aturan-updated');
             $this->dispatch('close-modal', id: 'edit-jadwal-aturan');
-
-            $this->toast()->success('Berhasil', 'Aturan Jadwal berhasil diperbarui.')->send();
         } catch (Throwable $e) {
             $this->toast()->error('Error', 'Failed : ' . $e->getMessage())->send();
         }
