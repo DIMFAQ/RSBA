@@ -15,7 +15,9 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    use HasRoles;
+    use HasRoles {
+        hasPermissionTo as traitHasPermissionTo;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -80,8 +82,8 @@ class User extends Authenticatable
      */
     public function isKoordinator(): bool
     {
-        // Super-Admin, Staff-SDM, dan Manajemen Wadir selalu lolos
-        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
+        // Super-Admin, Staff-SDM, Manajemen Wadir, dan Koordinator selalu lolos
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Koordinator'])) {
             return true;
         }
 
@@ -104,6 +106,145 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        if (is_string($permission)) {
+            if (in_array($permission, ['view-kepegawaian-jadwal-kerja', 'view-kepegawaian-konfigurasi-jadwal'])) {
+                if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Wadir-Medis-Keperawatan', 'Kepala-Bidang', 'Koordinator']) 
+                    || $this->isDokter() 
+                    || $this->isKoordinator() 
+                    || $this->isKepalaDept() 
+                    || $this->isWadir()
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return $this->traitHasPermissionTo($permission, $guardName);
+    }
+
+    /**
+     * Cek apakah user ini merupakan Kepala Bagian / Kepala Bidang / Kepala Dept (Tingkat 3)
+     */
+    public function isKepalaDept(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Wadir-Medis-Keperawatan', 'Kabid', 'Kepala-Bagian'])) {
+            return true;
+        }
+
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            return $karyawan->jabatan()
+                ->whereHas('tingkat', function ($q) {
+                    $q->where('urutan', 3);
+                })
+                ->exists();
+        }
+
+        return false;
+    }
+
+    /**
+     * Cek apakah user ini merupakan Wakil Direktur (Tingkat 2)
+     */
+    public function isWadir(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Wadir-Medis-Keperawatan', 'Direktur'])) {
+            return true;
+        }
+
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            return $karyawan->jabatan()
+                ->whereHas('tingkat', function ($q) {
+                    $q->where('urutan', 2);
+                })
+                ->exists();
+        }
+
+        return false;
+    }
+
+    public function isKabagSDM(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+            return true;
+        }
+
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            $jabatan = $karyawan->jabatan->first();
+            if ($jabatan && $this->isKepalaDept()) {
+                $namaJ = strtolower($jabatan->nama ?? '');
+                $namaB = strtolower($jabatan->bagian?->nama ?? '');
+                return str_contains($namaJ, 'sdm') || str_contains($namaJ, 'kepegawaian') || str_contains($namaB, 'sdm');
+            }
+        }
+
+        return false;
+    }
+
+    public function isKabagUmum(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Bagian-Umum'])) {
+            return true;
+        }
+
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            $jabatan = $karyawan->jabatan->first();
+            if ($jabatan && $this->isKepalaDept()) {
+                $namaJ = strtolower($jabatan->nama ?? '');
+                $namaB = strtolower($jabatan->bagian?->nama ?? '');
+                return str_contains($namaJ, 'umum') || str_contains($namaJ, 'sarpras') || str_contains($namaB, 'umum');
+            }
+        }
+
+        return false;
+    }
+
+    public function isKabagKeuangan(): bool
+    {
+        if ($this->hasRole(['Super-Admin', 'Keuangan'])) {
+            return true;
+        }
+
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            $jabatan = $karyawan->jabatan->first();
+            if ($jabatan && $this->isKepalaDept()) {
+                $namaJ = strtolower($jabatan->nama ?? '');
+                $namaB = strtolower($jabatan->bagian?->nama ?? '');
+                return str_contains($namaJ, 'keuangan') || str_contains($namaB, 'keuangan');
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Sinkronkan Role Spatie akun berdasarkan Jabatan Karyawan
+     */
+    public function syncRoleFromJabatan(): void
+    {
+        $karyawan = $this->karyawan;
+        if (!$karyawan) return;
+
+        $jabatanAktif = $karyawan->jabatan->first();
+        if (!$jabatanAktif) return;
+
+        $targetRoleName = $jabatanAktif->resolveTargetRoleName();
+
+        if ($targetRoleName && !$this->hasRole(['Super-Admin'])) {
+            $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => $targetRoleName]);
+            $this->syncRoles([$role]);
+        }
+
+        // Hapus cache sidebar permissions user agar menu langsung ter-refresh
+        cache()->forget('user-permissions:view:' . $this->id);
     }
 
     /**
