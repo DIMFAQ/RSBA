@@ -5,7 +5,7 @@
                 Konfigurasi Jadwal
             </h2>
             <p class="text-sm text-gray-500">
-                Pengaturan master data terkait jadwal kerja dan shift.
+                Pengaturan master shift kerja. (Pengelolaan Koordinator Ruangan dapat diakses di menu Master Data Ruangan)
             </p>
         </div>
     </div>
@@ -13,18 +13,6 @@
     <div class="rounded-lg bg-white p-4 shadow-sm" x-data="{ tab: @entangle('tab') }">
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button wire:click="$set('tab', 'aturan-jadwal')" @click="tab = 'aturan-jadwal'"
-                    :class="tab === 'aturan-jadwal' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
-                    class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">
-                    Aturan Jadwal
-                </button>
-                @if(auth()->user()?->hasRole(['Super-Admin', 'Staff-SDM']))
-                    <button wire:click="$set('tab', 'koordinator')" @click="tab = 'koordinator'"
-                        :class="tab === 'koordinator' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
-                        class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">
-                        Koordinator
-                    </button>
-                @endif
                 <button wire:click="$set('tab', 'master-shift')" @click="tab = 'master-shift'"
                     :class="tab === 'master-shift' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
                     class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">
@@ -34,14 +22,6 @@
         </div>
 
         <div class="mt-4">
-            @if($tab === 'aturan-jadwal')
-                @livewire('master.jadwal-aturan.index')
-            @endif
-            @if(auth()->user()?->hasRole(['Super-Admin', 'Staff-SDM']))
-                @if($tab === 'koordinator')
-                    @livewire('master.bagian-koordinator.index')
-                @endif
-            @endif
             @if($tab === 'master-shift')
                 @livewire('master.jadwal-shift.index')
             @endif

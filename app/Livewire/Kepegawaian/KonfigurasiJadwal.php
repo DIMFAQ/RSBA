@@ -13,22 +13,11 @@ class KonfigurasiJadwal extends Component
     use AuthorizesFromRoute;
 
     #[Url]
-    public $tab = 'aturan-jadwal';
+    public $tab = 'master-shift';
 
     public function mount()
     {
-        $user = auth()->user();
-        if ($this->tab === 'koordinator' && !$user?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
-            $this->tab = 'aturan-jadwal';
-        }
-    }
-
-    public function updatedTab($value)
-    {
-        $user = auth()->user();
-        if ($value === 'koordinator' && !$user?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
-            $this->tab = 'aturan-jadwal';
-        }
+        $this->tab = 'master-shift';
     }
 
     public function render()
