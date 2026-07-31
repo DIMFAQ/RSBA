@@ -278,7 +278,18 @@ class Index extends Component implements HasForms, HasTable, HasActions
 
     public function render()
     {
-        $this->authorizeFromRoute();
+        $user = Auth::user();
+        $canAccessJadwal = $user && (
+            $user->can('view-kepegawaian-jadwal-kerja')
+            || $user->isDokter()
+            || $user->isKoordinator()
+            || $user->isKepalaDept()
+            || $user->isWadir()
+            || !empty($user->karyawan?->ruangan_id)
+        );
+
+        abort_unless($canAccessJadwal, 403, 'Anda tidak memiliki akses ke Jadwal Kerja.');
+
         return view('livewire.kepegawaian.jadwal-kerja.index');
     }
 }

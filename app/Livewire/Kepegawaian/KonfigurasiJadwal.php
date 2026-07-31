@@ -23,10 +23,12 @@ class KonfigurasiJadwal extends Component
     public function render()
     {
         $user = auth()->user();
-        $canAccess = $user?->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])
-            || $user?->isKoordinator()
-            || $user?->can('view-kepegawaian-konfigurasi-jadwal')
-            || $user?->can('view-kepegawaian-jadwal-kerja');
+        $canAccess = $user && (
+            $user->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Koordinator'])
+            || $user->isKoordinator()
+            || $user->can('view-kepegawaian-konfigurasi-jadwal')
+            || $user->can('view-kepegawaian-jadwal-kerja')
+        );
 
         abort_unless(
             $canAccess,
