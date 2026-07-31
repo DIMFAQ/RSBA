@@ -53,4 +53,31 @@ class Jabatan extends Model
     {
         return $this->tingkat_id === 2;
     }
+
+    public static function getOrgChartNodes($bagianId = null): array
+    {
+        $query = static::with(['tingkat', 'bagian', 'jabatans.karyawan']);
+
+        if ($bagianId) {
+            $query->where('bagian_id', $bagianId);
+        }
+
+        $jabatans = $query->get();
+
+        return $jabatans->map(function ($j) {
+            $karyawanAktif = $j->jabatans->first(fn($kj) => $kj->is_active || is_null($kj->tgl_selesai))?->karyawan;
+            $namaKaryawan = $karyawanAktif?->full_nama ?? 'Belum Ada Pejabat';
+
+            return [
+                'id' => (string) $j->id,
+                'parentId' => $j->parent_id ? (string) $j->parent_id : null,
+                'name' => $j->nama,
+                'title' => $j->tingkat?->nama ?? ('Level ' . ($j->tingkat_id ?? '-')),
+                'urutan' => $j->tingkat?->urutan ?? 99,
+                'department' => $j->bagian?->nama ?? 'Umum RSBA',
+                'employeeName' => $namaKaryawan,
+                'hasEmployee' => (bool) $karyawanAktif,
+            ];
+        })->values()->toArray();
+    }
 }
