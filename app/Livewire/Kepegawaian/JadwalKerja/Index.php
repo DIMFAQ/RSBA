@@ -231,8 +231,16 @@ class Index extends Component implements HasForms, HasTable, HasActions
                     ->badge()
                     ->color(fn ($state) => $state->color())
                     ->formatStateUsing(fn ($state) => $state->nama()),
-                TextColumn::make('diketahuiOleh.nama')->label('Diketahui (Kabid)')->placeholder('—')->toggleable(),
-                TextColumn::make('disetujuiOleh.nama')->label('Disetujui (Wadir)')->placeholder('—')->toggleable(),
+                TextColumn::make('diketahuiOleh.nama')
+                    ->label('Diketahui (Kabid)')
+                    ->placeholder(fn (JadwalKerja $record): string => $record->status === \App\Enums\StatusJadwalKerja::MENUNGGU_KABID ? 'Target: ' . $record->getTargetApproverName(1) : '—')
+                    ->description(fn (JadwalKerja $record): ?string => $record->diketahui_at?->format('d/m/Y H:i'))
+                    ->toggleable(),
+                TextColumn::make('disetujuiOleh.nama')
+                    ->label('Disetujui (Wadir)')
+                    ->placeholder(fn (JadwalKerja $record): string => $record->status === \App\Enums\StatusJadwalKerja::MENUNGGU_WADIR ? 'Target: ' . $record->getTargetApproverName(2) : '—')
+                    ->description(fn (JadwalKerja $record): ?string => $record->disetujui_at?->format('d/m/Y H:i'))
+                    ->toggleable(),
                 TextColumn::make('pembuat.nama')->label('Dibuat Oleh')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([

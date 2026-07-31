@@ -44,6 +44,34 @@ class JadwalKerja extends Model
         return $this->belongsTo(\App\Models\Ruangan::class, 'ruangan_id');
     }
 
+    public function approvalLogs()
+    {
+        return $this->hasMany(JadwalApprovalLog::class, 'jadwal_kerja_id')->latest();
+    }
+
+    /**
+     * Catat audit trail persetujuan jadwal kerja.
+     *
+     * @param string      $aksi           Salah satu konstanta JadwalApprovalLog::AKSI_*
+     * @param string|null $statusSebelum  Status jadwal sebelum aksi
+     * @param string|null $statusSesudah  Status jadwal setelah aksi
+     * @param string|null $catatan        Catatan revisi / keterangan
+     */
+    public function logApproval(string $aksi, ?string $statusSebelum = null, ?string $statusSesudah = null, ?string $catatan = null): JadwalApprovalLog
+    {
+        $user     = auth()->user();
+        $karyawan = $user?->karyawan;
+
+        return $this->approvalLogs()->create([
+            'aksi'             => $aksi,
+            'user_id'          => $user?->id,
+            'karyawan_id'      => $karyawan?->id,
+            'status_sebelumnya' => $statusSebelum,
+            'status_sesudah'   => $statusSesudah,
+            'catatan'          => $catatan,
+        ]);
+    }
+
     public function isDokterSchedule(): bool
     {
         if (!empty($this->tipe)) {
@@ -59,6 +87,44 @@ class JadwalKerja extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Resolves the target approver Karyawan model or name dynamically based on Workflow & Department
+     */
+    public function getTargetApproverName(int $stepNumber): string
+    {
+        $tipeJadwal = $this->isDokterSchedule() ? 'dokter' : 'karyawan';
+        $targetTingkatId = WorkflowApproval::getTargetTingkatId($this->ruangan_id, $stepNumber, $tipeJadwal);
+
+        if (!$targetTingkatId) {
+            return $stepNumber === 1 ? 'Kepala Dept / Bidang' : 'Wakil Direktur';
+        }
+
+        $bagianId = $this->ruangan?->bagian_id;
+
+        // Query karyawan yang memegang Jabatan dengan tingkat_id yang cocok
+        $approverQuery = Karyawan::whereHas('jabatan', function ($q) use ($targetTingkatId, $bagianId) {
+            $q->where('tingkat_id', $targetTingkatId);
+            if ($bagianId && $targetTingkatId === 3) {
+                $q->where('bagian_id', $bagianId);
+            }
+        });
+
+        $approver = $approverQuery->first();
+
+        if ($approver) {
+            return $approver->full_nama;
+        }
+
+        // Fallback pencarian role
+        if ($targetTingkatId === 2) {
+            $wadirUser = \App\Models\User::role(['Wakil-Direktur', 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum'])->first();
+            return $wadirUser?->karyawan?->full_nama ?? $wadirUser?->name ?? 'Wakil Direktur';
+        }
+
+        $kabidUser = \App\Models\User::role('Kepala-Bidang')->first();
+        return $kabidUser?->karyawan?->full_nama ?? $kabidUser?->name ?? 'Kepala Dept';
     }
 
     public static function ensureEmployeeDetailsExist($karyawanId, $bulan, $tahun)
