@@ -1,27 +1,30 @@
 <div class="w-full">
     <form wire:submit.prevent='update' class="space-y-2">
 
-        <div class="grid-row grid gap-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <div class="w-full">
                 <x-ts:select.styled wire:model.live="form.status" searchable placeholder="Status Pegawai" :options="$status_options" select="label:label|value:value" />
                 @if ($form->status != $status_init)
-                    <div class="w-full">
+                    <div class="w-full mt-1">
                         <x-ts:date wire:model.lazy='form.tgl_status' placeholder="Tgl Status Baru" />
                     </div>
                 @endif
             </div>
             <div class="w-full">
+                <x-ts:select.styled wire:model.live="form.kategori_kerja" placeholder="Kategori Kerja" :options="$kategori_options" select="label:label|value:value" />
+            </div>
+            <div class="w-full">
                 <x-ts:select.styled wire:model.live="form.jabatan" searchable placeholder="Jabatan" :options="$jabatan_options" select="label:nama|value:id" />
                 @if ($form->jabatan != $jabatan_init)
-                    <div class="w-full">
+                    <div class="w-full mt-1">
                         <x-ts:date wire:model.lazy='form.tgl_jabatan' placeholder="Tanggal Jabatan Baru" />
                     </div>
                 @endif
             </div>
             <div class="w-full">
-                <x-ts:select.styled wire:model.live="form.ruangan" placeholder="Ruangan" :request="route('api.ruangan')" select="label:nama|value:id" />
+                <x-ts:select.styled wire:model.live="form.ruangan" placeholder="Ruangan Utama" :request="route('api.ruangan')" select="label:nama|value:id" />
                 @if ($form->ruangan != $ruangan_init)
-                    <div class="w-full">
+                    <div class="w-full mt-1">
                         <x-ts:date wire:model.lazy='form.tgl_ruangan' placeholder="Tanggal Ruangan Baru" />
                     </div>
                 @endif

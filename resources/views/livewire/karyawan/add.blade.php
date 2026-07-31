@@ -6,6 +6,9 @@
                 <x-ts:select.styled wire:model.lazy='form.status' placeholder="Status Pegawai" :options="$status_options" select="label:label|value:value" />
             </div>
             <div class="w-full lg:w-1/4">
+                <x-ts:select.styled wire:model.lazy='form.kategori_kerja' placeholder="Kategori Kerja" :options="$kategori_options" select="label:label|value:value" />
+            </div>
+            <div class="w-full lg:w-1/4">
                 <x-ts:date wire:model.lazy='form.tgl_masuk' placeholder="Tgl. Masuk" />
             </div>
             <div class="w-full lg:w-1/4">

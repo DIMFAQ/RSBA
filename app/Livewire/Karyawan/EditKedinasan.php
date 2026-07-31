@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\Sdm\Jabatan;
 use App\Models\Sdm\Karyawan;
 use App\Enums\StatusKaryawan;
+use App\Enums\KategoriKerja;
 use App\Livewire\Forms\KaryawanForm;
 use App\Models\Sdm\KaryawanJabatan;
 use Livewire\Attributes\Lazy;
@@ -22,6 +23,8 @@ class EditKedinasan extends Component
 
     public $status_options;
     public $status_init;
+    public $kategori_options;
+    public $kategori_init;
     public $jabatan_options;
     public $jabatan_init;
 
@@ -40,6 +43,7 @@ class EditKedinasan extends Component
     {
         return [
             'form.status' => 'required',
+            'form.kategori_kerja' => 'required',
             'form.jabatan' => 'required',
             'form.tgl_status' => Rule::requiredIf(fn() => $this->form->status != $this->status_init),
             'form.tgl_jabatan' => Rule::requiredIf(fn() => $this->form->jabatan != $this->jabatan_init),
@@ -58,6 +62,9 @@ class EditKedinasan extends Component
         $this->status_options = StatusKaryawan::options();
         $this->status_init = $karyawan->status;
 
+        $this->kategori_options = KategoriKerja::options();
+        $this->kategori_init = $karyawan->kategori_kerja?->value ?? 'shift';
+
         $this->jabatan_options = Jabatan::all();
         $this->jabatan_init = $karyawan->jabatan[0]->id ?? '';
         $this->ruangan_init = $karyawan->ruangan_id ?? '';
@@ -67,7 +74,8 @@ class EditKedinasan extends Component
     {
         $this->validate($this->rules());
 
-        if ($this->form->tgl_status && ($this->form->status != $this->status_init)) {
+        // update status or kategori kerja
+        if (($this->form->status != $this->status_init) || ($this->form->kategori_kerja != $this->kategori_init)) {
             $this->updateStatus();
         }
 
@@ -87,8 +95,14 @@ class EditKedinasan extends Component
 
         try {
             $data = [
-                'status' => $this->form->status
+                'status' => $this->form->status,
+                'kategori_kerja' => $this->form->kategori_kerja,
             ];
+
+            // update
+            $this->form->karyawan->update($data);
+            $this->status_init = $this->form->status;
+            $this->kategori_init = $this->form->kategori_kerja;
 
             // update
             $this->form->karyawan->update($data);
@@ -125,6 +139,9 @@ class EditKedinasan extends Component
 
             // insert data new jabatan
             KaryawanJabatan::create($data);
+
+            // Auto-sync role user jika terhubung dengan akun user
+            $this->form->karyawan->user?->syncRoleFromJabatan();
 
             $this->dispatch('new-jabatan-created'); //dispatch event
 
