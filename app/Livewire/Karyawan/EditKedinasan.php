@@ -43,6 +43,7 @@ class EditKedinasan extends Component
             'form.jabatan' => 'required',
             'form.tgl_status' => Rule::requiredIf(fn() => $this->form->status != $this->status_init),
             'form.tgl_jabatan' => Rule::requiredIf(fn() => $this->form->jabatan != $this->jabatan_init),
+            'form.tgl_ruangan' => Rule::requiredIf(fn() => $this->form->ruangan != $this->ruangan_init),
             'form.tgl_dinas' => Rule::requiredIf(fn() => $this->form->dinas != $this->dinas_init)
         ];
     }
@@ -59,22 +60,13 @@ class EditKedinasan extends Component
 
         $this->jabatan_options = Jabatan::all();
         $this->jabatan_init = $karyawan->jabatan[0]->id ?? '';
+        $this->ruangan_init = $karyawan->ruangan_id ?? '';
     }
 
     public function update()
     {
         $this->validate($this->rules());
 
-        // try {
-        // $data = [
-        //     'status' => $this->form->status,
-        //     'tgl_status' => $this->form->tgl_status ?: null,
-        //     'jabatan' => $this->form->jabatan,
-        //     'tgl_jabatan' => $this->form->tgl_jabatan ?: null,
-        //     'resign' => $this->form->dinas ?: null,
-        //     'resign_at' => $this->form->tgl_dinas ?: null,
-        //     // 'ket_dinas' => $this->form->ket_dinas ?: null,
-        // ];
         if ($this->form->tgl_status && ($this->form->status != $this->status_init)) {
             $this->updateStatus();
         }
@@ -84,35 +76,10 @@ class EditKedinasan extends Component
             $this->updateJabatan();
         }
 
-        // if ($this->form->tgl_dinas || $this->form->tgl_status) {
-        //     # code...
-        //     $data = [
-        //         'status' => $this->form->status,
-        //         'resign' => $this->form->dinas ?: 'null',
-        //         'resign_at' => $this->form->tgl_dinas ?: 'null',
-        //     ];
-
-        //     // update
-        //     Karyawan::where('id', $this->form->karyawan->id)
-        //         ->update($this->only($data));
-        //     // $this->dispatch('dinas-' . $this->form->karyawan->id);
-
-        //     // refresh compoenent
-        //     $this->mount($this->form->karyawan->id);
-
-        //     $this->toast()
-        //         ->success('Sukses', 'Update data kedinasan berhasil.')
-        //         ->send();
-        // }
-
-        // $this->toast()
-        //     ->success('Sukses', 'Update data kedinasan berhasil.')
-        //     ->send();
-        // } catch (\Throwable $th) {
-        //     $this->toast()
-        //         ->error('Failed', 'Error : ' . $th->getMessage())
-        //         ->send();
-        // }
+        // update ruangan
+        if ($this->form->tgl_ruangan && ($this->form->ruangan != $this->ruangan_init)) {
+            $this->updateRuangan();
+        }
     }
 
     function updateStatus()
@@ -167,6 +134,44 @@ class EditKedinasan extends Component
         } catch (Throwable $th) {
             $this->toast()
                 ->error('Failed', 'Error : ', $th->getMessage())
+                ->send();
+        }
+    }
+
+    public function updateRuangan()
+    {
+        try {
+            $karyawan = $this->form->karyawan;
+            $newRuanganId = $this->form->ruangan;
+            $tglRuangan = $this->form->tgl_ruangan;
+
+            // Update tgl_berakhir penugasan ruangan aktif terdahulu
+            \App\Models\Sdm\KaryawanRuangan::where('karyawan_id', $karyawan->id)
+                ->whereNull('tgl_berakhir')
+                ->update(['tgl_berakhir' => $tglRuangan]);
+
+            // Insert penugasan ruangan baru ke sdm_kary_ruangan
+            \App\Models\Sdm\KaryawanRuangan::create([
+                'karyawan_id' => $karyawan->id,
+                'ruangan_id'  => $newRuanganId,
+                'tgl_mulai'   => $tglRuangan,
+                'tgl_berakhir'=> null,
+                'is_utama'    => true,
+                'keterangan'  => 'Rotasi / Perubahan Ruangan via Edit Kedinasan',
+            ]);
+
+            // Update ruangan_id pada sdm_karyawan
+            $karyawan->update(['ruangan_id' => $newRuanganId]);
+
+            $this->ruangan_init = $newRuanganId;
+            $this->dispatch('new-ruangan-created');
+
+            $this->toast()
+                ->success('Berhasil', 'Penugasan ruangan baru berhasil disimpan.')
+                ->send();
+        } catch (Throwable $th) {
+            $this->toast()
+                ->error('Gagal', 'Error : ' . $th->getMessage())
                 ->send();
         }
     }

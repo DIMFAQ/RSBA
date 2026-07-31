@@ -50,6 +50,7 @@ class KaryawanForm extends Form
     public $tgl_status;
 
     public $ruangan;
+    public $tgl_ruangan;
 
     function mount($karyawan)
     {
@@ -110,6 +111,7 @@ class KaryawanForm extends Form
     {
         $this->status = $karyawan->status;
         $this->jabatan = $karyawan->jabatan[0]->id ?? '';
+        $this->ruangan = $karyawan->ruangan_id ?? '';
         $this->dinas = $karyawan->resign ?? '';
     }
 
