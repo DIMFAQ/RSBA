@@ -21,8 +21,9 @@ class OrgChart extends Component
         foreach ($jabatans as $j) {
             $karyawan = $j->jabatans->first()?->karyawan;
 
+            // Pastikan Direktur Utama (id = 1 atau level 1) selalu menjadi root node utama
             $parentId = $j->parent_id ? (string) $j->parent_id : null;
-            if ((string)$j->id === (string)$j->parent_id) {
+            if ((string)$j->id === '1' || (string)$j->id === (string)$j->parent_id) {
                 $parentId = null;
             }
 
