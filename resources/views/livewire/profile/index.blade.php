@@ -9,14 +9,19 @@
                 <div class="h-24 bg-gradient-to-br from-indigo-400 to-purple-600"></div>
 
                 {{-- Foto & nama --}}
-                <div class="flex flex-col items-center px-5 pb-5"
-                     x-data="{ userPreview: '{{ $profileTmp ? $profileTmp->temporaryUrl() : asset('storage/' . $this->karyawan->foto) }}' }">
+                 <div class="flex flex-col items-center px-5 pb-5"
+                     x-data="{ userPreview: '{{ $profileTmp ? $profileTmp->temporaryUrl() : ($this->avatarUrl ?? '') }}' }">
 
                     {{-- Avatar - posisi overlap cover --}}
                     <div class="-mt-12 mb-3 flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border-4 border-white bg-indigo-100 shadow"
                          x-on:click="document.getElementById('profileInput').click();"
                          title="Klik untuk ganti foto">
-                        <img :src="userPreview" class="h-full w-full object-cover" alt="Foto Profil" />
+                        <template x-if="userPreview">
+                            <img :src="userPreview" class="h-full w-full object-cover" alt="Foto Profil" />
+                        </template>
+                        <template x-if="!userPreview">
+                            <span class="text-lg font-bold text-indigo-600">{{ $this->avatarInitials }}</span>
+                        </template>
                     </div>
 
                     <input type="file" wire:model='profileTmp' id="profileInput" style="display:none"
@@ -105,51 +110,56 @@
 
         {{-- ===== PANEL KANAN (Tabs) ===== --}}
         <div class="min-w-0 flex-1">
-            <x-ts:tab selected="Home" x-on:navigate="$wire.set('tab',$event.detail.select)">
-                <x-ts:tab.items tab="Home">
-                    <x-slot:left>
-                        <x-ts:icon name="tabler.home" class="h-5 w-5" />
-                    </x-slot:left>
+            <div class="rounded-2xl bg-white p-3 sm:p-5 shadow-sm border border-slate-100" x-data="{ tab: @entangle('tab') }">
+                <div class="overflow-x-auto scrollbar-hidden pb-1">
+                    <nav class="inline-flex gap-2 sm:gap-3 min-w-max p-0.5" aria-label="Tabs">
+                        <button wire:click="$set('tab', 'home')" @click="tab = 'home'"
+                            :class="tab === 'home' ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-200 border border-indigo-600' : 'bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-slate-700 font-semibold'"
+                            class="whitespace-nowrap rounded-xl py-2 px-4 text-xs sm:text-sm transition-all duration-150 flex items-center gap-2">
+                            <x-ts:icon name="tabler.home" class="h-4 w-4 shrink-0" />
+                            Home
+                        </button>
+                        <button wire:click="$set('tab', 'identitas')" @click="tab = 'identitas'"
+                            :class="tab === 'identitas' ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-200 border border-indigo-600' : 'bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-slate-700 font-semibold'"
+                            class="whitespace-nowrap rounded-xl py-2 px-4 text-xs sm:text-sm transition-all duration-150 flex items-center gap-2">
+                            <x-ts:icon name="tabler.user-square" class="h-4 w-4 shrink-0" />
+                            Identitas
+                        </button>
+                        <button wire:click="$set('tab', 'pendidikan')" @click="tab = 'pendidikan'"
+                            :class="tab === 'pendidikan' ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-200 border border-indigo-600' : 'bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-slate-700 font-semibold'"
+                            class="whitespace-nowrap rounded-xl py-2 px-4 text-xs sm:text-sm transition-all duration-150 flex items-center gap-2">
+                            <x-ts:icon name="tabler.school" class="h-4 w-4 shrink-0" />
+                            Pendidikan
+                        </button>
+                        <button wire:click="$set('tab', 'documents')" @click="tab = 'documents'"
+                            :class="tab === 'documents' ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-200 border border-indigo-600' : 'bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-slate-700 font-semibold'"
+                            class="whitespace-nowrap rounded-xl py-2 px-4 text-xs sm:text-sm transition-all duration-150 flex items-center gap-2">
+                            <x-ts:icon name="tabler.file-type-doc" class="h-4 w-4 shrink-0" />
+                            Dokumen
+                        </button>
+                        <button wire:click="$set('tab', 'cuti')" @click="tab = 'cuti'"
+                            :class="tab === 'cuti' ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-200 border border-indigo-600' : 'bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-slate-700 font-semibold'"
+                            class="whitespace-nowrap rounded-xl py-2 px-4 text-xs sm:text-sm transition-all duration-150 flex items-center gap-2">
+                            <x-ts:icon name="tabler.calendar-pause" class="h-4 w-4 shrink-0" />
+                            Izin dan Cuti
+                        </button>
+                    </nav>
+                </div>
 
-                    <livewire:Profile.Home :id="$user?->karyawan_id" key="home" />
-                </x-ts:tab.items>
-
-                <x-ts:tab.items tab="Identitas">
-                    <x-slot:left>
-                        <x-ts:icon name="tabler.user-square" class="h-5 w-5" />
-                    </x-slot:left>
-
-                    {{-- load edit-identitas --}}
-                    <livewire:Karyawan.EditIdentitas :id="$user?->karyawan_id" key="identitas-karyawan" />
-                </x-ts:tab.items>
-
-                <x-ts:tab.items tab="Pendidikan">
-                    <x-slot:left>
-                        <x-ts:icon name="tabler.school" class="h-5 w-5" />
-                    </x-slot:left>
-
-                    {{-- load Karyawan.Pendidikan --}}
-                    <livewire:Karyawan.Pendidikan.PendidikanList :id="$user?->karyawan_id" key="'pendidikan-list'" @pendidikan-karyawan-created="$refresh" @deleted-pendidikan-karyawan="$refresh" />
-                </x-ts:tab.items>
-
-                <x-ts:tab.items tab="Documents">
-                    <x-slot:left>
-                        <x-ts:icon name="tabler.file-type-doc" class="h-5 w-5" />
-                    </x-slot:left>
-
-                    {{-- load Karyawan.Documents --}}
-                    <livewire:Karyawan.Document.DocumentList :id="$user?->karyawan_id" key="'document-list'" @document-karyawan-created="$refresh" @document-karyawan-deleted="$refresh" />
-                </x-ts:tab.items>
-
-                <x-ts:tab.items tab="Izin dan Cuti">
-                    <x-slot:left>
-                        <x-ts:icon name="tabler.calendar-pause" class="h-5 w-5" />
-                    </x-slot:left>
-
-                    {{-- load Jadwal & Cuti --}}
-                    <livewire:Profile.Cuti :id="$user?->karyawan_id" key="cuti-list" />
-                </x-ts:tab.items>
-            </x-ts:tab>
+                <div class="mt-4">
+                    @if($tab === 'home' || $tab === 'Home')
+                        <livewire:Profile.Home :id="$user?->karyawan_id" key="home" />
+                    @elseif($tab === 'identitas' || $tab === 'Identitas')
+                        <livewire:Karyawan.EditIdentitas :id="$user?->karyawan_id" key="identitas-karyawan" />
+                    @elseif($tab === 'pendidikan' || $tab === 'Pendidikan')
+                        <livewire:Karyawan.Pendidikan.PendidikanList :id="$user?->karyawan_id" key="pendidikan-list" @pendidikan-karyawan-created="$refresh" @deleted-pendidikan-karyawan="$refresh" />
+                    @elseif($tab === 'documents' || $tab === 'Documents')
+                        <livewire:Karyawan.Document.DocumentList :id="$user?->karyawan_id" key="document-list" @document-karyawan-created="$refresh" @document-karyawan-deleted="$refresh" />
+                    @elseif($tab === 'cuti' || $tab === 'Izin dan Cuti')
+                        <livewire:Profile.Cuti :id="$user?->karyawan_id" key="cuti-list" />
+                    @endif
+                </div>
+            </div>
         </div>
 
     </div>

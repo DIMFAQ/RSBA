@@ -2,9 +2,11 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-800">Kontrol Utama Absensi</h2>
         <div class="flex space-x-2">
+            @if(auth()->user()?->hasRole(['Super-Admin', 'Staff-SDM']))
             <x-ts:button href="{{ route('kepegawaian.absensi.rekap') }}" color="secondary">
                 Lihat Rekapitulasi
             </x-ts:button>
+            @endif
             <x-ts:button href="{{ route('kepegawaian.absensi.import') }}" color="primary">
                 Import Absensi Baru
             </x-ts:button>
@@ -69,8 +71,10 @@
             </table>
         </div>
         
-        <div class="mt-4">
-            {{ $logs->links() }}
-        </div>
+        @if($logs->hasPages())
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                {{ $logs->onEachSide(1)->links('partials.pagination') }}
+            </div>
+        @endif
     </x-ts:card>
 </div>

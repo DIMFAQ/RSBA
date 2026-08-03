@@ -343,6 +343,50 @@ class PoliAdmin extends Component
         }
     }
 
+    public function callPatient(DmsMiddlewareClient $client, string $id): void
+    {
+        try {
+            $client->updateQueueStatus($this->queuePoliId, $id, 'dilayani');
+            $this->successMessage = 'Pasien berhasil dipanggil!';
+            $this->loadQueue($client);
+        } catch (\Exception $e) {
+            $this->errorMessage = $e->getMessage();
+        }
+    }
+
+    public function completePatient(DmsMiddlewareClient $client, string $id): void
+    {
+        try {
+            $client->updateQueueStatus($this->queuePoliId, $id, 'selesai');
+            $this->successMessage = 'Pasien selesai dilayani!';
+            $this->loadQueue($client);
+        } catch (\Exception $e) {
+            $this->errorMessage = $e->getMessage();
+        }
+    }
+
+    public function skipPatient(DmsMiddlewareClient $client, string $id): void
+    {
+        try {
+            $client->updateQueueStatus($this->queuePoliId, $id, 'terlewat');
+            $this->successMessage = 'Pasien dilewati!';
+            $this->loadQueue($client);
+        } catch (\Exception $e) {
+            $this->errorMessage = $e->getMessage();
+        }
+    }
+
+    public function requeuePatient(DmsMiddlewareClient $client, string $id): void
+    {
+        try {
+            $client->requeuePatient($this->queuePoliId, $id);
+            $this->successMessage = 'Pasien berhasil dipanggil ulang (turun 2 posisi)!';
+            $this->loadQueue($client);
+        } catch (\Exception $e) {
+            $this->errorMessage = $e->getMessage();
+        }
+    }
+
     public function changeQueueStatus(DmsMiddlewareClient $client, string $id, string $newStatus): void
     {
         $item = collect($this->queueItems)->firstWhere('id', $id);

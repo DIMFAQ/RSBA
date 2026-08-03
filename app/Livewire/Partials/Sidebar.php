@@ -59,7 +59,7 @@ class Sidebar extends Component
     {
         $cacheKey = 'user-sidebar-menu:' . $userId;
 
-        return cache()->remember($cacheKey, 60 * 60, function () use ($userId) {
+        return cache()->remember($cacheKey, 60, function () use ($userId) {
             $allMenus = $this->getCachedBaseMenus();
 
             if (Auth::user()->hasRole('Super-Admin')) {
@@ -91,6 +91,9 @@ class Sidebar extends Component
     {
         return cache()->remember('user-sidebar-menu:base', 60 * 720, function () {
             $mainMenu = Menu::first();
+            if (!$mainMenu) {
+                return [];
+            }
 
             return Menu::where('parent_id', $mainMenu->id)
                 ->with('submenus')
@@ -105,7 +108,7 @@ class Sidebar extends Component
                     'permission' => $menu->permission ?? '',
                     'group'      => $menu->group?->nama() ?? '',
                     'submenus'   => $menu->submenus
-                        ->sortBy('nama')
+                        ->sortBy(fn($sub) => trim($sub->nama) === 'Rekap Bulanan' ? '00_rekap_bulanan' : $sub->nama)
                         ->map(fn($sub) => [
                             'id'           => $sub->id,
                             'nama'         => $sub->nama,
@@ -212,7 +215,7 @@ class Sidebar extends Component
 
     private function getCachedUserViewPermissions(int $userId): array
     {
-        return cache()->remember('user-permissions:view:' . $userId, 60 * 60, function () {
+        return cache()->remember('user-permissions:view:' . $userId, 60, function () {
             $user = Auth::user();
 
             $all = method_exists($user, 'getAllPermissions')
@@ -228,6 +231,15 @@ class Sidebar extends Component
                     'view-kepegawaian-absensi',
                     'view-kepegawaian-konfigurasi-jadwal',
                 ]);
+            }
+
+            // Filter ketersediaan menu Jadwal Kerja sesuai wewenang user
+            if ($user && $user->can('view-kepegawaian-jadwal-kerja')) {
+                if (!in_array('view-kepegawaian-jadwal-kerja', $permissions)) {
+                    $permissions[] = 'view-kepegawaian-jadwal-kerja';
+                }
+            } else {
+                $permissions = array_values(array_filter($permissions, fn($p) => $p !== 'view-kepegawaian-jadwal-kerja'));
             }
 
             // Allow users with assigned ruangan to view the asset & pengajuan menu

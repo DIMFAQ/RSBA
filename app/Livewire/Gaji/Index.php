@@ -13,6 +13,10 @@ use TallStackUi\Traits\Interactions;
 use Illuminate\Support\Facades\DB;
 use App\Services\PayrollCalculator;
 use Carbon\Carbon;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PayrollTemplateExport;
+use App\Imports\PayrollImport;
 
 #[Title('Penggajian')]
 class Index extends Component
@@ -20,19 +24,33 @@ class Index extends Component
     use WithPagination;
     use AuthorizesFromRoute;
     use Interactions;
+    use WithFileUploads;
 
     public string $search = '';
     public string $bagianFilter = '';
+    public string $statusFilter = '';
+    public string $payrollStatusFilter = '';
     
     #[Url]
     public string $periode = ''; // YYYY-MM
     public ?string $carriedOverFromPeriode = null;
     public int $calculatedLateMinutes = 0;
+    public int $calculatedLateCount = 0;
     public int $calculatedOvertimeMinutes = 0;
+    public int $perPage = 10;
 
     // Modal state for Slip View
     public bool $isOpenModal = false;
     public ?array $selectedSlip = null;
+
+    // Modal state for Period-wide Edit Log View
+    public bool $isPeriodLogModalOpen = false;
+    public array $periodLogs = [];
+    public string $periodLogSearch = '';
+
+    // Modal state for Bulk Excel Import
+    public bool $isImportModalOpen = false;
+    public $excelFile = null;
 
     // Modal state for Payroll Input
     public bool $isInputModalOpen = false;
@@ -55,8 +73,30 @@ class Index extends Component
     public $form_potongan_obat = 0;
     public $form_potongan_lain = 0;
     public $form_potongan_bank = 0;
+    public $form_potongan_bpjs_kes = 0;
+    public $form_potongan_bpjs_tk = 0;
     
     public int $form_bpjs_keluarga_tambahan = 0;
+
+    // PPh 21 Override Form Fields
+    public $form_potongan_pph21 = 0;
+    public $form_pph21_calculated = 0;
+    public bool $form_pph21_is_overridden = false;
+    public string $form_pph21_override_reason = '';
+
+    // December YTD reconciliation fields
+    public bool $is_december = false;
+    public $ytd_prior_bruto = 0.0;
+    public $ytd_prior_pph21 = 0.0;
+    public $ytd_prior_bpjs_tk = 0.0;
+    public $ytd_total_bruto = 0.0;
+    public $ytd_total_bpjs_tk = 0.0;
+    public $ytd_biaya_jabatan = 0.0;
+    public $ytd_neto = 0.0;
+    public $ytd_ptkp = 0.0;
+    public $ytd_pkp = 0.0;
+    public $ytd_tax_annual = 0.0;
+    public $ytd_paid_jan_nov = 0.0;
 
     // Dynamic 25% UMK allocations
     public array $form_umk_allocations = [];
@@ -75,8 +115,11 @@ class Index extends Component
     public $calc_total_gaji = 0;
     public $calc_total_potongan = 0;
     public $calc_gaji_bersih = 0;
+    public $calc_golongan = null;
+    public $calc_masa_kerja = 0.0;
     
     public bool $isLocked = false;
+    public string $periodStatus = 'draft';
 
     public function mount()
     {
@@ -84,10 +127,33 @@ class Index extends Component
             $this->periode = now()->format('Y-m');
         }
 
-        $this->isLocked = DB::table('sdm_payroll_period_locks')
+        $this->refreshLockStatus();
+    }
+
+    private function refreshLockStatus(): void
+    {
+        $lock = DB::table('sdm_payroll_period_locks')
             ->where('periode', $this->periode)
-            ->where('is_approved', true)
-            ->exists();
+            ->first();
+
+        $this->periodStatus = $lock->status ?? 'draft';
+
+        $user = auth()->user();
+        $isOnlyPajak = $user->hasRole('Pajak') && !$user->hasRole('Staff-SDM') && !$user->hasRole('Super-Admin');
+        $isSDM = $user->hasRole('Staff-SDM') || $user->hasRole('Super-Admin');
+
+        if ($this->periodStatus === 'approved') {
+            $this->isLocked = true;
+        } elseif ($this->periodStatus === 'review_pajak') {
+            // Pajak can edit during their review, SDM cannot
+            $this->isLocked = !$isOnlyPajak;
+        } elseif ($this->periodStatus === 'review_sdm') {
+            // SDM can view but cannot edit (waiting for finalisasi via rekap)
+            $this->isLocked = true;
+        } else {
+            // draft: SDM can edit, Pajak cannot
+            $this->isLocked = $isOnlyPajak;
+        }
     }
 
     public function updatingSearch(): void
@@ -100,7 +166,27 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPayrollStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatingPeriode(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPeriode(): void
+    {
+        $this->refreshLockStatus();
+    }
+
+    public function updatingPerPage(): void
     {
         $this->resetPage();
     }
@@ -109,8 +195,31 @@ class Index extends Component
     public function updated($name)
     {
         if (str_starts_with($name, 'form_')) {
+            $value = $this->{$name};
+            if (is_string($value)) {
+                $cleaned = str_replace('.', '', $value);
+                $this->{$name} = is_numeric($cleaned) ? (double)$cleaned : 0;
+            }
+
+            if ($name === 'form_potongan_pph21') {
+                if ((double) $this->form_potongan_pph21 !== (double) $this->form_pph21_calculated) {
+                    $this->form_pph21_is_overridden = true;
+                } else {
+                    $this->form_pph21_is_overridden = false;
+                    $this->form_pph21_override_reason = '';
+                }
+            }
             $this->recalculate();
         }
+    }
+
+    public function resetPph21ToAuto()
+    {
+        $this->form_pph21_is_overridden = false;
+        $this->form_pph21_override_reason = '';
+        $this->form_potongan_pph21 = $this->form_pph21_calculated;
+        $this->recalculate();
+        $this->toast()->info('Info', 'Nilai PPh 21 dikembalikan ke otomatis (sistem).')->send();
     }
 
     // Dynamic allowances actions
@@ -178,6 +287,8 @@ class Index extends Component
         $baseCalculator = PayrollCalculator::calculate($this->selectedKaryawan);
         $this->form_tunjangan_tetap = $tTetap + $baseCalculator['tunjangan_golongan_value'];
         $this->form_tunjangan_absensi = $tAbsen;
+        $this->calc_golongan = $baseCalculator['golongan'];
+        $this->calc_masa_kerja = $baseCalculator['masa_kerja_tahun'];
 
         // 2. Sum dynamic other allowances
         $sumTunjanganLain = 0.0;
@@ -198,17 +309,27 @@ class Index extends Component
             (double) $this->form_tunjangan_hari_raya;
 
         // 4. BPJS & PPh21 calculations
-        $deductions = PayrollCalculator::calculateDeductions(
-            $this->form_gaji_pokok,
-            $this->form_tunjangan_tetap,
-            $totalEarnings,
-            $this->form_bpjs_keluarga_tambahan
+        $this->calc_bpjs_kes = (double) $this->form_potongan_bpjs_kes;
+        $this->calc_bpjs_tk = (double) $this->form_potongan_bpjs_tk;
+
+        $calculatedDeductions = PayrollCalculator::calculateDeductions(
+            (double) $this->form_gaji_pokok,
+            (double) $this->form_tunjangan_tetap,
+            (double) $totalEarnings,
+            (int) $this->form_bpjs_keluarga_tambahan,
+            $this->selectedKaryawan,
+            $this->periode
         );
 
-        $this->calc_bpjs_kes = $deductions['potongan_bpjs_kes'];
-        $this->calc_bpjs_tk = $deductions['potongan_bpjs_tk'];
-        $this->calc_pph21 = $deductions['potongan_pph21'];
+        $this->form_pph21_calculated = (double) $calculatedDeductions['potongan_pph21'];
 
+        if ($this->form_pph21_is_overridden) {
+            $this->calc_pph21 = (double) $this->form_potongan_pph21;
+        } else {
+            $this->calc_pph21 = $this->form_pph21_calculated;
+            $this->form_potongan_pph21 = $this->calc_pph21;
+        }
+ 
         // 5. Total Deductions
         $this->calc_total_potongan = (double) $this->form_potongan_absensi +
             (double) $this->form_potongan_cash_bon +
@@ -218,6 +339,67 @@ class Index extends Component
             (double) $this->calc_bpjs_tk;
 
         $this->calc_total_gaji = $totalEarnings;
+
+        if ($this->is_december && $this->selectedKaryawan) {
+            $currentBruto = $totalEarnings;
+            $currentBpjsTk = $this->calc_bpjs_tk;
+            
+            $this->ytd_total_bruto = $this->ytd_prior_bruto + $currentBruto;
+            $this->ytd_total_bpjs_tk = $this->ytd_prior_bpjs_tk + $currentBpjsTk;
+            
+            // Biaya jabatan
+            $this->ytd_biaya_jabatan = min(0.05 * $this->ytd_total_bruto, 6000000.00);
+            
+            // Neto setahun
+            $this->ytd_neto = $this->ytd_total_bruto - $this->ytd_biaya_jabatan - $this->ytd_total_bpjs_tk;
+            
+            // PTKP
+            $year = (int) substr($this->periode, 0, 4);
+            $ptkpStatus = $this->selectedKaryawan->ptkp_status ?: 'TK0';
+            $this->ytd_ptkp = DB::table('sdm_payroll_ptkp')
+                ->where('status', $ptkpStatus)
+                ->where('berlaku_mulai_tahun', '<=', $year)
+                ->orderBy('berlaku_mulai_tahun', 'desc')
+                ->value('nominal_setahun') ?: 54000000.00;
+                
+            // PKP
+            $this->ytd_pkp = max(0, $this->ytd_neto - $this->ytd_ptkp);
+            $this->ytd_pkp = floor($this->ytd_pkp / 1000) * 1000;
+            
+            // Progressive Pasal 17 total tax
+            $pasal17Brackets = DB::table('sdm_payroll_pasal17')
+                ->where('berlaku_mulai_tahun', '<=', $year)
+                ->orderBy('pkp_bawah', 'asc')
+                ->get();
+
+            $pajakSetahun = 0;
+            $remainingPkp = $this->ytd_pkp;
+
+            foreach ($pasal17Brackets as $bracket) {
+                $bawah = (double) $bracket->pkp_bawah;
+                $atas = $bracket->pkp_atas ? (double) $bracket->pkp_atas : null;
+                $tarif = (double) $bracket->tarif_persen / 100;
+
+                if ($atas !== null) {
+                    $range = $atas - $bawah;
+                    if ($remainingPkp > $range) {
+                        $pajakSetahun += $range * $tarif;
+                        $remainingPkp -= $range;
+                    } else {
+                        $pajakSetahun += $remainingPkp * $tarif;
+                        $remainingPkp = 0;
+                        break;
+                    }
+                } else {
+                    $pajakSetahun += $remainingPkp * $tarif;
+                    $remainingPkp = 0;
+                    break;
+                }
+            }
+            
+            $this->ytd_tax_annual = $pajakSetahun;
+            $this->ytd_paid_jan_nov = $this->ytd_prior_pph21;
+        }
 
         // 6. Net Salary
         $this->calc_gaji_bersih = $this->calc_total_gaji - 
@@ -229,7 +411,7 @@ class Index extends Component
     private function calculateAttendanceStats(int $karyawanId): array
     {
         if (empty($this->periode)) {
-            return ['late_minutes' => 0, 'overtime_minutes' => 0];
+            return ['late_minutes' => 0, 'late_count' => 0, 'overtime_minutes' => 0];
         }
 
         try {
@@ -237,7 +419,7 @@ class Index extends Component
             $bulan = $parsedDate->month;
             $tahun = $parsedDate->year;
         } catch (\Exception $e) {
-            return ['late_minutes' => 0, 'overtime_minutes' => 0];
+            return ['late_minutes' => 0, 'late_count' => 0, 'overtime_minutes' => 0];
         }
 
         $details = DB::table('sdm_jadwal_kerja_detail')
@@ -248,12 +430,14 @@ class Index extends Component
 
         $toleransiTelat = (int) (DB::table('sdm_payroll_settings')->where('key', 'toleransi_telat_menit')->value('value') ?: 0);
         $lateMinutes = 0;
+        $lateCount = 0;
         $overtimeMinutes = 0;
 
         foreach ($details as $d) {
             // Lateness
-            if ($d->status_kehadiran && strtolower($d->status_kehadiran) === 'terlambat' && $d->catatan) {
-                if (preg_match('/Terlambat (-?\d+) menit/i', $d->catatan, $matches)) {
+            if ($d->status_kehadiran && strtolower($d->status_kehadiran) === 'terlambat') {
+                $lateCount++;
+                if ($d->catatan && preg_match('/Terlambat (-?\d+) menit/i', $d->catatan, $matches)) {
                     $mins = abs((int) $matches[1]);
                     if ($mins > $toleransiTelat) {
                         $lateMinutes += $mins;
@@ -286,6 +470,7 @@ class Index extends Component
 
         return [
             'late_minutes' => $lateMinutes,
+            'late_count' => $lateCount,
             'overtime_minutes' => $overtimeMinutes,
         ];
     }
@@ -305,13 +490,36 @@ class Index extends Component
         // Calculate attendance stats & pre-fill auto-calculated parameters
         $stats = $this->calculateAttendanceStats($karyawanId);
         $this->calculatedLateMinutes = $stats['late_minutes'];
+        $this->calculatedLateCount = $stats['late_count'];
         $this->calculatedOvertimeMinutes = $stats['overtime_minutes'];
 
-        $rateLate = (double) DB::table('sdm_payroll_settings')->where('key', 'potongan_telat_per_menit')->value('value') ?: 0;
-        $rateOvertime = (double) DB::table('sdm_payroll_settings')->where('key', 'tarif_lembur_per_menit')->value('value') ?: 0;
+        $rateLateDeduction = (double) (DB::table('sdm_payroll_settings')->where('key', 'potongan_telat_per_kejadian')->value('value')
+            ?: DB::table('sdm_payroll_settings')->where('key', 'potongan_telat_per_menit')->value('value')
+            ?: 50000);
 
-        $autoPotonganAbsensi = (int) ($this->calculatedLateMinutes * $rateLate);
-        $autoUangLembur = (int) ($this->calculatedOvertimeMinutes * $rateOvertime);
+        $autoPotonganAbsensi = (int) ($this->calculatedLateCount * $rateLateDeduction);
+        $autoUangLembur = 0; // Uang Lembur is entered manually
+
+        // Check if current month is December
+        $this->is_december = str_ends_with($this->periode, '-12');
+        $this->ytd_prior_bruto = 0.0;
+        $this->ytd_prior_pph21 = 0.0;
+        $this->ytd_prior_bpjs_tk = 0.0;
+        
+        if ($this->is_december) {
+            $year = (int) substr($this->periode, 0, 4);
+            $priorSlips = DB::table('sdm_payroll_slips')
+                ->where('karyawan_id', $karyawanId)
+                ->where('periode', 'like', "$year-%")
+                ->where('periode', '!=', $this->periode)
+                ->get();
+
+            foreach ($priorSlips as $ps) {
+                $this->ytd_prior_bruto += (double) $ps->gaji_pokok + (double) $ps->tunjangan_tetap + (double) $ps->tunjangan_absensi + (double) $ps->tunjangan_jabatan + (double) $ps->tunjangan_shift + (double) $ps->tunjangan_radiologi + (double) $ps->tunjangan_lain + (double) $ps->uang_lembur + (double) $ps->tunjangan_hari_raya;
+                $this->ytd_prior_pph21 += (double) $ps->potongan_pph21;
+                $this->ytd_prior_bpjs_tk += (double) $ps->potongan_bpjs_tk;
+            }
+        }
 
         // Check if slip already exists for this period
         $slip = DB::table('sdm_payroll_slips')
@@ -338,6 +546,12 @@ class Index extends Component
             $this->form_potongan_obat = (int) $slip->potongan_obat;
             $this->form_potongan_lain = (int) $slip->potongan_lain;
             $this->form_potongan_bank = (int) $slip->potongan_bank;
+            $this->form_potongan_bpjs_kes = (int) $slip->potongan_bpjs_kes;
+            $this->form_potongan_bpjs_tk = (int) $slip->potongan_bpjs_tk;
+            $this->form_potongan_pph21 = (int) $slip->potongan_pph21;
+            $this->form_pph21_calculated = (int) ($slip->pph21_calculated ?? $slip->potongan_pph21);
+            $this->form_pph21_is_overridden = (bool) ($slip->pph21_is_overridden ?? false);
+            $this->form_pph21_override_reason = $slip->pph21_override_reason ?? '';
             
             $this->form_bpjs_keluarga_tambahan = (int) $slip->bpjs_keluarga_tambahan;
 
@@ -385,6 +599,25 @@ class Index extends Component
             $this->form_tunjangan_jabatan = $base['tunjangan_jabatan'];
             $this->form_umk_allocations = $base['allocations_breakdown'];
 
+            // Sum allocations to calculate correct default deductions
+            $tTetap = 0.0;
+            foreach ($this->form_umk_allocations as $alloc) {
+                if (!$alloc['is_absensi']) {
+                    $tTetap += (double) $alloc['nominal'];
+                }
+            }
+            $tTetap += (double) $base['tunjangan_golongan_value'];
+            $totalEarnings = (double) $this->form_gaji_pokok + $tTetap + (double) $this->form_tunjangan_jabatan;
+
+            $deductions = PayrollCalculator::calculateDeductions(
+                $this->form_gaji_pokok,
+                $tTetap,
+                $totalEarnings,
+                0,
+                $karyawan,
+                $this->periode
+            );
+
             // Query employee's last slip from previous periods
             $lastSlip = DB::table('sdm_payroll_slips')
                 ->where('karyawan_id', $karyawanId)
@@ -406,6 +639,8 @@ class Index extends Component
                 $this->form_potongan_obat = 0;
                 $this->form_potongan_lain = 0;
                 $this->form_potongan_bank = 0;
+                $this->form_potongan_bpjs_kes = (int) $lastSlip->potongan_bpjs_kes;
+                $this->form_potongan_bpjs_tk = (int) $lastSlip->potongan_bpjs_tk;
 
                 // Set auto-calculated variables and reset THR
                 $this->form_uang_lembur = $autoUangLembur;
@@ -442,6 +677,12 @@ class Index extends Component
                 $this->form_potongan_bank = 0;
                 
                 $this->form_bpjs_keluarga_tambahan = 0;
+                $this->form_potongan_bpjs_kes = (int) $deductions['potongan_bpjs_kes'];
+                $this->form_potongan_bpjs_tk = (int) $deductions['potongan_bpjs_tk'];
+                $this->form_pph21_is_overridden = false;
+                $this->form_pph21_override_reason = '';
+                $this->form_pph21_calculated = (int) $deductions['potongan_pph21'];
+                $this->form_potongan_pph21 = $this->form_pph21_calculated;
             }
         }
 
@@ -466,7 +707,7 @@ class Index extends Component
             return;
         }
 
-        $this->validate([
+        $rules = [
             'form_gaji_pokok' => 'required|numeric|min:0',
             'form_tunjangan_tetap' => 'required|numeric|min:0',
             'form_tunjangan_absensi' => 'required|numeric|min:0',
@@ -481,10 +722,27 @@ class Index extends Component
             'form_potongan_obat' => 'required|numeric|min:0',
             'form_potongan_lain' => 'required|numeric|min:0',
             'form_potongan_bank' => 'required|numeric|min:0',
+            'form_potongan_bpjs_kes' => 'required|numeric|min:0',
+            'form_potongan_bpjs_tk' => 'required|numeric|min:0',
             'form_bpjs_keluarga_tambahan' => 'required|integer|min:0',
+            'form_potongan_pph21' => 'required|numeric|min:0',
+        ];
+
+        if ($this->form_pph21_is_overridden) {
+            $rules['form_pph21_override_reason'] = 'required|string|min:5';
+        }
+
+        $this->validate($rules, [
+            'form_pph21_override_reason.required' => 'Alasan perubahan PPh 21 wajib diisi jika nilai pajaknya diubah manual.',
+            'form_pph21_override_reason.min' => 'Alasan perubahan minimal 5 karakter.',
         ]);
 
         $this->recalculate();
+
+        $oldSlip = DB::table('sdm_payroll_slips')
+            ->where('karyawan_id', $this->selectedKaryawanId)
+            ->where('periode', $this->periode)
+            ->first();
 
         DB::beginTransaction();
         try {
@@ -495,6 +753,8 @@ class Index extends Component
                     'periode' => $this->periode
                 ],
                 [
+                    'golongan' => $this->calc_golongan,
+                    'masa_kerja_tahun' => $this->calc_masa_kerja,
                     'gaji_pokok' => $this->form_gaji_pokok,
                     'tunjangan_tetap' => $this->form_tunjangan_tetap,
                     'tunjangan_absensi' => $this->form_tunjangan_absensi,
@@ -511,6 +771,12 @@ class Index extends Component
                     'potongan_bpjs_tk' => $this->calc_bpjs_tk,
                     'potongan_lain' => $this->form_potongan_lain,
                     'potongan_pph21' => $this->calc_pph21,
+                    'pph21_bruto_bulan' => $this->calc_total_gaji,
+                    'pph21_calculated' => $this->form_pph21_calculated,
+                    'pph21_is_overridden' => $this->form_pph21_is_overridden ? 1 : 0,
+                    'pph21_override_reason' => $this->form_pph21_is_overridden ? $this->form_pph21_override_reason : null,
+                    'pph21_override_by' => $this->form_pph21_is_overridden ? auth()->id() : null,
+                    'pph21_override_at' => $this->form_pph21_is_overridden ? now() : null,
                     'potongan_bank' => $this->form_potongan_bank,
                     'bpjs_keluarga_tambahan' => $this->form_bpjs_keluarga_tambahan,
                     'total_gaji' => $this->calc_total_gaji,
@@ -558,6 +824,94 @@ class Index extends Component
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+                }
+
+                // Save override log if changed
+                if ($this->form_pph21_is_overridden && $oldSlip && (double) $this->calc_pph21 !== (double) $oldSlip->potongan_pph21) {
+                    DB::table('sdm_payroll_pph21_override_logs')->insert([
+                        'payroll_slip_id' => $insertedSlip->id,
+                        'nilai_lama' => $oldSlip->potongan_pph21,
+                        'nilai_baru' => $this->calc_pph21,
+                        'alasan' => $this->form_pph21_override_reason,
+                        'diubah_oleh' => auth()->id(),
+                        'created_at' => now(),
+                    ]);
+                }
+
+                // Save general edit log if changed
+                if ($oldSlip) {
+                    $fieldsToTrack = [
+                        'gaji_pokok' => 'Gaji Pokok',
+                        'tunjangan_tetap' => 'Tunjangan Tetap',
+                        'tunjangan_absensi' => 'Tunjangan Kehadiran/Absensi',
+                        'tunjangan_jabatan' => 'Tunjangan Jabatan',
+                        'tunjangan_shift' => 'Tunjangan Shift',
+                        'tunjangan_radiologi' => 'Tunjangan Radiologi',
+                        'tunjangan_lain' => 'Tunjangan Lain-lain',
+                        'uang_lembur' => 'Uang Lembur',
+                        'tunjangan_hari_raya' => 'Tunjangan Hari Raya (THR)',
+                        'potongan_absensi' => 'Potongan Kehadiran/Absensi',
+                        'potongan_cash_bon' => 'Potongan Cash Bon',
+                        'potongan_obat' => 'Potongan Obat',
+                        'potongan_bpjs_kes' => 'Potongan BPJS Kesehatan',
+                        'potongan_bpjs_tk' => 'Potongan BPJS Ketenagakerjaan',
+                        'potongan_lain' => 'Potongan Lain-lain',
+                        'potongan_pph21' => 'Potongan PPh 21',
+                        'potongan_bank' => 'Potongan Bank',
+                        'bpjs_keluarga_tambahan' => 'BPJS Keluarga Tambahan',
+                    ];
+
+                    $newValueMap = [
+                        'gaji_pokok' => (double) $this->form_gaji_pokok,
+                        'tunjangan_tetap' => (double) $this->form_tunjangan_tetap,
+                        'tunjangan_absensi' => (double) $this->form_tunjangan_absensi,
+                        'tunjangan_jabatan' => (double) $this->form_tunjangan_jabatan,
+                        'tunjangan_shift' => (double) $this->form_tunjangan_shift,
+                        'tunjangan_radiologi' => (double) $this->form_tunjangan_radiologi,
+                        'tunjangan_lain' => (double) $this->form_tunjangan_lain,
+                        'uang_lembur' => (double) $this->form_uang_lembur,
+                        'tunjangan_hari_raya' => (double) $this->form_tunjangan_hari_raya,
+                        'potongan_absensi' => (double) $this->form_potongan_absensi,
+                        'potongan_cash_bon' => (double) $this->form_potongan_cash_bon,
+                        'potongan_obat' => (double) $this->form_potongan_obat,
+                        'potongan_bpjs_kes' => (double) $this->calc_bpjs_kes,
+                        'potongan_bpjs_tk' => (double) $this->calc_bpjs_tk,
+                        'potongan_lain' => (double) $this->form_potongan_lain,
+                        'potongan_pph21' => (double) $this->calc_pph21,
+                        'potongan_bank' => (double) $this->form_potongan_bank,
+                        'bpjs_keluarga_tambahan' => (int) $this->form_bpjs_keluarga_tambahan,
+                    ];
+
+                    $changes = [];
+                    foreach ($fieldsToTrack as $column => $label) {
+                        $oldVal = (double) ($oldSlip->$column ?? 0);
+                        $newVal = (double) ($newValueMap[$column] ?? 0);
+
+                        if ($column === 'bpjs_keluarga_tambahan') {
+                            $oldVal = (int) $oldVal;
+                            $newVal = (int) $newVal;
+                        }
+
+                        if ($oldVal != $newVal) {
+                            $changes[$column] = [
+                                'label' => $label,
+                                'old' => $oldVal,
+                                'new' => $newVal,
+                            ];
+                        }
+                    }
+
+                    if (count($changes) > 0) {
+                        DB::table('sdm_payroll_edit_logs')->insert([
+                            'payroll_slip_id' => $insertedSlip->id,
+                            'karyawan_id' => $this->selectedKaryawanId,
+                            'periode' => $this->periode,
+                            'perubahan' => json_encode($changes),
+                            'diubah_oleh' => auth()->id(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
                 }
             }
 
@@ -609,6 +963,20 @@ class Index extends Component
                 ->select('sdm_payroll_allowance_allocations.nama', 'sdm_payroll_allowance_allocations.is_absensi', 'sdm_payroll_slip_allocations.nominal')
                 ->get();
 
+            // Get edit logs
+            $editLogs = DB::table('sdm_payroll_edit_logs')
+                ->join('users', 'sdm_payroll_edit_logs.diubah_oleh', '=', 'users.id')
+                ->join('sdm_karyawan', 'users.karyawan_id', '=', 'sdm_karyawan.id')
+                ->where('sdm_payroll_edit_logs.payroll_slip_id', $slip->id)
+                ->select('sdm_payroll_edit_logs.*', 'sdm_karyawan.nama as editor_name')
+                ->orderBy('sdm_payroll_edit_logs.created_at', 'desc')
+                ->get()
+                ->map(function ($log) {
+                    $log->perubahan = json_decode($log->perubahan, true);
+                    return $log;
+                })
+                ->toArray();
+
             $this->selectedSlip = [
                 'id' => $karyawan->id,
                 'nama' => $karyawan->full_nama,
@@ -616,6 +984,8 @@ class Index extends Component
                 'status' => $karyawan->status->nama(),
                 'jabatan' => $jabName,
                 'bagian' => $bagName,
+                'nama_bank' => $karyawan->nama_bank,
+                'no_rekening' => $karyawan->no_rekening,
                 'gaji_pokok' => $slip->gaji_pokok,
                 'tunjangan_tetap' => $slip->tunjangan_tetap,
                 'tunjangan_absensi' => $slip->tunjangan_absensi,
@@ -638,13 +1008,14 @@ class Index extends Component
                 'gaji_bersih' => $slip->gaji_bersih,
                 'total_gaji' => $slip->total_gaji,
                 'total_potongan' => $slip->total_potongan,
-                'periode' => \Carbon\Carbon::parse($this->periode . '-01')->translatedFormat('F Y'),
+                'periode' => Carbon::parse($this->periode . '-01')->translatedFormat('F Y'),
+                'edit_logs' => $editLogs,
             ];
         } else {
             // Draft calculation
             $base = PayrollCalculator::calculate($karyawan);
             $totalPendapatan = $base['gaji_pokok'] + $base['tunjangan_tetap'] + $base['tunjangan_absensi'] + $base['tunjangan_jabatan'];
-            $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0);
+            $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0, $karyawan, $this->periode);
 
             $latestJab = $karyawan->jabatan->first();
             $jabName = $latestJab ? $latestJab->nama : '-';
@@ -660,6 +1031,8 @@ class Index extends Component
                 'status' => $karyawan->status->nama(),
                 'jabatan' => $jabName,
                 'bagian' => $bagName,
+                'nama_bank' => $karyawan->nama_bank,
+                'no_rekening' => $karyawan->no_rekening,
                 'gaji_pokok' => $base['gaji_pokok'],
                 'tunjangan_tetap' => $base['tunjangan_tetap'],
                 'tunjangan_absensi' => $base['tunjangan_absensi'],
@@ -682,7 +1055,8 @@ class Index extends Component
                 'gaji_bersih' => $gajiBersih,
                 'total_gaji' => $totalPendapatan,
                 'total_potongan' => $totalPotongan,
-                'periode' => \Carbon\Carbon::parse($this->periode . '-01')->translatedFormat('F Y') . ' (DRAFT)',
+                'periode' => Carbon::parse($this->periode . '-01')->translatedFormat('F Y') . ' (DRAFT)',
+                'edit_logs' => [],
             ];
         }
         $this->isOpenModal = true;
@@ -692,6 +1066,66 @@ class Index extends Component
     {
         $this->isOpenModal = false;
         $this->selectedSlip = null;
+    }
+
+    public function updatedPeriodLogSearch()
+    {
+        $this->loadPeriodLogs();
+    }
+
+    public function openPeriodLogModal()
+    {
+        $this->periodLogSearch = '';
+        $this->loadPeriodLogs();
+        $this->isPeriodLogModalOpen = true;
+    }
+
+    public function loadPeriodLogs()
+    {
+        $query = DB::table('sdm_payroll_edit_logs')
+            ->join('users', 'sdm_payroll_edit_logs.diubah_oleh', '=', 'users.id')
+            ->join('sdm_karyawan as editor', 'users.karyawan_id', '=', 'editor.id')
+            ->join('sdm_karyawan as target', 'sdm_payroll_edit_logs.karyawan_id', '=', 'target.id')
+            ->leftJoin('sdm_kary_jabatan as target_kj', function ($join) {
+                $join->on('target.id', '=', 'target_kj.karyawan_id')
+                    ->whereRaw('target_kj.id = (select id from sdm_kary_jabatan where karyawan_id = target.id order by created_at desc limit 1)');
+            })
+            ->leftJoin('sdm_jabatan as target_j', 'target_kj.jabatan_id', '=', 'target_j.id')
+            ->leftJoin('bagian as target_b', 'target_j.bagian_id', '=', 'target_b.id')
+            ->where('sdm_payroll_edit_logs.periode', $this->periode);
+
+        if (!empty($this->periodLogSearch)) {
+            $search = '%' . $this->periodLogSearch . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('editor.nama', 'like', $search)
+                  ->orWhere('target.nama', 'like', $search)
+                  ->orWhere('target.nip', 'like', $search)
+                  ->orWhere('target_b.nama', 'like', $search)
+                  ->orWhere('sdm_payroll_edit_logs.perubahan', 'like', $search);
+            });
+        }
+
+        $this->periodLogs = $query->select(
+                'sdm_payroll_edit_logs.*',
+                'editor.nama as editor_name',
+                'target.nama as employee_name',
+                'target.nip as employee_nip',
+                'target_b.nama as employee_bagian'
+            )
+            ->orderBy('sdm_payroll_edit_logs.created_at', 'desc')
+            ->get()
+            ->map(function ($log) {
+                $log->perubahan = json_decode($log->perubahan, true);
+                return (array) $log;
+            })
+            ->toArray();
+    }
+
+    public function closePeriodLogModal()
+    {
+        $this->isPeriodLogModalOpen = false;
+        $this->periodLogs = [];
+        $this->periodLogSearch = '';
     }
 
     public function sendEmail(int $karyawanId): void
@@ -728,7 +1162,7 @@ class Index extends Component
         } else {
             $base = PayrollCalculator::calculate($karyawan);
             $totalPendapatan = $base['gaji_pokok'] + $base['tunjangan_tetap'] + $base['tunjangan_absensi'] + $base['tunjangan_jabatan'];
-            $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0);
+            $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0, $karyawan, $this->periode);
 
             $calc = [
                 'gaji_pokok' => $base['gaji_pokok'],
@@ -748,7 +1182,7 @@ class Index extends Component
             'status' => $karyawan->status->nama(),
             'jabatan' => $calc['jabatan_nama'],
             'bagian' => $calc['bagian_nama'],
-            'periode' => \Carbon\Carbon::parse($this->periode . '-01')->translatedFormat('F Y'),
+            'periode' => Carbon::parse($this->periode . '-01')->translatedFormat('F Y'),
             'gaji_pokok' => $calc['gaji_pokok'],
             'tunjangan' => $calc['tunjangan'],
             'bpjs_kes' => $calc['bpjs_kes'],
@@ -765,15 +1199,69 @@ class Index extends Component
         }
     }
 
-    public function render()
+    public function downloadTemplate()
+    {
+        $this->authorizeFromRoute();
+        return Excel::download(
+            new PayrollTemplateExport($this->periode),
+            'template_penggajian_' . $this->periode . '.xlsx'
+        );
+    }
+
+    public function openImportModal(): void
+    {
+        $this->excelFile = null;
+        $this->isImportModalOpen = true;
+    }
+
+    public function closeImportModal(): void
+    {
+        $this->isImportModalOpen = false;
+        $this->excelFile = null;
+    }
+
+    public function importExcel(): void
     {
         $this->authorizeFromRoute();
 
+        if ($this->isLocked) {
+            $this->toast()->error('Gagal !', 'Periode ini telah disetujui dan terkunci. Data tidak dapat diubah.')->send();
+            return;
+        }
+
+        $this->validate([
+            'excelFile' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ], [
+            'excelFile.required' => 'Pilih file Excel yang ingin diunggah.',
+            'excelFile.mimes' => 'Format file harus berupa Excel (.xlsx, .xls) atau CSV.',
+            'excelFile.max' => 'Ukuran file maksimal 10MB.',
+        ]);
+
+        try {
+            $importer = new PayrollImport($this->periode);
+            Excel::import($importer, $this->excelFile->getRealPath());
+
+            $count = $importer->getImportedCount();
+            $this->closeImportModal();
+            $this->toast()->success('Berhasil !', "Berhasil mengimpor data penggajian untuk {$count} karyawan.")->send();
+        } catch (\Throwable $e) {
+            $this->toast()->error('Gagal Impor !', 'Terjadi kesalahan: ' . $e->getMessage())->send();
+        }
+    }
+
+    public function exportToExcel()
+    {
+        $this->authorizeFromRoute();
+
+        // Get the filtered list of employees (without pagination)
         $query = Karyawan::query()
             ->with(['jabatan.bagian']);
 
         if (!empty($this->search)) {
-            $query->where('nama', 'like', '%' . $this->search . '%');
+            $query->where(function ($q) {
+                $q->where('nama', 'like', '%' . $this->search . '%')
+                  ->orWhere('nip', 'like', '%' . $this->search . '%');
+            });
         }
 
         if (!empty($this->bagianFilter)) {
@@ -782,32 +1270,337 @@ class Index extends Component
             });
         }
 
-        $karyawans = $query->paginate(10);
+        if (!empty($this->statusFilter)) {
+            $query->where('status', $this->statusFilter);
+        }
+
+        if (!empty($this->payrollStatusFilter)) {
+            if ($this->payrollStatusFilter === 'generated') {
+                $query->whereExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('sdm_payroll_slips')
+                        ->whereColumn('sdm_payroll_slips.karyawan_id', 'sdm_karyawan.id')
+                        ->where('sdm_payroll_slips.periode', $this->periode);
+                });
+            } elseif ($this->payrollStatusFilter === 'pending') {
+                $query->whereNotExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('sdm_payroll_slips')
+                        ->whereColumn('sdm_payroll_slips.karyawan_id', 'sdm_karyawan.id')
+                        ->where('sdm_payroll_slips.periode', $this->periode);
+                });
+            }
+        }
+
+        $karyawans = $query->get();
+        $isDecember = str_ends_with($this->periode, '-12');
+        $year = (int) substr($this->periode, 0, 4);
+
+        $filename = "rekap_gaji_" . $this->periode . "_" . now()->format('Ymd_His') . ".xls";
+        
+        $headers = [
+            "Content-Type"        => "application/vnd.ms-excel; charset=utf-8",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use ($karyawans, $isDecember, $year) {
+            $output = fopen('php://output', 'w');
+            
+            // Write standard Excel HTML headers
+            fwrite($output, '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">');
+            fwrite($output, '<head><meta http-equiv="Content-type" content="text/html;charset=utf-8" />');
+            fwrite($output, '<style>
+                table { border-collapse: collapse; }
+                th { background-color: #4F46E5; color: #FFFFFF; font-weight: bold; text-align: center; border: 1px solid #D1D5DB; padding: 10px 8px; font-size: 11pt; font-family: Calibri, sans-serif; }
+                .th-ytd { background-color: #0369A1; }
+                td { border: 1px solid #D1D5DB; padding: 8px 6px; font-size: 10pt; font-family: Calibri, sans-serif; }
+                .text-cell { mso-number-format: "\@"; text-align: left; }
+                .money-cell { text-align: right; }
+                .bold-money-cell { font-weight: bold; text-align: right; }
+                .center-cell { text-align: center; }
+            </style></head><body>');
+            
+            // Add visual title
+            $titlePeriode = Carbon::parse($this->periode . '-01')->translatedFormat('F Y');
+            fwrite($output, '<h3 style="font-family: Calibri, sans-serif; margin-bottom: 15px;">REKAP PENGGAJIAN KARYAWAN - PERIODE ' . strtoupper($titlePeriode) . '</h3>');
+            
+            fwrite($output, '<table><thead><tr>');
+            
+            $columns = [
+                'No', 'NIP', 'Nama Karyawan', 'Bagian', 'Jabatan', 'Status Kerja', 'Status Input',
+                'Gaji Pokok', 'Tunjangan Tetap', 'Tunjangan Absensi', 'Tunjangan Jabatan', 'Tunjangan Shift', 
+                'Tunjangan Radiologi', 'Tunjangan Lain', 'Uang Lembur', 'Tunjangan THR', 'Total Pendapatan (Bruto)',
+                'Potongan Absensi', 'Potongan Cash Bon', 'Potongan Obat', 'Potongan Lain', 'Potongan Bank',
+                'BPJS Kesehatan', 'BPJS Ketenagakerjaan', 'PPh 21', 'Total Potongan', 'Gaji Bersih'
+            ];
+
+            foreach ($columns as $col) {
+                fwrite($output, '<th>' . $col . '</th>');
+            }
+
+            if ($isDecember) {
+                fwrite($output, '<th class="th-ytd">Bruto YTD (Setahun)</th>');
+                fwrite($output, '<th class="th-ytd">PPh21 YTD (Setahun)</th>');
+            }
+
+            fwrite($output, '</tr></thead><tbody>');
+
+            $no = 1;
+            foreach ($karyawans as $karyawan) {
+                // Fetch slip details
+                $slip = DB::table('sdm_payroll_slips')
+                    ->where('karyawan_id', $karyawan->id)
+                    ->where('periode', $this->periode)
+                    ->first();
+
+                $brutoYtd = 0.0;
+                $pph21Ytd = 0.0;
+
+                if ($isDecember) {
+                    $priorSlips = DB::table('sdm_payroll_slips')
+                        ->where('karyawan_id', $karyawan->id)
+                        ->where('periode', 'like', "$year-%")
+                        ->where('periode', '!=', $this->periode)
+                        ->get();
+
+                    foreach ($priorSlips as $ps) {
+                        $brutoYtd += (double) $ps->gaji_pokok + (double) $ps->tunjangan_tetap + (double) $ps->tunjangan_absensi + (double) $ps->tunjangan_jabatan + (double) $ps->tunjangan_shift + (double) $ps->tunjangan_radiologi + (double) $ps->tunjangan_lain + (double) $ps->uang_lembur + (double) $ps->tunjangan_hari_raya;
+                        $pph21Ytd += (double) $ps->potongan_pph21;
+                    }
+                }
+
+                if ($slip) {
+                    $statusInput = 'Selesai';
+                    
+                    $gajiPokok = (double) $slip->gaji_pokok;
+                    $tunjanganTetap = (double) $slip->tunjangan_tetap;
+                    $tunjanganAbsensi = (double) $slip->tunjangan_absensi;
+                    $tunjanganJabatan = (double) $slip->tunjangan_jabatan;
+                    $tunjanganShift = (double) $slip->tunjangan_shift;
+                    $tunjanganRadiologi = (double) $slip->tunjangan_radiologi;
+                    $tunjanganLain = (double) $slip->tunjangan_lain;
+                    $uangLembur = (double) $slip->uang_lembur;
+                    $thr = (double) $slip->tunjangan_hari_raya;
+                    
+                    $totalBruto = $gajiPokok + $tunjanganTetap + $tunjanganAbsensi + $tunjanganJabatan + $tunjanganShift + $tunjanganRadiologi + $tunjanganLain + $uangLembur + $thr;
+                    
+                    $potAbsensi = (double) $slip->potongan_absensi;
+                    $potCashBon = (double) $slip->potongan_cash_bon;
+                    $potObat = (double) $slip->potongan_obat;
+                    $potLain = (double) $slip->potongan_lain;
+                    $potBank = (double) $slip->potongan_bank;
+                    $bpjsKes = (double) $slip->potongan_bpjs_kes;
+                    $bpjsTk = (double) $slip->potongan_bpjs_tk;
+                    $pph21 = (double) $slip->potongan_pph21;
+                    
+                    $totalPotongan = $potAbsensi + $potCashBon + $potObat + $potLain + $potBank + $bpjsKes + $bpjsTk + $pph21;
+                    $gajiBersih = (double) $slip->gaji_bersih;
+
+                    if ($isDecember) {
+                        $brutoYtd += $totalBruto;
+                        $pph21Ytd += $pph21;
+                    }
+                } else {
+                    $statusInput = 'Belum Input';
+                    $base = PayrollCalculator::calculate($karyawan);
+                    $totalPendapatan = (double) ($base['gaji_pokok'] + $base['tunjangan_tetap'] + $base['tunjangan_absensi'] + $base['tunjangan_jabatan']);
+                    $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0, $karyawan, $this->periode);
+                    
+                    $gajiPokok = (double) $base['gaji_pokok'];
+                    $tunjanganTetap = (double) $base['tunjangan_tetap'];
+                    $tunjanganAbsensi = (double) $base['tunjangan_absensi'];
+                    $tunjanganJabatan = (double) $base['tunjangan_jabatan'];
+                    $tunjanganShift = 0.0;
+                    $tunjanganRadiologi = 0.0;
+                    $tunjanganLain = 0.0;
+                    $uangLembur = 0.0;
+                    $thr = 0.0;
+                    
+                    $totalBruto = $totalPendapatan;
+                    
+                    $potAbsensi = 0.0;
+                    $potCashBon = 0.0;
+                    $potObat = 0.0;
+                    $potLain = 0.0;
+                    $potBank = 0.0;
+                    $bpjsKes = (double) $deductions['potongan_bpjs_kes'];
+                    $bpjsTk = (double) $deductions['potongan_bpjs_tk'];
+                    $pph21 = (double) $deductions['potongan_pph21'];
+                    
+                    $totalPotongan = $bpjsKes + $bpjsTk + $pph21;
+                    $gajiBersih = $totalBruto - $totalPotongan;
+
+                    if ($isDecember) {
+                        $brutoYtd += $totalBruto;
+                        $pph21Ytd += $pph21;
+                    }
+                }
+
+                $bagian = $karyawan->jabatan->first() && $karyawan->jabatan->first()->bagian ? $karyawan->jabatan->first()->bagian->nama : 'Umum';
+                $jabatan = $karyawan->jabatan->first() ? $karyawan->jabatan->first()->nama : 'Staff';
+
+                fwrite($output, '<tr>');
+                fwrite($output, '<td class="center-cell">' . $no++ . '</td>');
+                fwrite($output, '<td class="text-cell">' . $karyawan->nip . '</td>');
+                fwrite($output, '<td>' . htmlspecialchars($karyawan->full_nama) . '</td>');
+                fwrite($output, '<td>' . htmlspecialchars($bagian) . '</td>');
+                fwrite($output, '<td>' . htmlspecialchars($jabatan) . '</td>');
+                fwrite($output, '<td class="center-cell">' . htmlspecialchars($karyawan->status->nama()) . '</td>');
+                fwrite($output, '<td class="center-cell">' . htmlspecialchars($statusInput) . '</td>');
+                
+                // Money cells
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($gajiPokok, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($tunjanganTetap, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($tunjanganAbsensi, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($tunjanganJabatan, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($tunjanganShift, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($tunjanganRadiologi, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($tunjanganLain, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($uangLembur, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($thr, 0, ',', '.') . '</td>');
+                
+                // Total bruto
+                fwrite($output, '<td class="bold-money-cell">Rp ' . number_format($totalBruto, 0, ',', '.') . '</td>');
+                
+                // Potongans
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($potAbsensi, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($potCashBon, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($potObat, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($potLain, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($potBank, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($bpjsKes, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($bpjsTk, 0, ',', '.') . '</td>');
+                fwrite($output, '<td class="money-cell">Rp ' . number_format($pph21, 0, ',', '.') . '</td>');
+                
+                // Total potongan
+                fwrite($output, '<td class="bold-money-cell">Rp ' . number_format($totalPotongan, 0, ',', '.') . '</td>');
+                
+                // Gaji bersih
+                fwrite($output, '<td class="bold-money-cell" style="color: #4F46E5;">Rp ' . number_format($gajiBersih, 0, ',', '.') . '</td>');
+
+                if ($isDecember) {
+                    fwrite($output, '<td class="bold-money-cell">Rp ' . number_format($brutoYtd, 0, ',', '.') . '</td>');
+                    fwrite($output, '<td class="bold-money-cell" style="color: #ea580c;">Rp ' . number_format($pph21Ytd, 0, ',', '.') . '</td>');
+                }
+
+                fwrite($output, '</tr>');
+            }
+
+            fwrite($output, '</tbody></table></body></html>');
+            fclose($output);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function render()
+    {
+        $this->authorizeFromRoute();
+
+        $query = Karyawan::query()
+            ->with(['jabatan.bagian']);
+
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('nama', 'like', '%' . $this->search . '%')
+                  ->orWhere('nip', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if (!empty($this->bagianFilter)) {
+            $query->whereHas('jabatan.bagian', function ($q) {
+                $q->where('id', $this->bagianFilter);
+            });
+        }
+
+        if (!empty($this->statusFilter)) {
+            $query->where('status', $this->statusFilter);
+        }
+
+        if (!empty($this->payrollStatusFilter)) {
+            if ($this->payrollStatusFilter === 'generated') {
+                $query->whereExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('sdm_payroll_slips')
+                        ->whereColumn('sdm_payroll_slips.karyawan_id', 'sdm_karyawan.id')
+                        ->where('sdm_payroll_slips.periode', $this->periode);
+                });
+            } elseif ($this->payrollStatusFilter === 'pending') {
+                $query->whereNotExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('sdm_payroll_slips')
+                        ->whereColumn('sdm_payroll_slips.karyawan_id', 'sdm_karyawan.id')
+                        ->where('sdm_payroll_slips.periode', $this->periode);
+                });
+            }
+        }
+
+        if ($this->perPage === -1) {
+            $karyawans = $query->paginate($query->count() ?: 1);
+        } else {
+            $karyawans = $query->paginate($this->perPage);
+        }
+
+        $isDecember = str_ends_with($this->periode, '-12');
+        $year = (int) substr($this->periode, 0, 4);
 
         // Transform collection to append calculated salary or database record
-        $karyawans->getCollection()->transform(function ($karyawan) {
+        $karyawans->getCollection()->transform(function ($karyawan) use ($isDecember, $year) {
             // Check if slip is already inputted in DB
             $slip = DB::table('sdm_payroll_slips')
                 ->where('karyawan_id', $karyawan->id)
                 ->where('periode', $this->periode)
                 ->first();
 
+            $brutoYtd = 0.0;
+            $pph21Ytd = 0.0;
+
+            if ($isDecember) {
+                $priorSlips = DB::table('sdm_payroll_slips')
+                    ->where('karyawan_id', $karyawan->id)
+                    ->where('periode', 'like', "$year-%")
+                    ->where('periode', '!=', $this->periode)
+                    ->get();
+
+                foreach ($priorSlips as $ps) {
+                    $brutoYtd += (double) $ps->gaji_pokok + (double) $ps->tunjangan_tetap + (double) $ps->tunjangan_absensi + (double) $ps->tunjangan_jabatan + (double) $ps->tunjangan_shift + (double) $ps->tunjangan_radiologi + (double) $ps->tunjangan_lain + (double) $ps->uang_lembur + (double) $ps->tunjangan_hari_raya;
+                    $pph21Ytd += (double) $ps->potongan_pph21;
+                }
+            }
+
             if ($slip) {
                 $karyawan->payroll_status = 'generated';
+                
+                if ($isDecember) {
+                    $currentBruto = (double) $slip->gaji_pokok + (double) $slip->tunjangan_tetap + (double) $slip->tunjangan_absensi + (double) $slip->tunjangan_jabatan + (double) $slip->tunjangan_shift + (double) $slip->tunjangan_radiologi + (double) $slip->tunjangan_lain + (double) $slip->uang_lembur + (double) $slip->tunjangan_hari_raya;
+                    $brutoYtd += $currentBruto;
+                    $pph21Ytd += (double) $slip->potongan_pph21;
+                }
+
                 $karyawan->calculated_salary = [
                     'gaji_pokok' => $slip->gaji_pokok,
                     'tunjangan' => $slip->tunjangan_tetap + $slip->tunjangan_absensi + $slip->tunjangan_jabatan + $slip->tunjangan_shift + $slip->tunjangan_radiologi + $slip->tunjangan_lain + $slip->uang_lembur + $slip->tunjangan_hari_raya,
                     'gaji_bersih' => $slip->gaji_bersih,
                     'bagian_nama' => $karyawan->jabatan->first() && $karyawan->jabatan->first()->bagian ? $karyawan->jabatan->first()->bagian->nama : 'Umum',
                     'jabatan_nama' => $karyawan->jabatan->first() ? $karyawan->jabatan->first()->nama : 'Staff',
+                    'bruto_ytd' => $brutoYtd,
+                    'pph21_ytd' => $pph21Ytd,
                 ];
             } else {
                 $karyawan->payroll_status = 'pending';
                 $base = PayrollCalculator::calculate($karyawan);
                 $totalPendapatan = $base['gaji_pokok'] + $base['tunjangan_tetap'] + $base['tunjangan_absensi'] + $base['tunjangan_jabatan'];
-                $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0);
+                $deductions = PayrollCalculator::calculateDeductions($base['gaji_pokok'], $base['tunjangan_tetap'], $totalPendapatan, 0, $karyawan, $this->periode);
                 $totalPotongan = $deductions['potongan_bpjs_kes'] + $deductions['potongan_bpjs_tk'];
                 $gajiBersih = $totalPendapatan - $totalPotongan - $deductions['potongan_pph21'];
+
+                if ($isDecember) {
+                    $brutoYtd += $totalPendapatan;
+                    $pph21Ytd += $deductions['potongan_pph21'];
+                }
 
                 $karyawan->calculated_salary = [
                     'gaji_pokok' => $base['gaji_pokok'],
@@ -815,6 +1608,8 @@ class Index extends Component
                     'gaji_bersih' => $gajiBersih,
                     'bagian_nama' => $karyawan->jabatan->first() && $karyawan->jabatan->first()->bagian ? $karyawan->jabatan->first()->bagian->nama : 'Umum',
                     'jabatan_nama' => $karyawan->jabatan->first() ? $karyawan->jabatan->first()->nama : 'Staff',
+                    'bruto_ytd' => $brutoYtd,
+                    'pph21_ytd' => $pph21Ytd,
                 ];
             }
             return $karyawan;
@@ -823,10 +1618,16 @@ class Index extends Component
         // Get allowance types for dropdown
         $allowanceTypes = DB::table('sdm_payroll_allowance_types')->orderBy('nama', 'asc')->get();
 
+        $user = auth()->user();
+        $isOnlyPajak = $user->hasRole('Pajak') && !$user->hasRole('Staff-SDM') && !$user->hasRole('Super-Admin');
+
         return view('livewire.gaji.index', [
             'karyawans' => $karyawans,
             'bagians' => Bagian::all(),
+            'statusOptions' => \App\Enums\StatusKaryawan::options(),
             'allowanceTypes' => $allowanceTypes,
+            'isOnlyPajak' => $isOnlyPajak,
+            'periodStatus' => $this->periodStatus,
         ]);
     }
 }

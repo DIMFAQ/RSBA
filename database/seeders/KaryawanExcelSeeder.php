@@ -197,11 +197,12 @@ class KaryawanExcelSeeder extends Seeder
                 $emailKoor = 'koor_vip@rsba.com';
             }
 
-            if ($existing) {
+             if ($existing) {
                 // Update pin_absen dan ruangan_id jika sudah ada
                 $existing->update([
                     'pin_absen' => $pinAbsen,
                     'ruangan_id' => $ruanganId,
+                    'tgl_masuk' => now()->subYears(rand(1, 10))->subMonths(rand(0, 11))->subDays(rand(0, 28))->format('Y-m-d'),
                 ]);
                 $karyawanRecord = $existing;
                 $skippedCount++;
@@ -222,7 +223,7 @@ class KaryawanExcelSeeder extends Seeder
                     'alamat' => 'Jl. Pramuka No. 27',
                     'agama' => 'islam',
                     'status' => 'kontrak',
-                    'tgl_masuk' => '2026-01-01',
+                    'tgl_masuk' => now()->subYears(rand(1, 10))->subMonths(rand(0, 11))->subDays(rand(0, 28))->format('Y-m-d'),
                     'ruangan_id' => $ruanganId,
                     'kategori_kerja' => 'shift', // Asumsikan kerja shift karena jadwalnya variatif
                 ]);
@@ -234,7 +235,7 @@ class KaryawanExcelSeeder extends Seeder
                 $user = \App\Models\User::updateOrCreate(
                     ['email' => $emailKoor],
                     [
-                        'password'    => \Illuminate\Support\Facades\Hash::make('1234'),
+                        'password'    => '1234',
                         'karyawan_id' => $karyawanRecord->id,
                     ]
                 );

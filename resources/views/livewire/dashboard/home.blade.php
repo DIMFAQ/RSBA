@@ -32,9 +32,9 @@
     @if(!empty($rekapAbsen))
         <!-- Personal Attendance Recap Card -->
         <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col 2xl:flex-row items-center justify-between gap-6">
                 <!-- Left: Title and Circle Gauge -->
-                <div class="flex items-center gap-6">
+                <div class="flex flex-col sm:flex-row items-center gap-6">
                     <!-- Gauge Circle -->
                     <div class="relative flex items-center justify-center h-24 w-24 flex-shrink-0">
                         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -46,22 +46,47 @@
                             <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Hadir</p>
                         </div>
                     </div>
-                    <div>
-                        <div class="flex flex-wrap items-center gap-3">
+                    <div class="text-center sm:text-left">
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                             <h2 class="text-lg font-bold text-slate-800">Rekap Absensi Saya</h2>
                             
                             <!-- Month & Year Selectors -->
-                            <div class="flex items-center gap-1.5">
-                                <select wire:model.live="selectedBulan" class="text-xs rounded-lg border-gray-200 bg-slate-50 py-0.5 pl-2 pr-8 text-slate-700 font-medium focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
-                                    @for($m = 1; $m <= 12; $m++)
-                                        <option value="{{ $m }}">{{ \Carbon\Carbon::create(2026, $m, 1)->translatedFormat('F') }}</option>
-                                    @endfor
-                                </select>
-                                <select wire:model.live="selectedTahun" class="text-xs rounded-lg border-gray-200 bg-slate-50 py-0.5 pl-2 pr-8 text-slate-700 font-medium focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer">
-                                    @for($y = date('Y') + 1; $y >= 2008; $y--)
-                                        <option value="{{ $y }}">{{ $y }}</option>
-                                    @endfor
-                                </select>
+                            <div class="flex items-center gap-1.5" x-data="{ openBulan: false, openTahun: false }">
+                                <!-- Month Selector Dropdown -->
+                                <div class="relative">
+                                    <button type="button" @click="openBulan = !openBulan" @click.away="openBulan = false"
+                                        class="flex items-center gap-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 font-semibold shadow-2xs hover:bg-slate-100 transition-colors duration-200">
+                                        <span>{{ \Carbon\Carbon::create(2026, $selectedBulan, 1)->translatedFormat('F') }}</span>
+                                        <x-tabler-chevron-down class="h-3.5 w-3.5 text-slate-400" />
+                                    </button>
+                                    <div x-show="openBulan" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute left-0 top-full z-50 mt-1 max-h-48 w-32 overflow-y-auto rounded-lg border border-slate-100 bg-white py-1.5 shadow-lg" style="display: none;">
+                                        @for($m = 1; $m <= 12; $m++)
+                                            <button type="button" wire:click="$set('selectedBulan', {{ $m }})" @click="openBulan = false"
+                                                class="w-full px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors {{ $selectedBulan == $m ? 'bg-indigo-50 text-indigo-600 font-bold' : '' }}">
+                                                {{ \Carbon\Carbon::create(2026, $m, 1)->translatedFormat('F') }}
+                                            </button>
+                                        @endfor
+                                    </div>
+                                </div>
+
+                                <!-- Year Selector Dropdown -->
+                                <div class="relative">
+                                    <button type="button" @click="openTahun = !openTahun" @click.away="openTahun = false"
+                                        class="flex items-center gap-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 font-semibold shadow-2xs hover:bg-slate-100 transition-colors duration-200">
+                                        <span>{{ $selectedTahun }}</span>
+                                        <x-tabler-chevron-down class="h-3.5 w-3.5 text-slate-400" />
+                                    </button>
+                                    <div x-show="openTahun" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                        class="absolute left-0 top-full z-50 mt-1 max-h-48 w-24 overflow-y-auto rounded-lg border border-slate-100 bg-white py-1.5 shadow-lg" style="display: none;">
+                                        @for($y = date('Y') + 1; $y >= 2008; $y--)
+                                            <button type="button" wire:click="$set('selectedTahun', {{ $y }})" @click="openTahun = false"
+                                                class="w-full px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors {{ $selectedTahun == $y ? 'bg-indigo-50 text-indigo-600 font-bold' : '' }}">
+                                                {{ $y }}
+                                            </button>
+                                        @endfor
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <p class="text-xs text-slate-500 mt-1">Periode: <span class="font-semibold text-slate-700">{{ $rekapAbsen['bulan_nama'] }}</span></p>
@@ -70,7 +95,7 @@
                 </div>
                 
                 <!-- Right: Stats Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 w-full md:w-auto flex-grow max-w-5xl">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 w-full 2xl:w-auto flex-grow max-w-5xl">
                     <!-- Hadir (Tepat Waktu) -->
                     <div class="rounded-xl bg-emerald-50/50 border border-emerald-100/50 p-4 text-center">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Tepat Waktu</span>
@@ -90,19 +115,6 @@
                         <span class="text-[10px] font-bold uppercase tracking-wider text-orange-700">Pulang Cepat</span>
                         <h4 class="text-2xl font-bold text-orange-800 mt-1">{{ $rekapAbsen['pulang_cepat'] }}</h4>
                         <p class="text-[10px] text-orange-600 font-semibold">{{ $rekapAbsen['menit_pulang_cepat'] }} Menit</p>
-                    </div>
-
-                    <!-- Lembur -->
-                    <div class="rounded-xl bg-indigo-50/50 border border-indigo-100/50 p-4 text-center">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700">Lembur</span>
-                        <h4 class="text-2xl font-bold text-indigo-800 mt-1">{{ $rekapAbsen['menit_lembur'] }}</h4>
-                        <p class="text-[10px] text-indigo-600 font-semibold">
-                            @if($rekapAbsen['menit_lembur'] >= 60)
-                                {{ floor($rekapAbsen['menit_lembur'] / 60) }}j {{ $rekapAbsen['menit_lembur'] % 60 }}m
-                            @else
-                                Menit
-                            @endif
-                        </p>
                     </div>
 
                     <!-- Cuti / Izin -->
@@ -243,108 +255,123 @@
     </div>
 
     <!-- Main Dynamic Feed / Lists -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Left Column: Cuti or Purchases -->
-        @if(!empty($recentCuti))
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <h2 class="text-lg font-bold text-slate-800">Pengajuan Cuti Terbaru</h2>
-                    <a href="{{ route('kepegawaian.surat.cuti') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
-                </div>
-                <div class="mt-4 divide-y divide-gray-100">
-                    @foreach($recentCuti as $cuti)
-                        <div class="flex items-center justify-between py-3.5">
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-700">{{ $cuti['karyawan']['nama'] ?? 'Karyawan' }}</h4>
-                                <p class="text-xs text-slate-400">Periode: {{ \Carbon\Carbon::parse($cuti['tgl_mulai'])->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($cuti['tgl_akhir'])->translatedFormat('d M Y') }}</p>
-                            </div>
-                            <div>
-                                @php
-                                    $statusName = $cuti['status'] instanceof \App\Enums\StatusApproval ? $cuti['status']->nama() : $cuti['status'];
-                                    $statusColor = $cuti['status'] instanceof \App\Enums\StatusApproval ? $cuti['status']->color() : 'gray';
-                                @endphp
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-{{ $statusColor }}-50 text-{{ $statusColor }}-700 border border-{{ $statusColor }}-100">
-                                    {{ $statusName }}
-                                </span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+    @php
+        $activeCardsList = [];
+        if (!empty($recentCuti)) $activeCardsList[] = 'cuti';
+        if (!empty($recentPurchases)) $activeCardsList[] = 'purchases';
+        if (!empty($recentMaintenance)) $activeCardsList[] = 'maintenance';
+        if (!empty($recentSp3)) $activeCardsList[] = 'sp3';
+        
+        $totalActive = count($activeCardsList);
+    @endphp
 
-        @if(!empty($recentPurchases))
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <h2 class="text-lg font-bold text-slate-800">Transaksi Pembelian Terbaru</h2>
-                    <a href="{{ route('umum.pembelian.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
-                </div>
-                <div class="mt-4 divide-y divide-gray-100">
-                    @foreach($recentPurchases as $purchase)
-                        <div class="flex items-center justify-between py-3.5">
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-700">{{ $purchase['no_po'] ?? 'Pembelian PO' }}</h4>
-                                <p class="text-xs text-slate-400">Supplier: {{ $purchase['supplier']['nama'] ?? '-' }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-slate-800">{{ formatRupiah($purchase['total'], true, false) }}</p>
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-semibold tracking-wider uppercase {{ $purchase['status_pembayaran'] === 'lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100' }}">
-                                    {{ $purchase['status_pembayaran'] ?? 'tempo' }}
-                                </span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+    @if($totalActive > 0)
+        <div class="grid grid-cols-1 gap-6 {{ $totalActive > 1 ? 'lg:grid-cols-2' : '' }}">
+            @foreach($activeCardsList as $index => $cardType)
+                @php
+                    $isSingleOrLastOdd = ($totalActive === 1) || (($totalActive % 2 !== 0) && ($index === $totalActive - 1));
+                    $colSpanClass = $isSingleOrLastOdd ? 'lg:col-span-2' : '';
+                @endphp
 
-        <!-- Right Column: Maintenance or SP3 -->
-        @if(!empty($recentMaintenance))
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <h2 class="text-lg font-bold text-slate-800">Jadwal Maintenance Asset</h2>
-                    <a href="{{ route('umum.maintenance.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
-                </div>
-                <div class="mt-4 divide-y divide-gray-100">
-                    @foreach($recentMaintenance as $maint)
-                        <div class="flex items-center justify-between py-3.5">
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-700">{{ $maint['asset']['nama'] ?? 'Asset' }}</h4>
-                                <p class="text-xs text-slate-400">Teknisi ditugaskan: {{ count($maint['teknisi'] ?? []) }} Orang</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs font-medium text-slate-500">Tgl Jadwal:</p>
-                                <p class="text-xs font-semibold text-indigo-600">{{ \Carbon\Carbon::parse($maint['tanggal'])->translatedFormat('d M Y') }}</p>
-                            </div>
+                @if($cardType === 'cuti')
+                    <!-- Cuti Card -->
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm {{ $colSpanClass }}">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-800">Pengajuan Cuti Terbaru</h2>
+                            <a href="{{ route('kepegawaian.surat.cuti') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
                         </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        @if(!empty($recentSp3))
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <h2 class="text-lg font-bold text-slate-800">SP3 Terbaru</h2>
-                    <a href="{{ route('kepegawaian.surat.sp3') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
-                </div>
-                <div class="mt-4 divide-y divide-gray-100">
-                    @foreach($recentSp3 as $sp3)
-                        <div class="flex items-center justify-between py-3.5">
-                            <div>
-                                <h4 class="text-sm font-semibold text-slate-700">SP3 No. {{ $sp3['no'] }} ({{ $sp3['tahun'] }})</h4>
-                                <p class="text-xs text-slate-400">Rekanan: {{ $sp3['rekanan'] }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs font-medium text-slate-500">Persetujuan:</p>
-                                <p class="text-xs font-semibold text-emerald-600">{{ $sp3['penyetuju']['nama'] ?? 'Disetujui' }}</p>
-                            </div>
+                        <div class="mt-4 divide-y divide-gray-100">
+                            @foreach($recentCuti as $cuti)
+                                <div class="flex items-center justify-between py-3.5">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-slate-700">{{ $cuti['karyawan']['nama'] ?? 'Karyawan' }}</h4>
+                                        <p class="text-xs text-slate-400">Periode: {{ \Carbon\Carbon::parse($cuti['tgl_mulai'])->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($cuti['tgl_akhir'])->translatedFormat('d M Y') }}</p>
+                                    </div>
+                                    <div>
+                                        @php
+                                            $statusName = $cuti['status'] instanceof \App\Enums\StatusApproval ? $cuti['status']->nama() : $cuti['status'];
+                                            $statusColor = $cuti['status'] instanceof \App\Enums\StatusApproval ? $cuti['status']->color() : 'gray';
+                                        @endphp
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-{{ $statusColor }}-50 text-{{ $statusColor }}-700 border border-{{ $statusColor }}-100">
+                                            {{ $statusName }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-    </div>
+                    </div>
+                @elseif($cardType === 'purchases')
+                    <!-- Purchases Card -->
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm {{ $colSpanClass }}">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-800">Transaksi Pembelian Terbaru</h2>
+                            <a href="{{ route('umum.pembelian.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
+                        </div>
+                        <div class="mt-4 divide-y divide-gray-100">
+                            @foreach($recentPurchases as $purchase)
+                                <div class="flex items-center justify-between py-3.5">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-slate-700">{{ $purchase['no_po'] ?? 'Pembelian PO' }}</h4>
+                                        <p class="text-xs text-slate-400">Supplier: {{ $purchase['supplier']['nama'] ?? '-' }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-bold text-slate-800">{{ formatRupiah($purchase['total'], true, false) }}</p>
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase {{ $purchase['status_pembayaran'] === 'lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100' }}">
+                                            {{ $purchase['status_pembayaran'] ?? 'tempo' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @elseif($cardType === 'maintenance')
+                    <!-- Maintenance Card -->
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm {{ $colSpanClass }}">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-800">Jadwal Maintenance Asset</h2>
+                            <a href="{{ route('umum.maintenance.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
+                        </div>
+                        <div class="mt-4 divide-y divide-gray-100">
+                            @foreach($recentMaintenance as $maint)
+                                <div class="flex items-center justify-between py-3.5">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-slate-700">{{ $maint['asset']['nama'] ?? 'Asset' }}</h4>
+                                        <p class="text-xs text-slate-400">Teknisi ditugaskan: {{ count($maint['teknisi'] ?? []) }} Orang</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs font-medium text-slate-500">Tgl Jadwal:</p>
+                                        <p class="text-xs font-semibold text-indigo-600">{{ \Carbon\Carbon::parse($maint['tanggal'])->translatedFormat('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @elseif($cardType === 'sp3')
+                    <!-- SP3 Card -->
+                    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm {{ $colSpanClass }}">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h2 class="text-lg font-bold text-slate-800">SP3 Terbaru</h2>
+                            <a href="{{ route('kepegawaian.surat.sp3') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Lihat Semua &rarr;</a>
+                        </div>
+                        <div class="mt-4 divide-y divide-gray-100">
+                            @foreach($recentSp3 as $sp3)
+                                <div class="flex items-center justify-between py-3.5">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-slate-700">SP3 No. {{ $sp3['no'] }} ({{ $sp3['tahun'] }})</h4>
+                                        <p class="text-xs text-slate-400">Rekanan: {{ $sp3['rekanan'] }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs font-medium text-slate-500">Persetujuan:</p>
+                                        <p class="text-xs font-semibold text-emerald-600">{{ $sp3['penyetuju']['nama'] ?? 'Disetujui' }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    @endif
 
     <!-- Quick Navigation / Module Info -->
     <div class="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">

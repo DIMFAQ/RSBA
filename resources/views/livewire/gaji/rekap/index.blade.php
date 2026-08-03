@@ -14,18 +14,20 @@
                 <x-tabler-arrow-left class="h-4 w-4 mr-1.5" />
                 Kembali
             </x-ts:button>
+            @if(!$isOnlyPajak)
             <x-ts:button type="button" outline color="indigo" class="text-xs font-bold bg-white border border-indigo-200 text-indigo-600 shadow-sm" x-on:click="$tsui.open.modal('modal-payroll-parameters')">
                 <x-tabler-settings class="h-4 w-4 mr-1.5" />
                 Parameter Payroll
             </x-ts:button>
+            @endif
             @can('view-kepegawaian-gaji-detail')
                 <x-ts:button href="{{ route('kepegawaian.gaji.detail', ['periode' => $periode]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm">
                     <x-tabler-calculator class="h-4 w-4 mr-1.5" />
                     Kelola Gaji Karyawan
                 </x-ts:button>
             @endcan
-            <div class="w-48 bg-white rounded-lg shadow-2xs">
-                <x-ts:input wire:model.live="periode" type="month" class="w-full text-sm" />
+            <div class="w-48">
+                <x-month-picker wire:model.live="periode" />
             </div>
         </div>
     </div>
@@ -69,13 +71,24 @@
             <div class="absolute right-0 top-0 -mr-6 -mt-6 h-24 w-24 rounded-full bg-rose-50/30 blur-xl"></div>
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Potongan</span>
-                <div class="rounded-lg bg-rose-50 p-2 text-rose-600">
-                    <x-tabler-receipt-off class="h-5 w-5" />
+                <div class="flex items-center gap-1.5">
+                    <button type="button" x-on:click="$tsui.open.modal('modal-potongan-breakdown')" class="text-rose-600 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-md text-[11px] font-bold border border-rose-100 transition-colors flex items-center gap-1">
+                        <x-tabler-list-details class="h-3.5 w-3.5" />
+                        Rincian
+                    </button>
+                    <div class="rounded-lg bg-rose-50 p-2 text-rose-600">
+                        <x-tabler-receipt-off class="h-5 w-5" />
+                    </div>
                 </div>
             </div>
             <div class="mt-[5px]">
                 <h3 class="text-2xl font-black text-slate-800">Rp {{ number_format($totalPotongan, 0, ',', '.') }}</h3>
-                <p class="text-[12px] text-slate-400 mt-2.5 font-medium">Dihitung dari {{ $jumlahKaryawan }} slip gaji terbit bulan ini.</p>
+                <div class="mt-2.5 flex items-center justify-between text-[12px] text-slate-400 font-medium">
+                    <span>Dihitung dari {{ $jumlahKaryawan }} slip gaji bulan ini.</span>
+                    <button type="button" x-on:click="$tsui.open.modal('modal-potongan-breakdown')" class="text-rose-600 font-bold hover:underline">
+                        Lihat 8 Kategori &rarr;
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -121,7 +134,7 @@
                         @endphp
                         <div class="flex flex-col items-center flex-1 h-full justify-end group">
                             <!-- Tooltip / Label value -->
-                            <div class="mb-2 text-2xs font-extrabold text-slate-800 bg-slate-950 text-white px-2 py-1 rounded-md shadow-lg hidden group-hover:block transition-all duration-200">
+                            <div class="mb-2 text-[10px] font-extrabold text-slate-800 bg-slate-950 text-white px-2 py-1 rounded-md shadow-lg hidden group-hover:block transition-all duration-200">
                                 Rp {{ number_format($item['total_gaji_bersih'], 0, ',', '.') }}
                             </div>
                             
@@ -134,7 +147,7 @@
                             </div>
 
                             <!-- Label -->
-                            <span class="mt-2.5 text-2xs font-semibold {{ $isActive ? 'text-indigo-600 font-bold' : 'text-slate-400' }}">
+                            <span class="mt-2.5 text-[10px] font-semibold {{ $isActive ? 'text-indigo-600 font-bold' : 'text-slate-400' }}">
                                 {{ \Carbon\Carbon::parse($item['periode'] . '-01')->translatedFormat('M y') }}
                             </span>
                         </div>
@@ -185,10 +198,20 @@
                                         Rp {{ number_format($item['total_gaji_bersih'], 0, ',', '.') }}
                                     </td>
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
-                                        @if($item['is_approved'])
+                                        @if($item['status'] === 'approved')
                                             <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-100">
                                                 <x-tabler-lock class="h-3 w-3" />
                                                 Disetujui
+                                            </span>
+                                        @elseif($item['status'] === 'review_pajak')
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 border border-amber-100">
+                                                <x-tabler-eye-check class="h-3 w-3" />
+                                                Review Pajak
+                                            </span>
+                                        @elseif($item['status'] === 'review_sdm')
+                                            <span class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-100">
+                                                <x-tabler-clipboard-check class="h-3 w-3" />
+                                                Review SDM
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">
@@ -196,49 +219,62 @@
                                                 Draf
                                             </span>
                                         @endif
-                                    </td>
-                                    <td class="px-4 py-4 text-center" @click.stop>
-                                        <div class="flex items-center justify-center gap-2">
+                                    <td class="px-4 py-4 text-center whitespace-nowrap" @click.stop>
+                                        <div class="flex items-center justify-center gap-2 whitespace-nowrap">
                                             @can('view-kepegawaian-gaji-detail')
-                                                <a href="{{ route('kepegawaian.gaji.detail', ['periode' => $item['periode']]) }}" class="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-800 transition-all">
+                                                <a href="{{ route('kepegawaian.gaji.detail', ['periode' => $item['periode']]) }}" class="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-800 transition-all whitespace-nowrap">
                                                     <x-tabler-calculator class="h-3.5 w-3.5" />
-                                                    {{ $item['is_approved'] ? 'Lihat Detail' : 'Kelola Gaji' }}
+                                                    {{ $item['status'] === 'approved' ? 'Lihat Detail' : 'Kelola Gaji' }}
                                                 </a>
                                             @else
                                                 <span class="text-xs text-slate-400 font-medium">Buka Detail</span>
                                             @endcan
 
-                                            @can('approve-kepegawaian-gaji')
-                                                @if($item['is_approved'])
+                                            {{-- SDM Actions --}}
+                                            @if($isSDM)
+                                                @if($item['status'] === 'draft' && $item['karyawan_count'] > 0)
+                                                    {{-- SDM: Kirim ke Pajak --}}
+                                                    <button type="button" wire:click="submitToReviewPajak('{{ $item['periode'] }}')" wire:confirm="Kirim data gaji periode ini ke Tim Pajak untuk direview?" class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 transition-all whitespace-nowrap" title="Kirim ke Pajak">
+                                                        <x-tabler-send class="h-4 w-4" />
+                                                    </button>
+                                                @elseif($item['status'] === 'review_pajak')
+                                                    {{-- Waiting for Pajak --}}
+                                                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-amber-500 bg-amber-50/50 border border-amber-100 cursor-default whitespace-nowrap" title="Menunggu review dari Tim Pajak">
+                                                        <x-tabler-clock class="h-4 w-4" />
+                                                    </span>
+                                                @elseif($item['status'] === 'review_sdm')
+                                                    {{-- SDM: Finalisasi & SP3 --}}
+                                                    <button type="button" wire:click="openFinalisasiModal('{{ $item['periode'] }}', {{ $item['karyawan_count'] }}, {{ $item['total_potongan'] }}, {{ $item['total_gaji_bersih'] }})" class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 transition-all whitespace-nowrap" title="Setujui & Kunci">
+                                                        <x-tabler-lock class="h-4 w-4" />
+                                                    </button>
+                                                @elseif($item['status'] === 'approved')
                                                     @if($item['sp3_status'] === 'approved')
-                                                        {{-- SP3 disetujui Direksi: hanya Super Admin yang bisa buka kunci --}}
                                                         @role('Super-Admin')
-                                                            <button type="button" wire:click="unlockPeriode('{{ $item['periode'] }}')" class="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 hover:text-orange-800 transition-all" title="SP3 sudah disetujui Direksi. Hanya Super Admin yang dapat membuka kunci.">
-                                                                <x-tabler-shield-lock class="h-3.5 w-3.5" />
-                                                                Force Unlock
+                                                            <button type="button" wire:click="unlockPeriode('{{ $item['periode'] }}')" class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-orange-600 bg-orange-50 hover:bg-orange-100 hover:text-orange-800 transition-all whitespace-nowrap" title="Force Unlock (SP3 disetujui Direksi)">
+                                                                <x-tabler-shield-lock class="h-4 w-4" />
                                                             </button>
                                                         @else
-                                                            <span class="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold text-slate-400 bg-slate-50 border border-slate-200 cursor-not-allowed" title="SP3 sudah disetujui Direksi. Hanya Super Admin yang dapat membuka kunci.">
-                                                                <x-tabler-lock class="h-3.5 w-3.5" />
-                                                                SP3 Final
+                                                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-400 bg-slate-50 border border-slate-200 cursor-not-allowed whitespace-nowrap" title="SP3 sudah disetujui Direksi">
+                                                                <x-tabler-lock class="h-4 w-4" />
                                                             </span>
                                                         @endrole
                                                     @else
-                                                        {{-- SP3 pending/rejected atau belum ada: SDM bisa buka kunci untuk revisi --}}
-                                                        <button type="button" wire:click="unlockPeriode('{{ $item['periode'] }}')" class="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-800 transition-all" title="{{ $item['sp3_status'] === 'rejected' ? 'SP3 ditolak Direksi. Buka kunci untuk merevisi gaji.' : 'Buka kunci periode ini.' }}">
-                                                            <x-tabler-lock-open class="h-3.5 w-3.5" />
-                                                            {{ $item['sp3_status'] === 'rejected' ? 'Revisi Gaji' : 'Buka Kunci' }}
-                                                        </button>
-                                                    @endif
-                                                @else
-                                                    @if($item['karyawan_count'] > 0)
-                                                        <button type="button" wire:click="openFinalisasiModal('{{ $item['periode'] }}', {{ $item['karyawan_count'] }}, {{ $item['total_potongan'] }}, {{ $item['total_gaji_bersih'] }})" class="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 transition-all">
-                                                            <x-tabler-lock class="h-3.5 w-3.5" />
-                                                            Setujui & Kunci
+                                                        <button type="button" wire:click="unlockPeriode('{{ $item['periode'] }}')" class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-800 transition-all whitespace-nowrap" title="{{ $item['sp3_status'] === 'rejected' ? 'SP3 ditolak Direksi. Buka kunci untuk merevisi.' : 'Buka kunci periode ini.' }}">
+                                                            <x-tabler-lock-open class="h-4 w-4" />
                                                         </button>
                                                     @endif
                                                 @endif
-                                            @endcan
+                                            @endif
+
+                                            {{-- Pajak Actions --}}
+                                            @if($isOnlyPajak && $item['status'] === 'review_pajak')
+                                                <button type="button" wire:click="approveByPajak('{{ $item['periode'] }}')" wire:confirm="Setujui data pajak untuk periode ini dan kembalikan ke SDM?" class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 transition-all whitespace-nowrap" title="Setujui Pajak">
+                                                    <x-tabler-check class="h-4 w-4" />
+                                                </button>
+                                                <button type="button" wire:click="rejectByPajak('{{ $item['periode'] }}')" wire:confirm="Tolak dan kembalikan ke SDM untuk diperbaiki?" class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-800 transition-all whitespace-nowrap" title="Tolak Pajak (Kembalikan ke SDM)">
+                                                    <x-tabler-x class="h-4 w-4" />
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -312,16 +348,12 @@
                             <span class="font-extrabold text-slate-800 text-sm">Rp {{ number_format($config_umk, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center py-3">
-                            <span class="text-slate-500 text-xs font-semibold">Potongan Telat</span>
-                            <span class="font-extrabold text-slate-800 text-sm">Rp {{ number_format($config_potongan_telat, 0, ',', '.') }} / menit</span>
+                            <span class="text-slate-500 text-xs font-semibold">Potongan Telat (Per Kejadian)</span>
+                            <span class="font-extrabold text-slate-800 text-sm">Rp {{ number_format($config_potongan_telat, 0, ',', '.') }} / kejadian</span>
                         </div>
                         <div class="flex justify-between items-center py-3">
                             <span class="text-slate-500 text-xs font-semibold">Toleransi Telat</span>
                             <span class="font-extrabold text-slate-800 text-sm">{{ $config_toleransi_telat }} menit</span>
-                        </div>
-                        <div class="flex justify-between items-center py-3">
-                            <span class="text-slate-500 text-xs font-semibold">Tarif Lembur</span>
-                            <span class="font-extrabold text-slate-800 text-sm">Rp {{ number_format($config_tarif_lembur, 0, ',', '.') }} / menit</span>
                         </div>
                     </div>
 
@@ -363,13 +395,10 @@
         <form wire:submit.prevent="saveParameters" class="space-y-5 p-2">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                    <x-ts:input label="UMK Kantor (Rupiah)" wire:model.defer="config_umk" type="number" prefix="Rp" />
+                    <x-ts:input label="UMK Kantor (Rupiah)" wire:model.defer="config_umk" type="text" prefix="Rp" x-on:input="$event.target.value = $event.target.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')" x-effect="let inp = $el.querySelector('input') || $el; inp.value = (inp.value || '').replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')" />
                 </div>
                 <div>
-                    <x-ts:input label="Potongan Telat (Rupiah/Menit)" wire:model.defer="config_potongan_telat" type="number" prefix="Rp" />
-                </div>
-                <div>
-                    <x-ts:input label="Tarif Lembur (Rupiah/Menit)" wire:model.defer="config_tarif_lembur" type="number" prefix="Rp" />
+                    <x-ts:input label="Potongan Telat (Rupiah/Kejadian)" wire:model.defer="config_potongan_telat" type="text" prefix="Rp" x-on:input="$event.target.value = $event.target.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')" x-effect="let inp = $el.querySelector('input') || $el; inp.value = (inp.value || '').replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')" />
                 </div>
                 <div>
                     <x-ts:input label="Toleransi Telat (Menit)" wire:model.defer="config_toleransi_telat" type="number" suffix="Min" />
@@ -416,7 +445,7 @@
                 
                 <div class="p-3 bg-indigo-50/50 rounded-lg text-[10px] text-slate-500 border border-indigo-100/50 leading-relaxed">
                     <span class="font-bold text-indigo-700 block mb-0.5">Catatan:</span>
-                    Total persentase dari seluruh alokasi yang ditambahkan harus tepat **100%** agar alokasi tunjangan bernilai pas 25% dari UMK.
+                    Total persentase dari seluruh alokasi yang ditambahkan harus tepat <strong>100%</strong> agar alokasi tunjangan bernilai pas 25% dari UMK.
                 </div>
             </div>
 
@@ -441,7 +470,7 @@
         <form wire:submit.prevent="submitFinalisasi" class="space-y-4 p-2">
             <!-- Summary Information -->
             <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 space-y-2 text-xs">
-                <span class="text-2xs text-emerald-700 font-bold uppercase tracking-wider block mb-1">Ringkasan Penggajian Bulanan</span>
+                <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block mb-1">Ringkasan Penggajian Bulanan</span>
                 <div class="flex justify-between">
                     <span class="text-slate-500 font-medium">Periode</span>
                     <span class="text-slate-800 font-bold">
@@ -500,5 +529,67 @@
                 </x-ts:button>
             </div>
         </form>
+    </x-ts:modal>
+
+    <!-- Modal Rincian Total Potongan -->
+    <x-ts:modal id="modal-potongan-breakdown" title="Rincian Total Potongan Payroll" size="lg" class="relative z-50">
+        <div class="space-y-4">
+            <div class="p-4 bg-rose-50/60 border border-rose-100 rounded-2xl flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-rose-600 block">Total Seluruh Potongan</span>
+                    <h2 class="text-2xl font-black text-rose-950 mt-0.5">Rp {{ number_format($totalPotongan, 0, ',', '.') }}</h2>
+                    <span class="text-xs text-rose-700 font-medium">Periode: {{ \Carbon\Carbon::parse($periode . '-01')->translatedFormat('F Y') }} ({{ $jumlahKaryawan }} Karyawan)</span>
+                </div>
+                <div class="p-3 bg-rose-500 text-white rounded-xl shadow-sm">
+                    <x-tabler-receipt-off class="h-7 w-7" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                @php
+                    $items = [
+                        ['label' => 'BPJS Kesehatan', 'key' => 'bpjs_kes', 'icon' => 'tabler-heart-rate-monitor', 'color' => 'bg-emerald-500', 'textColor' => 'text-emerald-700'],
+                        ['label' => 'BPJS Ketenagakerjaan', 'key' => 'bpjs_tk', 'icon' => 'tabler-shield-check', 'color' => 'bg-blue-500', 'textColor' => 'text-blue-700'],
+                        ['label' => 'PPh 21 (Pajak)', 'key' => 'pph21', 'icon' => 'tabler-receipt-tax', 'color' => 'bg-amber-500', 'textColor' => 'text-amber-700'],
+                        ['label' => 'Potongan Absensi / Telat', 'key' => 'absensi', 'icon' => 'tabler-clock-off', 'color' => 'bg-rose-500', 'textColor' => 'text-rose-700'],
+                        ['label' => 'Potongan Cash Bon', 'key' => 'cash_bon', 'icon' => 'tabler-wallet-off', 'color' => 'bg-purple-500', 'textColor' => 'text-purple-700'],
+                        ['label' => 'Potongan Obat / Rawat', 'key' => 'obat', 'icon' => 'tabler-pill', 'color' => 'bg-cyan-500', 'textColor' => 'text-cyan-700'],
+                        ['label' => 'Potongan Bank', 'key' => 'bank', 'icon' => 'tabler-building-bank', 'color' => 'bg-indigo-500', 'textColor' => 'text-indigo-700'],
+                        ['label' => 'Potongan Lain-Lain', 'key' => 'lain', 'icon' => 'tabler-dots', 'color' => 'bg-slate-500', 'textColor' => 'text-slate-700'],
+                    ];
+                @endphp
+
+                @foreach($items as $item)
+                    @php
+                        $val = $potonganBreakdown[$item['key']] ?? 0;
+                        $pct = $totalPotongan > 0 ? ($val / $totalPotongan) * 100 : 0;
+                    @endphp
+                    <div class="p-3.5 bg-white border border-slate-100 rounded-xl shadow-2xs flex flex-col justify-between space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full {{ $item['color'] }}"></span>
+                                {{ $item['label'] }}
+                            </span>
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-sm">
+                                {{ number_format($pct, 1) }}%
+                            </span>
+                        </div>
+                        <div class="flex items-baseline justify-between pt-1">
+                            <span class="text-base font-extrabold text-slate-800">Rp {{ number_format($val, 0, ',', '.') }}</span>
+                        </div>
+                        <!-- Progress bar -->
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="{{ $item['color'] }} h-full rounded-full" style="width: {{ min(100, max(0, $pct)) }}%"></div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <x-slot:footer>
+            <div class="flex justify-end">
+                <x-ts:button size="sm" flat color="slate" x-on:click="$tsui.close.modal('modal-potongan-breakdown')">Tutup</x-ts:button>
+            </div>
+        </x-slot:footer>
     </x-ts:modal>
 </div>

@@ -25,15 +25,30 @@ class Index extends Component
         }
     }
 
+    protected $listeners = [
+        'new-jabatan-created' => 'refreshJabatans'
+    ];
+
+    public function refreshJabatans()
+    {
+        $jabs = DB::table('sdm_jabatan')->get();
+        foreach ($jabs as $jab) {
+            if (!isset($this->allowances[$jab->id])) {
+                $this->allowances[$jab->id] = (int) $jab->tunjangan_jabatan;
+            }
+        }
+    }
+
     public function save()
     {
         DB::beginTransaction();
         try {
             foreach ($this->allowances as $id => $val) {
+                $cleaned = is_string($val) ? str_replace('.', '', $val) : $val;
                 DB::table('sdm_jabatan')
                     ->where('id', $id)
                     ->update([
-                        'tunjangan_jabatan' => (double) $val,
+                        'tunjangan_jabatan' => (double) $cleaned,
                         'updated_at' => now(),
                     ]);
             }
