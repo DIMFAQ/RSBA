@@ -13,6 +13,26 @@ class Jabatan extends Model
     protected $table = 'sdm_jabatan';
     protected $guarded = [];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Jabatan $jabatan) {
+            if (empty($jabatan->tingkat_id) || $jabatan->tingkat_id == 5) {
+                $namaLower = strtolower($jabatan->nama ?? '');
+                if (str_contains($namaLower, 'direktur utama') || str_contains($namaLower, 'dirut') || str_contains($namaLower, 'dewan pengawas')) {
+                    $jabatan->tingkat_id = 1;
+                } elseif (str_contains($namaLower, 'wadir') || str_contains($namaLower, 'wakil direktur')) {
+                    $jabatan->tingkat_id = 2;
+                } elseif (str_contains($namaLower, 'kabid') || str_contains($namaLower, 'kepala bidang') || str_contains($namaLower, 'kabag') || str_contains($namaLower, 'kepala bagian') || str_contains($namaLower, 'kepala dept') || str_contains($namaLower, 'manajer')) {
+                    $jabatan->tingkat_id = 3;
+                } elseif (str_contains($namaLower, 'koordinator') || str_contains($namaLower, 'karu') || str_contains($namaLower, 'kepala ruangan') || str_contains($namaLower, 'koor')) {
+                    $jabatan->tingkat_id = 4;
+                } else {
+                    $jabatan->tingkat_id = 5;
+                }
+            }
+        });
+    }
+
     function atasan(): BelongsTo
     {
         return $this->belongsTo(Jabatan::class, 'parent_id');

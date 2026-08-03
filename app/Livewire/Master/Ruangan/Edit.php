@@ -18,11 +18,13 @@ class Edit extends Component
     use Interactions;
 
     public $nama;
+    public $bagian_id;
     public $karyawan_id;
     public ?Ruangan $ruangan;
 
     public $rules = [
         'nama' => 'required|string',
+        'bagian_id' => 'required|exists:bagian,id',
         'karyawan_id' => 'nullable',
     ];
 
@@ -38,6 +40,7 @@ class Edit extends Component
     {
         $this->ruangan = Ruangan::with('koordinatorAktif')->findOrFail($id);
         $this->nama = $this->ruangan->nama;
+        $this->bagian_id = $this->ruangan->bagian_id;
         $this->karyawan_id = $this->ruangan->koordinatorAktif?->karyawan_id;
     }
 
@@ -48,6 +51,7 @@ class Edit extends Component
         DB::beginTransaction();
         try {
             $this->ruangan->nama = $this->nama;
+            $this->ruangan->bagian_id = $this->bagian_id;
             $this->ruangan->save();
 
             // Update Koordinator Ruangan
@@ -124,8 +128,18 @@ class Edit extends Component
 
         array_unshift($karyawanOptions, ['value' => '', 'label' => '-- Belum Ada Yang Menjabat --']);
 
+        $bagianOptions = \App\Models\Sdm\Bagian::select('id', 'nama')
+            ->orderBy('nama')
+            ->get()
+            ->map(fn($item) => [
+                'value' => $item->id,
+                'label' => $item->nama,
+            ])
+            ->toArray();
+
         return view('livewire.master.ruangan.edit', [
             'karyawanOptions' => $karyawanOptions,
+            'bagianOptions'   => $bagianOptions,
         ]);
     }
 }

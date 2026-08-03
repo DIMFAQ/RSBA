@@ -59,14 +59,22 @@ class Kelola extends Component
         $canManage = false;
 
         if ($user) {
-            $isApprover = $user->hasRole([
-                'Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Kepala-Bidang',
+            $isGlobalApprover = $user->hasRole([
+                'Super-Admin', 'Staff-SDM', 'Wakil-Direktur',
                 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Wadir-Keuangan', 'Direktur'
-            ]) || $user->can('approve-jadwal-kabid') || $user->can('approve-jadwal-wadir') || $user->can('view-kepegawaian-jadwal-kerja');
+            ]) || $user->can('approve-jadwal-wadir') || $user->can('view-kepegawaian-jadwal-kerja');
 
-            if ($isApprover) {
+            if ($isGlobalApprover) {
                 $canView = true;
                 if ($user->hasRole(['Super-Admin', 'Staff-SDM'])) {
+                    $canManage = true;
+                }
+            } elseif ($user->hasRole('Kepala-Bidang') || $user->can('approve-jadwal-kabid')) {
+                $bagianRuanganIds = $user->getBagianScopedRuanganIds() ?? [];
+                $koorIds = $user->getRuanganKoordinatorIds() ?? [];
+                $scopedIds = array_unique(array_merge($bagianRuanganIds, $koorIds));
+                if (in_array($this->jadwalKerja->ruangan_id, $scopedIds)) {
+                    $canView = true;
                     $canManage = true;
                 }
             }

@@ -16,10 +16,12 @@ class Add extends Component
     use Interactions;
 
     public $nama;
+    public $bagian_id;
     public $karyawan_id;
 
     public $rules = [
         'nama' => 'required|string',
+        'bagian_id' => 'required|exists:bagian,id',
         'karyawan_id' => 'nullable',
     ];
 
@@ -29,7 +31,8 @@ class Add extends Component
 
         try {
             $ruangan = Ruangan::create([
-                'nama' => $this->nama
+                'nama' => $this->nama,
+                'bagian_id' => $this->bagian_id,
             ]);
 
             if ($this->karyawan_id) {
@@ -52,7 +55,7 @@ class Add extends Component
                 ->success('Berhasil', 'Ruangan baru berhasil dibuat.')
                 ->send();
 
-            $this->reset(['nama', 'karyawan_id']);
+            $this->reset(['nama', 'bagian_id', 'karyawan_id']);
             $this->dispatch('new-ruangan-created');
             $this->dispatch('close-modal', id: 'new-ruangan');
         } catch (Throwable $e) {
@@ -73,8 +76,18 @@ class Add extends Component
             ])
             ->toArray();
 
+        $bagianOptions = \App\Models\Sdm\Bagian::select('id', 'nama')
+            ->orderBy('nama')
+            ->get()
+            ->map(fn($item) => [
+                'value' => $item->id,
+                'label' => $item->nama,
+            ])
+            ->toArray();
+
         return view('livewire.master.ruangan.add', [
             'karyawanOptions' => $karyawanOptions,
+            'bagianOptions'   => $bagianOptions,
         ]);
     }
 }

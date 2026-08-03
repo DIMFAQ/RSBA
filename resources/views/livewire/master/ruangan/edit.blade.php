@@ -4,6 +4,15 @@
             <x-ts:input label="Nama Ruangan" wire:model.defer="nama" placeholder="Nama Ruangan" />
 
             <x-ts:select.styled
+                label="Bagian / Departemen (Wajib)"
+                wire:model="bagian_id"
+                :options="$bagianOptions"
+                select="label:label|value:value"
+                searchable
+                placeholder="Pilih Bagian / Departemen..."
+            />
+
+            <x-ts:select.styled
                 label="Koordinator Ruangan"
                 wire:model="karyawan_id"
                 :options="$karyawanOptions"

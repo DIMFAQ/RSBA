@@ -38,10 +38,17 @@ class Index extends Component implements HasForms, HasTable, HasActions
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Ruangan::query()->with(['koordinatorAktif.karyawan', 'koordinatorAktif.user', 'karyawans.jabatan.tingkat', 'karyawanPrimary.jabatan.tingkat']))
+            ->query(Ruangan::query()->with(['bagian', 'koordinatorAktif.karyawan', 'koordinatorAktif.user', 'karyawans.jabatan.tingkat', 'karyawanPrimary.jabatan.tingkat']))
             ->columns([
                 TextColumn::make('nama')
                     ->label('Nama')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('bagian.nama')
+                    ->label('Bagian / Dept')
+                    ->getStateUsing(fn (Ruangan $record) => $record->bagian?->nama ?? 'Belum Dipetakan')
+                    ->badge()
+                    ->color(fn (Ruangan $record) => $record->bagian_id ? 'primary' : 'warning')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('koordinator')

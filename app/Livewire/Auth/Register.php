@@ -46,6 +46,7 @@ class Register extends Component
             Auth::login($user, true);
 
             $user->assignRole('Guest');
+            $user->syncRoleFromJabatan();
 
             $this->toast()
                 ->success('Selamat Bergabung!', Auth::user()->karyawan->nama)

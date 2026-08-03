@@ -82,8 +82,8 @@ class User extends Authenticatable
      */
     public function isKoordinator(): bool
     {
-        // Super-Admin, Staff-SDM, Manajemen Wadir, dan Koordinator selalu lolos
-        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Koordinator'])) {
+        // Super-Admin, Staff-SDM, Manajemen Wadir, dan Koordinator (termasuk Koordinator-Dokter) selalu lolos
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Koordinator', 'Koordinator-Dokter'])) {
             return true;
         }
 
@@ -112,7 +112,7 @@ class User extends Authenticatable
     {
         if (is_string($permission)) {
             if (in_array($permission, ['view-kepegawaian-jadwal-kerja', 'view-kepegawaian-konfigurasi-jadwal'])) {
-                if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Wadir-Medis-Keperawatan', 'Kepala-Bidang', 'Koordinator']) 
+                if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Wadir-Medis-Keperawatan', 'Kepala-Bidang', 'Koordinator', 'Koordinator-Dokter']) 
                     || $this->isDokter() 
                     || $this->isKoordinator() 
                     || $this->isKepalaDept() 
@@ -248,6 +248,29 @@ class User extends Authenticatable
     }
 
     /**
+     * Dapatkan daftar ruangan_id yang dinaungi oleh bagian dari jabatan aktif user (khusus Kabid/Kepala Bagian).
+     * Return null jika Super-Admin/Staff-SDM/Wadir/Direktur (akses semua ruangan).
+     */
+    public function getBagianScopedRuanganIds(): ?array
+    {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Wadir-Keuangan', 'Direktur'])) {
+            return null; // null = akses semua ruangan
+        }
+
+        $karyawan = $this->karyawan;
+        if ($karyawan) {
+            $jabatanAktif = $karyawan->jabatan->first();
+            if ($jabatanAktif && $jabatanAktif->bagian_id) {
+                return \App\Models\Sdm\Ruangan::where('bagian_id', $jabatanAktif->bagian_id)
+                    ->pluck('id')
+                    ->toArray();
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * Dapatkan daftar ruangan_id yang dikoordinasi user ini
      * Return null jika Super-Admin/Staff-SDM/Wadir (artinya akses semua ruangan)
      */
@@ -328,7 +351,7 @@ class User extends Authenticatable
         if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
             return false;
         }
-        return $this->isKoordinator() && $this->isDokter();
+        return $this->hasRole('Koordinator-Dokter') || ($this->isKoordinator() && $this->isDokter());
     }
 
     /**
@@ -336,7 +359,7 @@ class User extends Authenticatable
      */
     public function isKoordinatorKaryawan(): bool
     {
-        if ($this->hasRole(['Super-Admin', 'Staff-SDM'])) {
+        if ($this->hasRole(['Super-Admin', 'Staff-SDM', 'Koordinator-Dokter'])) {
             return false;
         }
         return $this->isKoordinator() && !$this->isDokter();

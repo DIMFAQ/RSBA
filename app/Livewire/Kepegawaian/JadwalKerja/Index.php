@@ -176,13 +176,22 @@ class Index extends Component implements HasForms, HasTable, HasActions
 
         $user = Auth::user();
         if ($user) {
-            $isApprover = $user->hasRole([
-                'Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Kepala-Bidang',
+            $isGlobalApprover = $user->hasRole([
+                'Super-Admin', 'Staff-SDM', 'Wakil-Direktur',
                 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Wadir-Keuangan', 'Direktur'
-            ]) || $user->can('approve-jadwal-kabid') || $user->can('approve-jadwal-wadir');
+            ]) || $user->can('approve-jadwal-wadir');
 
-            if ($isApprover) {
-                // Super-Admin, SDM, Wadir, dan Kabid dapat melihat seluruh daftar jadwal ruangan
+            if ($isGlobalApprover) {
+                // Super-Admin, SDM, Wadir, dan Direktur dapat melihat seluruh daftar jadwal ruangan
+            } elseif ($user->hasRole('Kepala-Bidang') || $user->can('approve-jadwal-kabid')) {
+                $bagianRuanganIds = $user->getBagianScopedRuanganIds() ?? [];
+                $koorIds = $user->getRuanganKoordinatorIds() ?? [];
+                $scopedIds = array_unique(array_merge($bagianRuanganIds, $koorIds));
+                if (empty($scopedIds)) {
+                    $query->whereRaw('0 = 1');
+                } else {
+                    $query->whereIn('ruangan_id', $scopedIds);
+                }
             } elseif ($user->isKoordinatorDokter()) {
                 $ruanganIds = $user->getRuanganKoordinatorIds() ?? [];
                 if (empty($ruanganIds)) {
