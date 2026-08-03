@@ -125,16 +125,15 @@ class EditKedinasan extends Component
     {
         $latestJabatan = $this->form->karyawan->jabatan?->first();
         try {
-            // update tgl_berakhir jabatan terakhir
-            if (!empty($latestJabatan)) {
-                KaryawanJabatan::where('id', $latestJabatan->pivot->id)
-                    ->update(['tgl_berakhir' => $this->form->tgl_jabatan]);
-            }
+            // Tutup SEMUA jabatan aktif (tgl_berakhir IS NULL) agar tidak ada duplikat pejabat aktif
+            KaryawanJabatan::where('karyawan_id', $this->form->karyawan->id)
+                ->whereNull('tgl_berakhir')
+                ->update(['tgl_berakhir' => $this->form->tgl_jabatan]);
 
             $data = [
-                'jabatan_id' => $this->form->jabatan,
+                'jabatan_id'  => $this->form->jabatan,
                 'karyawan_id' => $this->form->karyawan->id,
-                'tgl_mulai' => $this->form->tgl_jabatan
+                'tgl_mulai'   => $this->form->tgl_jabatan
             ];
 
             // insert data new jabatan
@@ -142,6 +141,21 @@ class EditKedinasan extends Component
 
             // Auto-sync role user jika terhubung dengan akun user
             $this->form->karyawan->user?->syncRoleFromJabatan();
+
+            // Cek jika jabatan baru adalah level struktural (tingkat_id <= 3 / Kabag / Wadir / Direktur)
+            // dan karyawan memiliki penugasan koordinator aktif
+            $newJabatan = \App\Models\Sdm\Jabatan::find($this->form->jabatan);
+            if ($newJabatan && $newJabatan->tingkat_id <= 3) {
+                $hasActiveKoor = \App\Models\Sdm\RuanganKoordinator::where('karyawan_id', $this->form->karyawan->id)
+                    ->where('aktif', true)
+                    ->exists();
+
+                if ($hasActiveKoor) {
+                    $this->toast()
+                        ->info('Perhatian Koordinator', 'Karyawan ini masih memiliki penugasan Koordinator Ruangan aktif. Harap periksa menu Penugasan Koordinator bila penugasan lama perlu dinonaktifkan.')
+                        ->send();
+                }
+            }
 
             $this->dispatch('new-jabatan-created'); //dispatch event
 

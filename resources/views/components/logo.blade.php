@@ -1,1 +1,1 @@
-<img {{ $attributes }} src="{{ asset('storage/' . $rs->logo) }}" alt="logo-{{ $rs->singkatan }}" />
+<img {{ $attributes }} src="{{ asset($rs?->logo ? 'storage/' . $rs->logo : 'img/logo.png') }}" alt="logo-{{ $rs?->singkatan ?? 'RSBA' }}" />

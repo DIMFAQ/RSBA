@@ -103,18 +103,35 @@ class JadwalKerja extends Model
 
         $bagianId = $this->ruangan?->bagian_id;
 
-        // Query karyawan yang memegang Jabatan dengan tingkat_id yang cocok
-        $approverQuery = Karyawan::whereHas('jabatan', function ($q) use ($targetTingkatId, $bagianId) {
-            $q->where('tingkat_id', $targetTingkatId);
+        if ($targetTingkatId === 3 && !$bagianId) {
+            return 'Kepala Dept / Bidang (ruangan belum dipetakan ke bagian)';
+        }
+
+        // Query karyawan yang memegang Jabatan AKTIF (tgl_berakhir IS NULL) dengan tingkat_id yang cocok
+        $approver = Karyawan::whereHas('jabatan', function ($q) use ($targetTingkatId, $bagianId) {
+            $q->where('tingkat_id', $targetTingkatId)
+              ->whereNull('sdm_kary_jabatan.tgl_berakhir'); // hanya jabatan aktif saat ini
             if ($bagianId && $targetTingkatId === 3) {
                 $q->where('bagian_id', $bagianId);
             }
-        });
-
-        $approver = $approverQuery->first();
+        })->orderBy('id')->first();
 
         if ($approver) {
             return $approver->full_nama;
+        }
+
+        // Jika belum ada karyawan yang menjabat Kabid di bagian ini
+        if ($targetTingkatId === 3 && $bagianId) {
+            $jabatanKabidBagian = Jabatan::where('bagian_id', $bagianId)
+                ->where('tingkat_id', 3)
+                ->first();
+
+            if ($jabatanKabidBagian) {
+                return $jabatanKabidBagian->nama . ' (Belum ada pejabat)';
+            }
+
+            $namaBagian = Bagian::find($bagianId)?->nama;
+            return 'Kepala Bidang ' . ($namaBagian ?? '') . ' (Belum ada pejabat)';
         }
 
         // Fallback pencarian role
@@ -149,28 +166,37 @@ class JadwalKerja extends Model
 
         $isReguler = $karyawan->kategori_kerja === \App\Enums\KategoriKerja::REGULER;
 
-        $jadwalKerja = self::where('ruangan_id', $ruanganId)
+        $hasTipe = \Illuminate\Support\Facades\Schema::hasColumn('sdm_jadwal_kerja', 'tipe');
+
+        $query = self::where('ruangan_id', $ruanganId)
             ->where('bulan', $bulan)
-            ->where('tahun', $tahun)
-            ->where('tipe', $tipe)
-            ->first();
+            ->where('tahun', $tahun);
+        if ($hasTipe) {
+            $query->where('tipe', $tipe);
+        }
+        $jadwalKerja = $query->first();
 
         if (!$jadwalKerja) {
             try {
-                $jadwalKerja = self::create([
+                $payload = [
                     'ruangan_id'  => $ruanganId,
                     'bulan'       => $bulan,
                     'tahun'       => $tahun,
-                    'tipe'        => $tipe,
                     'status'      => $isReguler ? \App\Enums\StatusJadwalKerja::PUBLISHED : \App\Enums\StatusJadwalKerja::DRAFT,
                     'dibuat_oleh' => 1,
-                ]);
+                ];
+                if ($hasTipe) {
+                    $payload['tipe'] = $tipe;
+                }
+                $jadwalKerja = self::create($payload);
             } catch (\Throwable $e) {
-                $jadwalKerja = self::where('ruangan_id', $ruanganId)
+                $fallbackQuery = self::where('ruangan_id', $ruanganId)
                     ->where('bulan', $bulan)
-                    ->where('tahun', $tahun)
-                    ->where('tipe', $tipe)
-                    ->first();
+                    ->where('tahun', $tahun);
+                if ($hasTipe) {
+                    $fallbackQuery->where('tipe', $tipe);
+                }
+                $jadwalKerja = $fallbackQuery->first();
                 if (!$jadwalKerja) {
                     return;
                 }

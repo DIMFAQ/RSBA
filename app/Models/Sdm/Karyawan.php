@@ -85,13 +85,13 @@ class Karyawan extends Model
     }
 
 
-    // get Jabatan latest / Saat Ini
+    // get Jabatan Aktif Saat Ini (tgl_berakhir IS NULL)
     function jabatan()
     {
         return $this->belongsToMany(Jabatan::class, 'sdm_kary_jabatan', 'karyawan_id', 'jabatan_id')
             ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
-            ->orderByPivot('created_at', 'desc')
-            ->limit(1);
+            ->wherePivotNull('tgl_berakhir')
+            ->orderByPivot('tgl_mulai', 'desc');
     }
 
     // Get History Ruangan

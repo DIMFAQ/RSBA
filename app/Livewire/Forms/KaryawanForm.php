@@ -63,6 +63,7 @@ class KaryawanForm extends Form
     {
         return [
             'status' => 'required',
+            'tgl_masuk' => 'required|date',
             'nama' => 'required|string',
             'nik' => 'required|int|digits_between:16,16',
             'tempat_lahir' => 'required|string',
@@ -120,6 +121,10 @@ class KaryawanForm extends Form
     // simpan data
     public function store()
     {
+        if (empty($this->tgl_masuk)) {
+            $this->tgl_masuk = now()->toDateString();
+        }
+
         $this->nip = $this->createNip($this->status, $this->tgl_masuk);
 
         $data = [
@@ -217,27 +222,34 @@ class KaryawanForm extends Form
     {
         /**
          * eg : 22240001
-         * mean : 2 fixed, 2 based on statusKarywan, 24 tahun , 0001 nomor urut based on statusKaryawan
+         * mean : 2 fixed, 2 based on statusKaryawan, 24 tahun , 0001 nomor urut based on statusKaryawan
          */
 
         $statusKode = StatusKaryawan::from($status)->idNIP();
         $tahun  = Carbon::parse($tanggal)->format('y');
+        $prefix = "2" . $statusKode . $tahun;
 
-        $lastNip = Karyawan::where('status', $status)
-            // ->whereYear('created_at', Carbon::now()->year)
+        // Cari NIP tertinggi dengan prefix yang sama
+        $lastNip = Karyawan::where('nip', 'like', $prefix . '%')
             ->orderBy('nip', 'desc')
             ->first();
 
-        $incrementNumber = 1; // Default if no NIP exists for the status in this year
+        $incrementNumber = 1;
 
         if ($lastNip) {
-            // Extract the last four digits and increment by 1
             $incrementNumber = (int)substr($lastNip->nip, -4) + 1;
         }
 
-        // Format increment number to be four digits
-        $incrementNumber = str_pad($incrementNumber, 4, '0', STR_PAD_LEFT);
+        // Garansi NIP Unik: terus increment sampai menemukan NIP yang belum digunakan di DB
+        do {
+            $formattedIncrement = str_pad($incrementNumber, 4, '0', STR_PAD_LEFT);
+            $nip = $prefix . $formattedIncrement;
+            $exists = Karyawan::where('nip', $nip)->exists();
+            if ($exists) {
+                $incrementNumber++;
+            }
+        } while ($exists);
 
-        return "2" . $statusKode . $tahun . $incrementNumber;
+        return $nip;
     }
 }
