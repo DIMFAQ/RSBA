@@ -27,6 +27,10 @@ Route::prefix('dashboard')
         Route::middleware(['auth'])
             ->get('/display-monitor/admin', App\Livewire\Dashboard\DisplayMonitorAdmin::class)
             ->name('display-monitor.admin');
+
+        Route::middleware(['auth'])
+            ->get('/poli/admin', App\Livewire\Dashboard\PoliAdmin::class)
+            ->name('poli.admin');
     });
 
 
@@ -37,6 +41,9 @@ Route::middleware('auth')
     });
 
 Route::get('surat/verification', App\Livewire\Surat\Verifikasi\Index::class)->name('surat.verification');
+
+// Public Document Verification Portal
+Route::get('/verifikasi-surat/{hash?}', App\Livewire\Public\VerifyDocument::class)->name('surat.verifikasi.publik');
 
 // // Administrator
 // Route::middleware('auth')

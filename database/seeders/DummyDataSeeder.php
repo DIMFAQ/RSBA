@@ -64,48 +64,58 @@ class DummyDataSeeder extends Seeder
             'akre_kegiatan',
         ];
 
-        foreach ($tables as $table) {
-            DB::table($table)->truncate();
+        foreach ($tables as $t) {
+            if (Schema::hasTable($t)) {
+                if (DB::getDriverName() === 'sqlite') {
+                    DB::table($t)->delete();
+                } else {
+                    DB::table($t)->truncate();
+                }
+            }
+        }
+
+        if (Schema::hasTable('surat_cuti_jenis')) {
+            DB::table('surat_cuti_jenis')->insert([
+                ['id' => 1, 'nama' => 'Cuti Tahunan', 'lama' => 12, 'periode' => 'Y', 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 2, 'nama' => 'Cuti Sakit', 'lama' => 0, 'periode' => 'Y', 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 3, 'nama' => 'Cuti Melahirkan', 'lama' => 90, 'periode' => 'Y', 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 4, 'nama' => 'Cuti Alasan Penting', 'lama' => 5, 'periode' => 'Y', 'created_at' => now(), 'updated_at' => now()],
+            ]);
         }
 
         // 3. Re-enable Foreign Key Checks
         Schema::enableForeignKeyConstraints();
 
         // 4. Seed Ruangan
-        $ruangans = [
-            ['nama' => 'UGD', 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Poli Anak', 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Poli Bedah', 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Ruang Rawat Inap Melati', 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Gudang Farmasi Utama', 'is_active' => 1, 'created_at' => now(), 'updated_at' => now()],
-        ];
-        DB::table('ruangan')->insert($ruangans);
-        $ruanganIds = DB::table('ruangan')->pluck('id')->toArray();
+        $this->call(RuanganDummySeeder::class);
+        $ruanganIds = Schema::hasTable('ruangan') ? DB::table('ruangan')->pluck('id')->toArray() : [];
 
         // 5. Seed Bagian
-        $bagians = [
-            ['nama' => 'Medis', 'is_active' => 1, 'group' => 'medis', 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Keperawatan', 'is_active' => 1, 'group' => 'medis', 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'SDM', 'is_active' => 1, 'group' => 'manajemen', 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Umum & Logistik', 'is_active' => 1, 'group' => 'penunjang', 'created_at' => now(), 'updated_at' => now()],
-            ['nama' => 'Keuangan', 'is_active' => 1, 'group' => 'manajemen', 'created_at' => now(), 'updated_at' => now()],
-        ];
-        DB::table('bagian')->insert($bagians);
-        $bagianIds = DB::table('bagian')->pluck('id', 'nama')->toArray();
+        if (Schema::hasTable('bagian') && Schema::hasTable('sdm_jabatan')) {
+            $bagians = [
+                ['nama' => 'Medis', 'is_active' => 1, 'group' => 'medis', 'created_at' => now(), 'updated_at' => now()],
+                ['nama' => 'Keperawatan', 'is_active' => 1, 'group' => 'medis', 'created_at' => now(), 'updated_at' => now()],
+                ['nama' => 'SDM', 'is_active' => 1, 'group' => 'manajemen', 'created_at' => now(), 'updated_at' => now()],
+                ['nama' => 'Umum & Logistik', 'is_active' => 1, 'group' => 'penunjang', 'created_at' => now(), 'updated_at' => now()],
+                ['nama' => 'Keuangan', 'is_active' => 1, 'group' => 'manajemen', 'created_at' => now(), 'updated_at' => now()],
+            ];
+            DB::table('bagian')->insert($bagians);
+            $bagianIds = DB::table('bagian')->pluck('id', 'nama')->toArray();
 
-        // 6. Seed Jabatan (Needs self-referencing disable/enable)
-        Schema::disableForeignKeyConstraints();
-        $jabatans = [
-            ['id' => 1, 'nama' => 'Direktur Utama', 'kode_surat' => 'DIR', 'parent_id' => 1, 'bagian_id' => $bagianIds['SDM'], 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'nama' => 'Kepala Bagian SDM', 'kode_surat' => 'KABAG-SDM', 'parent_id' => 1, 'bagian_id' => $bagianIds['SDM'], 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'nama' => 'Kepala Bagian Umum', 'kode_surat' => 'KABAG-UM', 'parent_id' => 1, 'bagian_id' => $bagianIds['Umum & Logistik'], 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 4, 'nama' => 'Kepala Bagian Keuangan', 'kode_surat' => 'KABAG-KEU', 'parent_id' => 1, 'bagian_id' => $bagianIds['Keuangan'], 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5, 'nama' => 'Staff Pelaksana SDM', 'kode_surat' => 'STF-SDM', 'parent_id' => 2, 'bagian_id' => $bagianIds['SDM'], 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 6, 'nama' => 'Staff Pelaksana Umum', 'kode_surat' => 'STF-UM', 'parent_id' => 3, 'bagian_id' => $bagianIds['Umum & Logistik'], 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 7, 'nama' => 'Staff Pelaksana Keuangan', 'kode_surat' => 'STF-KEU', 'parent_id' => 4, 'bagian_id' => $bagianIds['Keuangan'], 'created_at' => now(), 'updated_at' => now()],
-        ];
-        DB::table('sdm_jabatan')->insert($jabatans);
-        Schema::enableForeignKeyConstraints();
+            // 6. Seed Jabatan (Needs self-referencing disable/enable)
+            Schema::disableForeignKeyConstraints();
+            $jabatans = [
+                ['id' => 1, 'nama' => 'Direktur Utama', 'kode_surat' => 'DIR', 'parent_id' => 1, 'bagian_id' => $bagianIds['SDM'], 'tunjangan_jabatan' => 5000000, 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 2, 'nama' => 'Kepala Bagian SDM', 'kode_surat' => 'KABAG-SDM', 'parent_id' => 1, 'bagian_id' => $bagianIds['SDM'], 'tunjangan_jabatan' => 2500000, 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 3, 'nama' => 'Kepala Bagian Umum', 'kode_surat' => 'KABAG-UM', 'parent_id' => 1, 'bagian_id' => $bagianIds['Umum & Logistik'], 'tunjangan_jabatan' => 2500000, 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 4, 'nama' => 'Kepala Bagian Keuangan', 'kode_surat' => 'KABAG-KEU', 'parent_id' => 1, 'bagian_id' => $bagianIds['Keuangan'], 'tunjangan_jabatan' => 2500000, 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 5, 'nama' => 'Staff Pelaksana SDM', 'kode_surat' => 'STF-SDM', 'parent_id' => 2, 'bagian_id' => $bagianIds['SDM'], 'tunjangan_jabatan' => 500000, 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 6, 'nama' => 'Staff Pelaksana Umum', 'kode_surat' => 'STF-UM', 'parent_id' => 3, 'bagian_id' => $bagianIds['Umum & Logistik'], 'tunjangan_jabatan' => 500000, 'created_at' => now(), 'updated_at' => now()],
+                ['id' => 7, 'nama' => 'Staff Pelaksana Keuangan', 'kode_surat' => 'STF-KEU', 'parent_id' => 4, 'bagian_id' => $bagianIds['Keuangan'], 'tunjangan_jabatan' => 500000, 'created_at' => now(), 'updated_at' => now()],
+            ];
+            DB::table('sdm_jabatan')->insert($jabatans);
+            Schema::enableForeignKeyConstraints();
+        }
 
         // 7. Map existing seeded users to Karyawan Jabatans
         $karyawanSdm = Karyawan::where('nama', 'Staff SDM')->first();
@@ -171,54 +181,131 @@ class DummyDataSeeder extends Seeder
         DB::table('sdm_kary_jabatan')->insert($karyawanJabatans);
 
         // --- Tambahan: Dummy Pegawai Ruangan untuk UGD dan Poli Anak ---
-        // UGD: id 1, Poli Anak: id 2 (asumsi berdasarkan urutan insert Ruangan di line 63)
-        $ruanganUgd = $ruanganIds[0] ?? 1;
-        $ruanganPoliAnak = $ruanganIds[1] ?? 2;
-        $ruanganMelati = $ruanganIds[3] ?? 4;
+        // Cari ID ruangan berdasarkan nama agar tidak tergantung pada urutan array
+        $ruanganUgd = DB::table('ruangan')->where('nama', 'like', '%UGD%')->value('id') 
+            ?? (DB::table('ruangan')->where('nama', 'like', '%IGD%')->value('id') ?? 1);
+        $ruanganPoliAnak = DB::table('ruangan')->where('nama', 'like', '%Poli Anak%')->value('id') ?? 2;
+        $ruanganMelati = DB::table('ruangan')->where('nama', 'like', '%Melati%')->value('id') ?? 4;
         
         $dummyPegawai = [];
         $kategoriKerja = \App\Enums\KategoriKerja::class;
         
-        // 8 Pegawai UGD (Semua SHIFT)
-        for ($i = 1; $i <= 8; $i++) {
-            $dummyPegawai[] = [
-                'nip' => 'UGD' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'nik' => '320' . rand(1000000000000, 9999999999999),
-                'nama' => 'Perawat UGD ' . $i,
-                'ruangan_id' => $ruanganUgd,
-                'kategori_kerja' => 'shift', // Enum
-                'tgl_lahir' => '1995-01-01', 'hp' => '0812' . rand(10000000, 99999999),
-                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Alamat ' . $i,
-                'agama' => 'islam', 'status' => 'tetap', 'tgl_masuk' => '2022-01-01', 'cuti' => 12,
-                'created_at' => now(), 'updated_at' => now(),
-            ];
-        }
+        $karyawanAbsensi = [
+            ['nip' => '21220175', 'nama' => 'Afrizal'],
+            ['nip' => '22200233', 'nama' => 'Rosiana'],
+            ['nip' => '21220077', 'nama' => 'Agustina'],
+            ['nip' => '22210264', 'nama' => 'Arif Pamungkas'],
+            ['nip' => '21220131', 'nama' => 'Dwi Septiana'],
+            ['nip' => '21220082', 'nama' => 'Leni Kristina'],
+            ['nip' => '22200240', 'nama' => 'Farouk Alfero'],
+            ['nip' => '21220189', 'nama' => 'Maya Kurniawati'],
+            ['nip' => '21220087', 'nama' => 'Nurma novianti'],
+            ['nip' => '21220133', 'nama' => 'Risnawati'],
+            ['nip' => '21220118', 'nama' => 'Rurin Astiar'],
+            ['nip' => '21190039', 'nama' => 'Mira Novita'],
+            ['nip' => '21220134', 'nama' => 'Septian Riadi'],
+            ['nip' => '22220327', 'nama' => 'Zirki Orlanda'],
+            ['nip' => '21220083', 'nama' => 'Etik Nurhayati'],
+            ['nip' => '21220132', 'nama' => 'Herdinan'],
+            ['nip' => '22190203', 'nama' => 'I Ketut Kariawan'],
+            ['nip' => '21220171', 'nama' => 'Rahmad Arifin'],
+            ['nip' => '21220085', 'nama' => 'Rini Alamia'],
+            ['nip' => '22220312', 'nama' => 'Yeni Erawati'],
+            ['nip' => '21220119', 'nama' => 'Titin'],
+            ['nip' => '21220090', 'nama' => 'Andi Apriyasyah'],
+            ['nip' => '21080013', 'nama' => 'Jhon Aziz'],
+            ['nip' => '21220092', 'nama' => 'Budi Setia Utomo'],
+            ['nip' => '21220129', 'nama' => 'Dian'],
+            ['nip' => '21190054', 'nama' => 'Desky Hendra'],
+            ['nip' => '21220108', 'nama' => 'Fitria Eka'],
+            ['nip' => '22230337', 'nama' => 'Ahmad Efendri'],
+            ['nip' => '21220112', 'nama' => 'Martina Eka'],
+            ['nip' => '21080004', 'nama' => 'Afridawati'],
+            ['nip' => '24230005', 'nama' => 'Riska Absari'],
+            ['nip' => '21190067', 'nama' => 'Era Zulfia'],
+            ['nip' => '22220309', 'nama' => 'M Rizki Genio'],
+            ['nip' => '22220323', 'nama' => 'Rohida'],
+            ['nip' => '21190056', 'nama' => 'Sisi Natalia'],
+            ['nip' => '22210269', 'nama' => 'Rolly Alvares'],
+            ['nip' => '22200243', 'nama' => 'Yulia Atika'],
+            ['nip' => '22200241', 'nama' => 'Siti Setiani'],
+            ['nip' => '22220324', 'nama' => 'Wahyu Putri'],
+            ['nip' => '22190214', 'nama' => 'Fakhri'],
+            ['nip' => '21220165', 'nama' => 'Dea'],
+            ['nip' => '22200245', 'nama' => 'Fahri Ramadona'],
+            ['nip' => '21220149', 'nama' => 'Fera'],
+            ['nip' => '21220183', 'nama' => 'Jefta'],
+            ['nip' => '21220168', 'nama' => 'Lay Rizka'],
+            ['nip' => '21220191', 'nama' => 'Vilandari'],
+            ['nip' => '21220190', 'nama' => 'Nur Khotinah'],
+            ['nip' => '21220117', 'nama' => 'Rischa Pratiwi'],
+            ['nip' => '21190029', 'nama' => 'Yuniati'],
+            ['nip' => '22220326', 'nama' => 'Yunita Shara'],
+            ['nip' => '21220138', 'nama' => 'Suci Yuliansari'],
+            ['nip' => '22140040', 'nama' => 'Dwi Ariyanti'],
+            ['nip' => '22220311', 'nama' => 'Andri Darmawan'],
+            ['nip' => '22220316', 'nama' => 'Dhyas'],
+            ['nip' => '22200232', 'nama' => 'Enjelina'],
+            ['nip' => '22210265', 'nama' => 'Erlina'],
+            ['nip' => '21220155', 'nama' => 'Mega Mustika'],
+            ['nip' => '21220182', 'nama' => 'Rio Ardi Prayoga'],
+            ['nip' => '22210274', 'nama' => 'Oktaria'],
+            ['nip' => '22220319', 'nama' => 'Nailul'],
+            ['nip' => '21220089', 'nama' => 'Yanti Fitria'],
+            ['nip' => '22210268', 'nama' => 'Yoga Erixa'],
+            ['nip' => '22190201', 'nama' => 'Selvy Sari'],
+            ['nip' => '22200246', 'nama' => 'Aditya'],
+            ['nip' => '21220076', 'nama' => 'Marlena'],
+            ['nip' => '22220315', 'nama' => 'Dandy'],
+            ['nip' => '21220120', 'nama' => 'Tri Ayu R'],
+            ['nip' => '22210258', 'nama' => 'Desi Nur Fitri'],
+            ['nip' => '22200235', 'nama' => 'Gilda Puspita'],
+            ['nip' => '22190199', 'nama' => 'Meilinda'],
+            ['nip' => '21220172', 'nama' => 'Raluki'],
+            ['nip' => '21220156', 'nama' => 'Qory'],
+            ['nip' => '22210267', 'nama' => 'Ratnasari'],
+            ['nip' => '22190202', 'nama' => 'Susilo Sudarman'],
+            ['nip' => '21220158', 'nama' => 'Siti Rohima'],
+            ['nip' => '21220157', 'nama' => 'Septi Dwi Ariyawati'],
+            ['nip' => '22210262', 'nama' => 'Arief Ginanjar'],
+            ['nip' => '22210266', 'nama' => 'Zamayra'],
+            ['nip' => '22200234', 'nama' => 'Ike Teresia'],
+            ['nip' => '22200239', 'nama' => 'Anggita Dwi Puspitarini'],
+            ['nip' => '22210260', 'nama' => 'Juliati'],
+            ['nip' => '21220185', 'nama' => 'Fentri'],
+            ['nip' => '22220321', 'nama' => 'Nopa'],
+            ['nip' => '21220115', 'nama' => 'Rendi Prayoga'],
+            ['nip' => '22190206', 'nama' => 'Vania Rachmania'],
+            ['nip' => '21220146', 'nama' => 'Junarispep'],
+            ['nip' => '21220080', 'nama' => 'Herliza'],
+            ['nip' => '21220169', 'nama' => 'Fitrirahma'],
+            ['nip' => '21080016', 'nama' => 'Munawaroh'],
+            ['nip' => '21080007', 'nama' => 'Cecilia'],
+            ['nip' => '21220121', 'nama' => 'Yunidha'],
+            ['nip' => '21220107', 'nama' => 'Feli Handayani'],
+            ['nip' => '21220091', 'nama' => 'Feni Fransina'],
+            ['nip' => '21220125', 'nama' => 'Evi Septiyani'],
+            ['nip' => '21220127', 'nama' => 'Rina Okawinda'],
+            ['nip' => '21220101', 'nama' => 'Siska Vertika'],
+            ['nip' => '21220113', 'nama' => 'Neng Safitri'],
+            ['nip' => '21220143', 'nama' => 'Raliyan'],
+            ['nip' => '24230006', 'nama' => 'Tuti Alawiyah'],
+            ['nip' => '21190028', 'nama' => 'Sucipto'],
+        ];
 
-        // 6 Pegawai Poli Anak (Campuran REGULER dan SHIFT)
-        for ($i = 1; $i <= 6; $i++) {
+        foreach ($karyawanAbsensi as $index => $k) {
+            $rId = $ruanganUgd;
+            if ($index % 3 == 1) $rId = $ruanganPoliAnak;
+            if ($index % 3 == 2) $rId = $ruanganMelati;
+            
             $dummyPegawai[] = [
-                'nip' => 'POL' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'nip' => $k['nip'],
                 'nik' => '320' . rand(1000000000000, 9999999999999),
-                'nama' => 'Perawat Poli Anak ' . $i,
-                'ruangan_id' => $ruanganPoliAnak,
-                'kategori_kerja' => $i <= 2 ? 'reguler' : 'shift', // 2 reguler, 4 shift
+                'nama' => $k['nama'],
+                'ruangan_id' => $rId,
+                'kategori_kerja' => 'shift', // shift
                 'tgl_lahir' => '1995-01-01', 'hp' => '0812' . rand(10000000, 99999999),
-                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Alamat ' . $i,
-                'agama' => 'islam', 'status' => 'tetap', 'tgl_masuk' => '2022-01-01', 'cuti' => 12,
-                'created_at' => now(), 'updated_at' => now(),
-            ];
-        }
-
-        // 6 Pegawai Melati (Semua SHIFT)
-        for ($i = 1; $i <= 6; $i++) {
-            $dummyPegawai[] = [
-                'nip' => 'MLT' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'nik' => '320' . rand(1000000000000, 9999999999999),
-                'nama' => 'Perawat Inap Melati ' . $i,
-                'ruangan_id' => $ruanganMelati,
-                'kategori_kerja' => 'shift',
-                'tgl_lahir' => '1995-01-01', 'hp' => '0812' . rand(10000000, 99999999),
-                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Alamat ' . $i,
+                'prov' => '-', 'kab' => '-', 'kec' => '-', 'desa' => '-', 'alamat' => 'Alamat ' . $index,
                 'agama' => 'islam', 'status' => 'tetap', 'tgl_masuk' => '2022-01-01', 'cuti' => 12,
                 'created_at' => now(), 'updated_at' => now(),
             ];
@@ -227,12 +314,12 @@ class DummyDataSeeder extends Seeder
         DB::table('sdm_karyawan')->insert($dummyPegawai);
 
         // --- Create User for Perawat UGD 1 ---
-        $karyawanPerawat = Karyawan::where('nip', 'UGD001')->first();
+        $karyawanPerawat = Karyawan::where('nip', '22210264')->first(); // Arif Pamungkas
         if ($karyawanPerawat) {
             $userPerawat = User::updateOrCreate(
                 ['email' => 'perawat@rsba.com'],
                 [
-                    'password' => Hash::make('1234'),
+                    'password' => '1234',
                     'karyawan_id' => $karyawanPerawat->id,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -389,6 +476,8 @@ class DummyDataSeeder extends Seeder
             ['nama' => 'Alat Tulis Kantor', 'prefix' => 'ATK', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Alat Kesehatan', 'prefix' => 'ALK', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Obat-obatan', 'prefix' => 'OBT', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Elektronik & IT', 'prefix' => 'ELK', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Furniture & Rumah Tangga', 'prefix' => 'FUR', 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('um_kategori')->insert($barangKategori);
         $kategoriIds = DB::table('um_kategori')->pluck('id')->toArray();
@@ -396,9 +485,14 @@ class DummyDataSeeder extends Seeder
         $barangPenyimpanan = [
             ['nama' => 'Gudang Utama', 'created_at' => now(), 'updated_at' => now()],
             ['nama' => 'Apotek UGD', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Gudang IT & Elektronik', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Gudang Alat Kesehatan', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Gudang Farmasi', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Apotek Rawat Jalan', 'created_at' => now(), 'updated_at' => now()],
+            ['nama' => 'Apotek Rawat Inap', 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('um_penyimpanan')->insert($barangPenyimpanan);
-        $penyimpananIds = DB::table('um_penyimpanan')->pluck('id')->toArray();
+        $penyimpananIds = DB::table('um_penyimpanan')->pluck('id', 'nama')->toArray();
 
         $barangSatuan = [
             ['nama' => 'Pcs', 'created_at' => now(), 'updated_at' => now()],
@@ -408,15 +502,51 @@ class DummyDataSeeder extends Seeder
         DB::table('um_satuan')->insert($barangSatuan);
         $satuanIds = DB::table('um_satuan')->pluck('id')->toArray();
 
-        $supplier = [
-            'nama' => 'PT. Medika Sejahtera',
-            'alamat' => 'Jl. Industri Farmasi No. 45, Karawang',
-            'telp' => '021-89765432',
-            'email' => 'sales@medikasejahtera.com',
-            'created_at' => now(),
-            'updated_at' => now(),
+        $suppliers = [
+            [
+                'nama' => 'PT. Medika Sejahtera',
+                'alamat' => 'Jl. Industri Farmasi No. 45, Karawang',
+                'telp' => '021-89765432',
+                'email' => 'sales@medikasejahtera.com',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'PT. Global IT Solution',
+                'alamat' => 'Sudirman Central Business District Lt. 12, Jakarta',
+                'telp' => '021-5551234',
+                'email' => 'sales@globalit.co.id',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'CV. Jaya ATK & Office',
+                'alamat' => 'Jl. Pemuda No. 88, Semarang',
+                'telp' => '024-7654321',
+                'email' => 'info@jayaatk.com',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'PT. Furniture Indah Lestari',
+                'alamat' => 'Kawasan Industri Cikarang Blok C-10, Bekasi',
+                'telp' => '021-8901234',
+                'email' => 'contact@furnitureindah.com',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'PT. Bio Farma Persada',
+                'alamat' => 'Jl. Pasteur No. 28, Bandung',
+                'telp' => '022-2033755',
+                'email' => 'info@biofarmapersada.co.id',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ];
-        $supplierId = DB::table('um_supplier')->insertGetId($supplier);
+        DB::table('um_supplier')->insert($suppliers);
+        $supplierIds = DB::table('um_supplier')->pluck('id', 'nama')->toArray();
+        $supplierId = $supplierIds['PT. Medika Sejahtera'];
 
         // Seed Barang (Umum & Asset)
         $barangs = [
@@ -453,6 +583,94 @@ class DummyDataSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'sku' => 'SKU-004-DIA',
+                'nama' => 'Obat Diare (Attapulgite)',
+                'satuan_id' => $satuanIds[1], // Box
+                'kategori_id' => $kategoriIds[2], // Obat
+                'tipe' => 'umum',
+                'min_stok' => 10,
+                'bhp' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-005-RAM',
+                'nama' => 'RAM DDR4 8GB',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[3], // Elektronik & IT
+                'tipe' => 'umum',
+                'min_stok' => 5,
+                'bhp' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-006-TVL',
+                'nama' => 'Televisi LED 32 Inch',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[3], // Elektronik & IT
+                'tipe' => 'asset',
+                'min_stok' => 1,
+                'bhp' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-007-KEY',
+                'nama' => 'Keyboard Logitech USB',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[3], // Elektronik & IT
+                'tipe' => 'umum',
+                'min_stok' => 5,
+                'bhp' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-008-MJA',
+                'nama' => 'Meja Kantor 1/2 Biro',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[4], // Furniture & Rumah Tangga
+                'tipe' => 'asset',
+                'min_stok' => 2,
+                'bhp' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-009-KRS',
+                'nama' => 'Kursi Kerja Staff',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[4], // Furniture & Rumah Tangga
+                'tipe' => 'asset',
+                'min_stok' => 5,
+                'bhp' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-010-LMR',
+                'nama' => 'Lemari Arsip Besi',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[4], // Furniture & Rumah Tangga
+                'tipe' => 'asset',
+                'min_stok' => 1,
+                'bhp' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'sku' => 'SKU-011-PEN',
+                'nama' => 'Pena Ballpoint Hitam',
+                'satuan_id' => $satuanIds[0], // Pcs
+                'kategori_id' => $kategoriIds[0], // ATK
+                'tipe' => 'umum',
+                'min_stok' => 20,
+                'bhp' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ];
         DB::table('um_barang')->insert($barangs);
         $barangIds = DB::table('um_barang')->pluck('id', 'nama')->toArray();
@@ -481,11 +699,111 @@ class DummyDataSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        $pemDetKrtId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Kertas A4 80gr'],
+            'jumlah' => 50,
+            'batch' => 'BATCH-KRT-01',
+            'harga_satuan' => 45000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetPcmId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Paracetamol 500mg'],
+            'jumlah' => 100,
+            'batch' => 'BATCH-PCM-01',
+            'harga_satuan' => 12000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetDiaId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Obat Diare (Attapulgite)'],
+            'jumlah' => 40,
+            'batch' => 'BATCH-DIA-01',
+            'harga_satuan' => 15000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetRamId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['RAM DDR4 8GB'],
+            'jumlah' => 15,
+            'batch' => 'BATCH-RAM-01',
+            'harga_satuan' => 350000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetTvlId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Televisi LED 32 Inch'],
+            'jumlah' => 3,
+            'batch' => 'BATCH-TVL-01',
+            'harga_satuan' => 1800000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetKeyId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Keyboard Logitech USB'],
+            'jumlah' => 20,
+            'batch' => 'BATCH-KEY-01',
+            'harga_satuan' => 120000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetMjaId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Meja Kantor 1/2 Biro'],
+            'jumlah' => 4,
+            'batch' => 'BATCH-MJA-01',
+            'harga_satuan' => 750000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetKrsId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Kursi Kerja Staff'],
+            'jumlah' => 10,
+            'batch' => 'BATCH-KRS-01',
+            'harga_satuan' => 450000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetLmrId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Lemari Arsip Besi'],
+            'jumlah' => 2,
+            'batch' => 'BATCH-LMR-01',
+            'harga_satuan' => 1500000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pemDetPenId = DB::table('um_pembelian_det')->insertGetId([
+            'pembelian_id' => $pembelianId,
+            'barang_id' => $barangIds['Pena Ballpoint Hitam'],
+            'jumlah' => 200,
+            'batch' => 'BATCH-PEN-01',
+            'harga_satuan' => 3000.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $userVerify = User::where('email', 'admin@rsba.com')->first();
         $penerimaanId = DB::table('um_penerimaan_beli')->insertGetId([
             'tanggal' => '2026-06-28',
             'no_faktur' => 'INV-MS-98765',
-            'keterangan' => 'Penerimaan alat kesehatan tensimeter digital',
+            'keterangan' => 'Penerimaan alat kesehatan, BHP, meubel, IT dan obat-obatan',
             'penerima' => $userVerify->id ?? 1,
             'created_at' => now(),
             'updated_at' => now(),
@@ -499,6 +817,86 @@ class DummyDataSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        $penDetKrtId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetKrtId,
+            'jumlah' => 50,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetPcmId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetPcmId,
+            'jumlah' => 100,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetDiaId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetDiaId,
+            'jumlah' => 40,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetRamId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetRamId,
+            'jumlah' => 15,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetTvlId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetTvlId,
+            'jumlah' => 3,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetKeyId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetKeyId,
+            'jumlah' => 20,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetMjaId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetMjaId,
+            'jumlah' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetKrsId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetKrsId,
+            'jumlah' => 10,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetLmrId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetLmrId,
+            'jumlah' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $penDetPenId = DB::table('um_penerimaan_beli_det')->insertGetId([
+            'penerimaan_id' => $penerimaanId,
+            'pembelian_det_id' => $pemDetPenId,
+            'jumlah' => 200,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // 14. Seed Stock
         $stokId = DB::table('um_stok')->insertGetId([
             'penerimaan_det_id' => $penDetId,
@@ -506,7 +904,127 @@ class DummyDataSeeder extends Seeder
             'stok' => 5,
             'batch' => 'BATCH-TNS-01',
             'harga_satuan' => 250000.00,
-            'penyimpanan_id' => $penyimpananIds[0], // Gudang Utama
+            'penyimpanan_id' => $penyimpananIds['Gudang Alat Kesehatan'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Kertas A4 80gr (BHP) di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetKrtId,
+            'barang_id' => $barangIds['Kertas A4 80gr'],
+            'stok' => 50,
+            'batch' => 'BATCH-KRT-01',
+            'harga_satuan' => 45000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Utama'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Paracetamol 500mg (Obat) di Gudang Farmasi
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetPcmId,
+            'barang_id' => $barangIds['Paracetamol 500mg'],
+            'stok' => 100,
+            'batch' => 'BATCH-PCM-01',
+            'harga_satuan' => 12000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Farmasi'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Obat Diare (Attapulgite) di Gudang Farmasi
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetDiaId,
+            'barang_id' => $barangIds['Obat Diare (Attapulgite)'],
+            'stok' => 40,
+            'batch' => 'BATCH-DIA-01',
+            'harga_satuan' => 15000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Farmasi'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock RAM DDR4 8GB di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetRamId,
+            'barang_id' => $barangIds['RAM DDR4 8GB'],
+            'stok' => 15,
+            'batch' => 'BATCH-RAM-01',
+            'harga_satuan' => 350000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang IT & Elektronik'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Televisi LED 32 Inch di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetTvlId,
+            'barang_id' => $barangIds['Televisi LED 32 Inch'],
+            'stok' => 3,
+            'batch' => 'BATCH-TVL-01',
+            'harga_satuan' => 1800000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang IT & Elektronik'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Keyboard Logitech USB di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetKeyId,
+            'barang_id' => $barangIds['Keyboard Logitech USB'],
+            'stok' => 20,
+            'batch' => 'BATCH-KEY-01',
+            'harga_satuan' => 120000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang IT & Elektronik'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Meja Kantor 1/2 Biro di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetMjaId,
+            'barang_id' => $barangIds['Meja Kantor 1/2 Biro'],
+            'stok' => 4,
+            'batch' => 'BATCH-MJA-01',
+            'harga_satuan' => 750000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Utama'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Kursi Kerja Staff di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetKrsId,
+            'barang_id' => $barangIds['Kursi Kerja Staff'],
+            'stok' => 10,
+            'batch' => 'BATCH-KRS-01',
+            'harga_satuan' => 450000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Utama'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Lemari Arsip Besi di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetLmrId,
+            'barang_id' => $barangIds['Lemari Arsip Besi'],
+            'stok' => 2,
+            'batch' => 'BATCH-LMR-01',
+            'harga_satuan' => 1500000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Utama'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Stock Pena Ballpoint Hitam di Gudang Utama
+        DB::table('um_stok')->insert([
+            'penerimaan_det_id' => $penDetPenId,
+            'barang_id' => $barangIds['Pena Ballpoint Hitam'],
+            'stok' => 200,
+            'batch' => 'BATCH-PEN-01',
+            'harga_satuan' => 3000.00,
+            'penyimpanan_id' => $penyimpananIds['Gudang Utama'],
             'created_at' => now(),
             'updated_at' => now(),
         ]);

@@ -14,8 +14,11 @@ class MenuSeeder extends Seeder
     public function run(): void
     {
         \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
-        Menu::truncate();
-        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+            Menu::query()->delete();
+        } else {
+            Menu::truncate();
+        }
 
         $menus = [
             [
@@ -173,15 +176,33 @@ class MenuSeeder extends Seeder
             ],
             [
                 'id' => 19,
-                'nama' => 'SP3',
-                'route' => 'kepegawaian.surat.sp3',
-                'icon' => null,
-                'permission' => ['view-kepegawaian-surat-sp3'],
+                'nama' => 'Izin dan Cuti',
+                'route' => 'kepegawaian.surat.cuti',
+                'icon' => 'file-text',
+                'permission' => ['view-kepegawaian-surat-cuti', 'create-cuti-other-karyawan'],
                 'parent_id' => 17,
                 'group' => 'sdm',
             ],
             [
                 'id' => 20,
+                'nama' => 'SP3',
+                'route' => 'kepegawaian.surat.sp3',
+                'icon' => 'file-alert',
+                'permission' => ['view-kepegawaian-surat-sp3'],
+                'parent_id' => 17,
+                'group' => 'sdm',
+            ],
+            [
+                'id' => 21,
+                'nama' => 'Verifikasi',
+                'route' => 'surat.verification',
+                'icon' => 'file-check',
+                'permission' => ['view-surat-verification'],
+                'parent_id' => 17,
+                'group' => 'sdm',
+            ],
+            [
+                'id' => 22,
                 'nama' => 'Master',
                 'route' => null,
                 'icon' => 'database',
@@ -190,61 +211,53 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 21,
+                'id' => 23,
                 'nama' => 'Supplier',
                 'route' => 'umum.master.supplier',
                 'icon' => null,
                 'permission' => ['view-umum-master-supplier'],
-                'parent_id' => 20,
+                'parent_id' => 22,
                 'group' => 'umu',
             ],
+
             [
-                'id' => 22,
-                'nama' => 'Jasmed',
-                'route' => 'kepegawaian.jasmed.index',
-                'icon' => 'chart-pie',
-                'permission' => ['jasmed-bpjs', 'jasmed-jkmd', 'view-kepegawaian-jasmed'],
-                'parent_id' => 1,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 23,
+                'id' => 25,
                 'nama' => 'Kategori Barang',
                 'route' => 'umum.master.kategori',
                 'icon' => null,
                 'permission' => ['view-umum-master-kategori'],
-                'parent_id' => 20,
-                'group' => 'umu',
-            ],
-            [
-                'id' => 24,
-                'nama' => 'Satuan Barang',
-                'route' => 'umum.master.satuan',
-                'icon' => null,
-                'permission' => ['view-umum-master-satuan'],
-                'parent_id' => 20,
-                'group' => 'umu',
-            ],
-            [
-                'id' => 25,
-                'nama' => 'Penyimpanan',
-                'route' => 'umum.master.penyimpanan',
-                'icon' => null,
-                'permission' => ['view-umum-master-penyimpanan'],
-                'parent_id' => 20,
+                'parent_id' => 22,
                 'group' => 'umu',
             ],
             [
                 'id' => 26,
-                'nama' => 'Barang',
-                'route' => 'umum.master.barang',
+                'nama' => 'Satuan Barang',
+                'route' => 'umum.master.satuan',
                 'icon' => null,
-                'permission' => ['view-umum-master-barang'],
-                'parent_id' => 20,
+                'permission' => ['view-umum-master-satuan'],
+                'parent_id' => 22,
                 'group' => 'umu',
             ],
             [
                 'id' => 27,
+                'nama' => 'Penyimpanan',
+                'route' => 'umum.master.penyimpanan',
+                'icon' => null,
+                'permission' => ['view-umum-master-penyimpanan'],
+                'parent_id' => 22,
+                'group' => 'umu',
+            ],
+            [
+                'id' => 28,
+                'nama' => 'Barang',
+                'route' => 'umum.master.barang',
+                'icon' => null,
+                'permission' => ['view-umum-master-barang'],
+                'parent_id' => 22,
+                'group' => 'umu',
+            ],
+            [
+                'id' => 29,
                 'nama' => 'Pembelian',
                 'route' => 'umum.pembelian.index',
                 'icon' => 'shopping-cart-plus',
@@ -253,7 +266,7 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 28,
+                'id' => 30,
                 'nama' => 'Distribusi',
                 'route' => 'umum.distribusi.index',
                 'icon' => 'shopping-cart-share',
@@ -262,7 +275,7 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 29,
+                'id' => 31,
                 'nama' => 'Gudang',
                 'route' => 'umum.gudang.index',
                 'icon' => 'package',
@@ -271,7 +284,7 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 30,
+                'id' => 32,
                 'nama' => 'Asset',
                 'route' => 'umum.asset.index',
                 'icon' => 'device-ipad-horizontal-check',
@@ -280,7 +293,7 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 31,
+                'id' => 33,
                 'nama' => 'Hutang',
                 'route' => 'keuangan.hutang.index',
                 'icon' => 'file-invoice',
@@ -289,7 +302,7 @@ class MenuSeeder extends Seeder
                 'group' => 'keu',
             ],
             [
-                'id' => 32,
+                'id' => 34,
                 'nama' => 'Piutang',
                 'route' => 'keuangan.piutang.index',
                 'icon' => 'file-dollar',
@@ -298,7 +311,7 @@ class MenuSeeder extends Seeder
                 'group' => 'keu',
             ],
             [
-                'id' => 33,
+                'id' => 35,
                 'nama' => 'Laporan',
                 'route' => 'umum.laporan.index',
                 'icon' => 'file-analytics',
@@ -307,7 +320,7 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 34,
+                'id' => 36,
                 'nama' => 'Stok Opname',
                 'route' => 'umum.opname.index',
                 'icon' => 'align-box-left-stretch',
@@ -316,7 +329,7 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 35,
+                'id' => 37,
                 'nama' => 'Laporan',
                 'route' => 'keuangan.laporan.index',
                 'icon' => 'file-analytics',
@@ -325,16 +338,7 @@ class MenuSeeder extends Seeder
                 'group' => 'keu',
             ],
             [
-                'id' => 36,
-                'nama' => 'Verifikasi',
-                'route' => 'surat.verification',
-                'icon' => '',
-                'permission' => ['view-surat-verification'],
-                'parent_id' => 17,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 37,
+                'id' => 38,
                 'nama' => 'Maintenance',
                 'route' => 'umum.maintenance.index',
                 'icon' => 'device-desktop-cog',
@@ -343,22 +347,13 @@ class MenuSeeder extends Seeder
                 'group' => 'umu',
             ],
             [
-                'id' => 38,
+                'id' => 39,
                 'nama' => 'Pengajuan',
                 'route' => 'umum.pengajuan.index',
                 'icon' => 'send',
                 'permission' => ['view-umum-pengajuan'],
                 'parent_id' => 1,
                 'group' => 'umu',
-            ],
-            [
-                'id' => 39,
-                'nama' => 'Laporan',
-                'route' => 'kepegawaian.laporan.index',
-                'icon' => 'file-analytics',
-                'permission' => ['view-kepegawaian-laporan'],
-                'parent_id' => 1,
-                'group' => 'sdm',
             ],
             [
                 'id' => 40,
@@ -370,7 +365,7 @@ class MenuSeeder extends Seeder
                 'group' => 'sdm',
             ],
             [
-                'id' => 64,
+                'id' => 41,
                 'nama' => 'Semua Kegiatan',
                 'route' => 'kepegawaian.akreditasi.index',
                 'icon' => null,
@@ -385,15 +380,6 @@ class MenuSeeder extends Seeder
                 'icon' => null,
                 'permission' => ['view-kepegawaian-master-cuti'],
                 'parent_id' => 12,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 43,
-                'nama' => 'Izin dan Cuti',
-                'route' => 'kepegawaian.surat.cuti',
-                'icon' => null,
-                'permission' => ['create-cuti-other-karyawan', 'view-kepegawaian-surat-cuti'],
-                'parent_id' => 17,
                 'group' => 'sdm',
             ],
             [
@@ -425,11 +411,11 @@ class MenuSeeder extends Seeder
             ],
             [
                 'id' => 48,
-                'nama' => 'Golongan',
-                'route' => null,
+                'nama' => 'Tunjangan Golongan',
+                'route' => 'kepegawaian.master.tunjangan-golongan.index',
                 'icon' => null,
-                'permission' => [],
-                'parent_id' => 12,
+                'permission' => ['view-kepegawaian-master-tunjangan-golongan'],
+                'parent_id' => 53,
                 'group' => 'sdm',
             ],
             [
@@ -462,10 +448,19 @@ class MenuSeeder extends Seeder
             [
                 'id' => 53,
                 'nama' => 'Penggajian',
-                'route' => 'kepegawaian.gaji.index',
+                'route' => null,
                 'icon' => 'moneybag',
-                'permission' => ['view-kepegawaian-gaji-index', 'add-kepegawaian-gaji-index', 'edit-kepegawaian-gaji-index', 'delete-kepegawaian-gaji-index'],
+                'permission' => [],
                 'parent_id' => 1,
+                'group' => 'sdm',
+            ],
+            [
+                'id' => 531,
+                'nama' => 'Rekap Bulanan',
+                'route' => 'kepegawaian.gaji.index',
+                'icon' => null,
+                'permission' => ['view-kepegawaian-gaji'],
+                'parent_id' => 53,
                 'group' => 'sdm',
             ],
             [
@@ -477,10 +472,39 @@ class MenuSeeder extends Seeder
                 'parent_id' => 1,
                 'group' => 'admin',
             ],
-
-            // ── Jadwal & Kehadiran (Fase 0 & 1) ──
             [
-                'id' => 57,
+                'id' => 55,
+                'nama' => 'Jasa Medis',
+                'route' => 'kepegawaian.jasmed.index',
+                'icon' => 'medical-cross',
+                'permission' => ['view-kepegawaian-jasmed'],
+                'parent_id' => 1,
+                'group' => 'sdm',
+            ],
+            [
+                'id' => 56,
+                'nama' => 'Laporan',
+                'route' => 'kepegawaian.laporan.index',
+                'icon' => 'file-analytics',
+                'permission' => ['view-kepegawaian-laporan'],
+                'parent_id' => 1,
+                'group' => 'sdm',
+            ],
+
+
+            [
+                'id' => 69,
+                'nama' => 'Aturan Pajak PPh 21',
+                'route' => 'kepegawaian.master.aturan-pajak.index',
+                'icon' => null,
+                'permission' => ['view-kepegawaian-master-aturan-pajak'],
+                'parent_id' => 53,
+                'group' => 'sdm',
+            ],
+
+            // ── Modul Jadwal & Kehadiran (Fase 0 & 1) ──
+            [
+                'id' => 70,
                 'nama' => 'Jadwal & Kehadiran',
                 'route' => null,
                 'icon' => 'calendar-time',
@@ -489,83 +513,47 @@ class MenuSeeder extends Seeder
                 'group' => 'sdm',
             ],
             [
-                'id' => 55,
+                'id' => 71,
                 'nama' => 'Jadwal Kerja',
                 'route' => 'kepegawaian.jadwal-kerja.index',
                 'icon' => null,
                 'permission' => ['view-kepegawaian-jadwal-kerja'],
-                'parent_id' => 57,
+                'parent_id' => 70,
                 'group' => 'sdm',
             ],
             [
-                'id' => 56,
+                'id' => 72,
+                'nama' => 'Kontrol Absensi',
+                'route' => 'kepegawaian.absensi.index',
+                'icon' => null,
+                'permission' => ['view-kepegawaian-absensi'],
+                'parent_id' => 70,
+                'group' => 'sdm',
+            ],
+            [
+                'id' => 73,
+                'nama' => 'Konfigurasi Jadwal',
+                'route' => 'kepegawaian.konfigurasi-jadwal.index',
+                'icon' => null,
+                'permission' => ['view-kepegawaian-konfigurasi-jadwal'],
+                'parent_id' => 70,
+                'group' => 'sdm',
+            ],
+            [
+                'id' => 74,
                 'nama' => 'Jadwal Tugas Saya',
                 'route' => 'profile.jadwal-tugas-saya',
                 'icon' => null,
                 'permission' => ['view-profile-jadwal-tugas-saya'],
-                'parent_id' => 57,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 60,
-                'nama' => 'Master Shift',
-                'route' => 'kepegawaian.master.jadwal-shift.index',
-                'icon' => null,
-                'permission' => ['view-kepegawaian-master-jadwal-shift'],
-                'parent_id' => 57,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 61,
-                'nama' => 'Aturan Jadwal',
-                'route' => 'kepegawaian.master.jadwal-aturan.index',
-                'icon' => null,
-                'permission' => ['view-kepegawaian-master-jadwal-aturan'],
-                'parent_id' => 57,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 62,
-                'nama' => 'Shift per Ruangan',
-                'route' => 'kepegawaian.master.ruangan-shift.index',
-                'icon' => null,
-                'permission' => ['view-kepegawaian-master-ruangan-shift'],
-                'parent_id' => 57,
-                'group' => 'sdm',
-            ],
-            [
-                'id' => 63,
-                'nama' => 'Koordinator',
-                'route' => 'kepegawaian.master.bagian-koordinator.index',
-                'icon' => null,
-                'permission' => ['view-kepegawaian-master-bagian-koordinator'],
-                'parent_id' => 57,
+                'parent_id' => 70,
                 'group' => 'sdm',
             ],
         ];
 
-        foreach ($menus as $menuData) {
-            $group = $menuData['group'];
-            if ($group === 'adm') {
-                $group = 'admin';
-            }
-
-            if (!empty($menuData['permission'])) {
-                foreach ($menuData['permission'] as $permName) {
-                    Permission::firstOrCreate(['name' => $permName]);
-                }
-            }
-
-            Menu::create([
-                'id'           => $menuData['id'],
-                'nama'         => $menuData['nama'],
-                'route'        => $menuData['route'],
-                'route_params' => $menuData['route_params'] ?? null,
-                'icon'         => $menuData['icon'],
-                'permission'   => !empty($menuData['permission']) ? $menuData['permission'] : null,
-                'group'        => $group,
-                'parent_id'    => $menuData['parent_id'],
-            ]);
+        foreach ($menus as $menu) {
+            Menu::create($menu);
         }
+
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
     }
 }

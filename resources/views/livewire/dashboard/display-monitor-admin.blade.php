@@ -178,6 +178,8 @@
                                                     Summary Inap
                                                 @elseif($dev['mappings'][0]['target_type'] === 'inpatient_room')
                                                     Ruang Inap
+                                                @elseif($dev['mappings'][0]['target_type'] === 'polyclinic')
+                                                    Poliklinik
                                                 @else
                                                     Kamar Operasi
                                                 @endif
@@ -261,6 +263,7 @@
                                 <option value="ward_summary">Summary Rawat Inap (Semua Kamar)</option>
                                 <option value="operating_room">Jadwal Kamar Operasi</option>
                                 <option value="inpatient_room">Ruangan Custom (Lantai & Gedung)</option>
+                                <option value="polyclinic">Poliklinik</option>
                             </select>
                         </div>
 
@@ -279,6 +282,10 @@
                                 @elseif($targetType === 'inpatient_room')
                                     @foreach($inpatientRooms as $ir)
                                         <option value="{{ $ir['id'] }}">{{ $ir['room_code'] }} - {{ $ir['name'] }} (Fl. {{ $ir['floor'] }} / {{ $ir['building'] }})</option>
+                                    @endforeach
+                                @elseif($targetType === 'polyclinic')
+                                    @foreach($polyclinics as $p)
+                                        <option value="{{ $p['id'] }}">{{ $p['code'] }} - {{ $p['name'] }}</option>
                                     @endforeach
                                 @elseif($targetType === 'ward_summary')
                                     <option value="all">Semua Ruangan</option>

@@ -45,7 +45,7 @@
                     <x-dynamic-component :component="TallStackUi::prefix('icon')"
                                          :icon="TallStackUi::icon('x-mark')"
                                          internal
-                            @class([$customization['icon.size'], $customization['icon.clear']])/>
+                                         @class([$customization['icon.size'], $customization['icon.clear']])/>
                 </button>
                 <button type="button" class="cursor-pointer"
                         x-on:click="(disables['disabled'] ?? false) || (disables['readonly'] ?? false) ? false : show = !show"
@@ -110,7 +110,7 @@
                                 <button type="button"
                                         dusk="tallstackui_date_previous_year"
                                         class="{{ $customization['button.navigate'] }}"
-                                        x-on:click.stop.prevent="previousYear($event)">
+                                        x-on:click="previousYear($event)">
                                     <x-dynamic-component :component="TallStackUi::prefix('icon')"
                                                          :icon="TallStackUi::icon('chevron-left')"
                                                          internal
@@ -119,7 +119,7 @@
                                 <button type="button"
                                         dusk="tallstackui_date_next_year"
                                         class="{{ $customization['button.navigate'] }}"
-                                        x-on:click.stop.prevent="nextYear($event)">
+                                        x-on:click="nextYear($event)">
                                     <x-dynamic-component :component="TallStackUi::prefix('icon')"
                                                          :icon="TallStackUi::icon('chevron-right')"
                                                          internal
@@ -142,7 +142,7 @@
                 <button type="button"
                         dusk="tallstackui_date_previous_month"
                         class="{{ $customization['button.navigate'] }}"
-                        x-on:click.stop.prevent="previousMonth()">
+                        x-on:click="previousMonth()">
                     <x-dynamic-component :component="TallStackUi::prefix('icon')"
                                          :icon="TallStackUi::icon('chevron-left')"
                                          internal
@@ -151,7 +151,7 @@
                 <button type="button"
                         class="{{ $customization['button.navigate'] }}"
                         dusk="tallstackui_date_next_month"
-                        x-on:click.stop.prevent="nextMonth()">
+                        x-on:click="nextMonth()">
                     <x-dynamic-component :component="TallStackUi::prefix('icon')"
                                          :icon="TallStackUi::icon('chevron-right')"
                                          internal

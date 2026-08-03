@@ -104,6 +104,7 @@ class PermissionSeeder extends Seeder
             'view-kepegawaian-laporan',
             'view-kepegawaian-akreditasi',
             'view-kepegawaian-master-cuti',
+            'view-kepegawaian-master-aturan-pajak',
             'view-keuangan-akuntansi-coa',
             'view-keuangan-akuntansi-jurnal-umum',
             'view-keuangan-master-rekanan',
@@ -119,6 +120,9 @@ class PermissionSeeder extends Seeder
             'add-kepegawaian-gaji-index',
             'edit-kepegawaian-gaji-index',
             'delete-kepegawaian-gaji-index',
+            'view-kepegawaian-gaji-rekap',
+            'view-kepegawaian-gaji-detail',
+            'approve-kepegawaian-gaji',
             'view-administrasi-registrasi-index',
             'add-administrasi-registrasi-index',
             'edit-administrasi-registrasi-index',
@@ -129,6 +133,10 @@ class PermissionSeeder extends Seeder
             'add-kepegawaian-jadwal-kerja',
             'edit-kepegawaian-jadwal-kerja',
             'delete-kepegawaian-jadwal-kerja',
+            'approve-jadwal-kabid',
+            'approve-jadwal-wadir',
+            'view-kepegawaian-absensi',
+            'view-kepegawaian-konfigurasi-jadwal',
             'view-profile-jadwal-tugas-saya',
             'view-kepegawaian-master-jadwal-shift',
             'add-kepegawaian-master-jadwal-shift',
@@ -145,6 +153,7 @@ class PermissionSeeder extends Seeder
             'add-kepegawaian-master-bagian-koordinator',
             'edit-kepegawaian-master-bagian-koordinator',
             'delete-kepegawaian-master-bagian-koordinator',
+            'view-dashboard-poli',
         ];
 
         foreach ($permissions as $permission) {

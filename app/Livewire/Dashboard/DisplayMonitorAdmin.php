@@ -32,6 +32,7 @@ class DisplayMonitorAdmin extends Component
     public array $wards          = [];
     public array $rooms          = [];
     public array $inpatientRooms = [];
+    public array $polyclinics    = [];
     public array $auditLogs      = [];
 
     // Inpatient Room form
@@ -61,6 +62,7 @@ class DisplayMonitorAdmin extends Component
         $this->wards          = $client->getWards();
         $this->rooms          = $client->getRooms();
         $this->inpatientRooms = $client->getInpatientRooms();
+        $this->polyclinics    = $client->getPolyclinics();
         $this->auditLogs      = $client->getAuditLogs();
     }
 
@@ -79,6 +81,7 @@ class DisplayMonitorAdmin extends Component
             'wards'           => $this->wards,
             'rooms'           => $this->rooms,
             'inpatientRooms'  => $this->inpatientRooms,
+            'polyclinics'     => $this->polyclinics,
             'auditLogs'       => $this->auditLogs,
             'totalMonitors'   => $totalMonitors,
             'onlineMonitors'  => $onlineMonitors,
@@ -152,7 +155,7 @@ class DisplayMonitorAdmin extends Component
     {
         $this->validate([
             'selectedDeviceId' => 'required|string',
-            'targetType'       => 'required|string|in:ward_class,operating_room,ward_summary,inpatient_room',
+            'targetType'       => 'required|string|in:ward_class,operating_room,ward_summary,inpatient_room,polyclinic',
             'targetId'         => 'required|string',
         ]);
 

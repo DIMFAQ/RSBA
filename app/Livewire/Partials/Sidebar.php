@@ -7,6 +7,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Isolate;
+use Livewire\Attributes\On;
 
 #[Isolate]
 class Sidebar extends Component
@@ -22,6 +23,22 @@ class Sidebar extends Component
     public function updatedSearchMenu(): void
     {
         // saat pencarian
+        $this->loadMenus();
+    }
+
+    #[On('updated-role-user')]
+    #[On('updated-permission-user')]
+    #[On('new-role-created')]
+    #[On('new-permission-created')]
+    #[On('menu-updated')]
+    #[On('new-menu-created')]
+    public function refreshMenus(): void
+    {
+        // Hapus cache milik user yang sedang login agar perubahan role/permission langsung berefek di UI-nya
+        cache()->forget('user-sidebar-menu:' . auth()->id());
+        cache()->forget('user-permissions:view:' . auth()->id());
+        cache()->forget('user-sidebar-menu:base');
+        
         $this->loadMenus();
     }
 
@@ -42,7 +59,7 @@ class Sidebar extends Component
     {
         $cacheKey = 'user-sidebar-menu:' . $userId;
 
-        return cache()->remember($cacheKey, 60 * 60, function () use ($userId) {
+        return cache()->remember($cacheKey, 60, function () use ($userId) {
             $allMenus = $this->getCachedBaseMenus();
 
             if (Auth::user()->hasRole('Super-Admin')) {
@@ -74,6 +91,9 @@ class Sidebar extends Component
     {
         return cache()->remember('user-sidebar-menu:base', 60 * 720, function () {
             $mainMenu = Menu::first();
+            if (!$mainMenu) {
+                return [];
+            }
 
             return Menu::where('parent_id', $mainMenu->id)
                 ->with('submenus')
@@ -88,7 +108,7 @@ class Sidebar extends Component
                     'permission' => $menu->permission ?? '',
                     'group'      => $menu->group?->nama() ?? '',
                     'submenus'   => $menu->submenus
-                        ->sortBy('nama')
+                        ->sortBy(fn($sub) => trim($sub->nama) === 'Rekap Bulanan' ? '00_rekap_bulanan' : $sub->nama)
                         ->map(fn($sub) => [
                             'id'           => $sub->id,
                             'nama'         => $sub->nama,
@@ -193,19 +213,46 @@ class Sidebar extends Component
         return $result;
     }
 
-    /**
-     * Get only 'view' permissions for a user (cached per user)
-     */
     private function getCachedUserViewPermissions(int $userId): array
     {
-        return cache()->remember('user-permissions:view:' . $userId, 60 * 60, function () {
+        return cache()->remember('user-permissions:view:' . $userId, 60, function () {
             $user = Auth::user();
 
             $all = method_exists($user, 'getAllPermissions')
                 ? $user->getAllPermissions()->pluck('name')->toArray()
                 : $user->permissions->pluck('name')->toArray();
 
-            return array_values(array_filter($all, fn($p) => str_starts_with($p, 'view')));
+            $permissions = array_values(array_filter($all, fn($p) => str_starts_with($p, 'view')));
+
+            // Tambahkan permission view koordinator jika user adalah koordinator
+            if ($user && $user->isKoordinator()) {
+                $permissions = array_merge($permissions, [
+                    'view-kepegawaian-jadwal-kerja',
+                    'view-kepegawaian-absensi',
+                    'view-kepegawaian-konfigurasi-jadwal',
+                ]);
+            }
+
+            // Filter ketersediaan menu Jadwal Kerja sesuai wewenang user
+            if ($user && $user->can('view-kepegawaian-jadwal-kerja')) {
+                if (!in_array('view-kepegawaian-jadwal-kerja', $permissions)) {
+                    $permissions[] = 'view-kepegawaian-jadwal-kerja';
+                }
+            } else {
+                $permissions = array_values(array_filter($permissions, fn($p) => $p !== 'view-kepegawaian-jadwal-kerja'));
+            }
+
+            // Allow users with assigned ruangan to view the asset & pengajuan menu
+            if ($user?->karyawan?->ruangan_id) {
+                if (!in_array('view-umum-asset', $permissions)) {
+                    $permissions[] = 'view-umum-asset';
+                }
+                if (!in_array('view-umum-pengajuan', $permissions)) {
+                    $permissions[] = 'view-umum-pengajuan';
+                }
+            }
+
+            return $permissions;
         });
     }
 
