@@ -228,10 +228,14 @@ class DokterSeeder extends Seeder
         ];
 
         foreach ($koordinators as $koor) {
-            // 4a. Buat/update data Karyawan
+            // 4a. Buat/update data Karyawan (filtered by existing columns in DB)
+            $karyData = collect($koor['karyawan'])
+                ->filter(fn($val, $key) => Schema::hasColumn('sdm_karyawan', $key))
+                ->toArray();
+
             $karyawan = Karyawan::updateOrCreate(
                 ['nip' => $koor['karyawan']['nip']],
-                $koor['karyawan']
+                $karyData
             );
 
             // 4b. Buat record di tabel dokter (link karyawan → spesialisasi)
@@ -248,7 +252,7 @@ class DokterSeeder extends Seeder
             $user = User::updateOrCreate(
                 ['email' => $koor['email']],
                 [
-                    'password'    => '1234',
+                    'password'    => \Illuminate\Support\Facades\Hash::make('1234'),
                     'karyawan_id' => $karyawan->id,
                 ]
             );

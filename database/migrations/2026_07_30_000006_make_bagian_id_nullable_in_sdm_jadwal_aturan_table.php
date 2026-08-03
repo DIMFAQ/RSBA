@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('sdm_jadwal_aturan')) {
+            return;
+        }
         Schema::table('sdm_jadwal_aturan', function (Blueprint $table) {
             $table->unsignedBigInteger('bagian_id')->nullable()->change();
         });

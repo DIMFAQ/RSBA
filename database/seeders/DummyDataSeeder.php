@@ -116,7 +116,10 @@ class DummyDataSeeder extends Seeder
                 ['id' => 6, 'nama' => 'Staff Pelaksana Umum', 'kode_surat' => 'STF-UM', 'parent_id' => 3, 'bagian_id' => $bagianIds['Umum & Logistik'], 'tunjangan_jabatan' => 500000, 'created_at' => now(), 'updated_at' => now()],
                 ['id' => 7, 'nama' => 'Staff Pelaksana Keuangan', 'kode_surat' => 'STF-KEU', 'parent_id' => 4, 'bagian_id' => $bagianIds['Keuangan'], 'tunjangan_jabatan' => 500000, 'created_at' => now(), 'updated_at' => now()],
             ];
-            DB::table('sdm_jabatan')->insert($jabatans);
+            $filteredJabatans = array_map(function ($j) {
+                return array_filter($j, fn($val, $key) => Schema::hasColumn('sdm_jabatan', $key), ARRAY_FILTER_USE_BOTH);
+            }, $jabatans);
+            DB::table('sdm_jabatan')->insert($filteredJabatans);
             Schema::enableForeignKeyConstraints();
         }
 
@@ -314,7 +317,11 @@ class DummyDataSeeder extends Seeder
             ];
         }
 
-        DB::table('sdm_karyawan')->insert($dummyPegawai);
+        $filteredDummyPegawai = array_map(function ($p) {
+            return array_filter($p, fn($val, $key) => Schema::hasColumn('sdm_karyawan', $key), ARRAY_FILTER_USE_BOTH);
+        }, $dummyPegawai);
+
+        DB::table('sdm_karyawan')->insertOrIgnore($filteredDummyPegawai);
 
         // --- Create User for Perawat UGD 1 ---
         $karyawanPerawat = Karyawan::where('nip', '22210264')->first(); // Arif Pamungkas

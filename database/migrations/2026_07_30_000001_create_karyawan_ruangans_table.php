@@ -12,25 +12,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sdm_kary_ruangan', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('karyawan_id');
-            $table->unsignedBigInteger('ruangan_id');
-            $table->date('tgl_mulai');
-            $table->date('tgl_berakhir')->nullable();
-            $table->boolean('is_utama')->default(true);
-            $table->text('keterangan')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('sdm_kary_ruangan')) {
+            Schema::create('sdm_kary_ruangan', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('karyawan_id');
+                $table->unsignedBigInteger('ruangan_id');
+                $table->date('tgl_mulai');
+                $table->date('tgl_berakhir')->nullable();
+                $table->boolean('is_utama')->default(true);
+                $table->text('keterangan')->nullable();
+                $table->timestamps();
 
-            $table->foreign('karyawan_id')->references('id')->on('sdm_karyawan')->onDelete('cascade');
-            $table->foreign('ruangan_id')->references('id')->on('ruangan')->onDelete('cascade');
-        });
+                $table->foreign('karyawan_id')->references('id')->on('sdm_karyawan')->onDelete('cascade');
+                $table->foreign('ruangan_id')->references('id')->on('ruangan')->onDelete('cascade');
+            });
+        }
 
         // Backfill data eksisting dari sdm_karyawan.ruangan_id
-        $karyawans = DB::table('sdm_karyawan')
-            ->whereNotNull('ruangan_id')
-            ->select('id', 'ruangan_id', 'tgl_masuk', 'created_at')
-            ->get();
+        if (Schema::hasColumn('sdm_karyawan', 'ruangan_id')) {
+            $karyawans = DB::table('sdm_karyawan')
+                ->whereNotNull('ruangan_id')
+                ->select('id', 'ruangan_id', 'tgl_masuk', 'created_at')
+                ->get();
 
         $now = now();
         $records = [];
@@ -53,6 +56,7 @@ return new class extends Migration
             foreach (array_chunk($records, 100) as $chunk) {
                 DB::table('sdm_kary_ruangan')->insert($chunk);
             }
+        }
         }
     }
 

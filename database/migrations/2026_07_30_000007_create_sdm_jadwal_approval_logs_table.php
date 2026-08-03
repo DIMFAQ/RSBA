@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('sdm_jadwal_approval_log')) {
+            return;
+        }
+
         Schema::create('sdm_jadwal_approval_log', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('jadwal_kerja_id');
@@ -19,9 +23,11 @@ return new class extends Migration
             $table->text('catatan')->nullable();
             $table->timestamps();
 
-            $table->foreign('jadwal_kerja_id')
-                ->references('id')->on('sdm_jadwal_kerja')
-                ->onDelete('cascade');
+            if (Schema::hasTable('sdm_jadwal_kerja')) {
+                $table->foreign('jadwal_kerja_id')
+                    ->references('id')->on('sdm_jadwal_kerja')
+                    ->onDelete('cascade');
+            }
 
             $table->foreign('user_id')
                 ->references('id')->on('users')

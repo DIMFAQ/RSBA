@@ -59,8 +59,17 @@ class RoleSeeder extends Seeder
         ];
         $executivePermissions = array_values(array_filter($allPermissions, fn($p) => !in_array($p, $systemSettingsOnly)));
 
+        $wadirMedis = Role::firstOrCreate(['name' => 'Wadir-Medis-Keperawatan']);
+        $wadirSdm   = Role::firstOrCreate(['name' => 'Wadir-SDM-Umum']);
+        $wadirKeu   = Role::firstOrCreate(['name' => 'Wadir-Keuangan']);
+        $direktur   = Role::firstOrCreate(['name' => 'Direktur']);
+
         $safeSync($kabid, $executivePermissions);
         $safeSync($wadir, $executivePermissions);
+        $safeSync($wadirMedis, $executivePermissions);
+        $safeSync($wadirSdm, $executivePermissions);
+        $safeSync($wadirKeu, $executivePermissions);
+        $safeSync($direktur, $executivePermissions);
 
 
 
