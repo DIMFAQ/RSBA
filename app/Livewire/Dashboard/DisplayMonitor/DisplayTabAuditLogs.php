@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Livewire\Dashboard\DisplayMonitor;
+
+use App\Services\DmsMiddlewareClient;
+use Livewire\Attributes\On;
+use Livewire\Component;
+
+class DisplayTabAuditLogs extends Component
+{
+    public array $auditLogs = [];
+
+    public function mount(DmsMiddlewareClient $client): void
+    {
+        $this->loadData($client);
+    }
+
+    public function render()
+    {
+        return view('livewire.dashboard.display-monitor.display-tab-audit-logs');
+    }
+
+    public function loadData(DmsMiddlewareClient $client): void
+    {
+        $this->auditLogs = $client->getAuditLogs();
+    }
+
+    #[On('display-status-changed')]
+    public function refreshData(DmsMiddlewareClient $client): void
+    {
+        $this->loadData($client);
+    }
+}
