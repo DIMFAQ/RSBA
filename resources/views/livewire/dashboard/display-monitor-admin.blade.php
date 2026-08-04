@@ -19,12 +19,14 @@
         >
             Data Cache BPJS
         </button>
-        <button 
-            wire:click="setTab('logs')" 
-            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'logs' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
-        >
-            Log Audit
-        </button>
+        @if($isSuperAdmin)
+            <button 
+                wire:click="setTab('logs')" 
+                class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'logs' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+            >
+                Log Audit
+            </button>
+        @endif
         <button 
             wire:click="setTab('inpatient_rooms')" 
             class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'inpatient_rooms' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
@@ -73,7 +75,7 @@
         <livewire:dashboard.display-monitor.display-tab-devices wire:key="tab-devices" />
     @elseif($activeTab === 'data')
         <livewire:dashboard.display-monitor.display-tab-bpjs-data wire:key="tab-data" />
-    @elseif($activeTab === 'logs')
+    @elseif($activeTab === 'logs' && $isSuperAdmin)
         <livewire:dashboard.display-monitor.display-tab-audit-logs wire:key="tab-logs" />
     @elseif($activeTab === 'inpatient_rooms')
         <livewire:dashboard.display-monitor.display-tab-inpatient-rooms wire:key="tab-inpatient-rooms" />

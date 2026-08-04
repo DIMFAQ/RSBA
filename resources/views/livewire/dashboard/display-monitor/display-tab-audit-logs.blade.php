@@ -1,5 +1,11 @@
-<div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6">
-    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Log Aktivitas & Audit Mapping</h3>
+<div wire:poll.10s="loadData" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6 space-y-4">
+    <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Log Aktivitas & Audit Mapping</h3>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Auto-Sync Background (10s)
+        </span>
+    </div>
     
     <div class="overflow-x-auto">
         <table class="min-w-full text-left">
