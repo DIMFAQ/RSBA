@@ -259,15 +259,58 @@ class User extends Authenticatable
 
         $karyawan = $this->karyawan;
         if ($karyawan) {
-            $jabatanAktif = $karyawan->jabatan->first();
-            if ($jabatanAktif && $jabatanAktif->bagian_id) {
-                return \App\Models\Sdm\Ruangan::where('bagian_id', $jabatanAktif->bagian_id)
+            $bagianId = $karyawan->active_bagian_id;
+            if ($bagianId) {
+                return \App\Models\Ruangan::where('bagian_id', $bagianId)
                     ->pluck('id')
                     ->toArray();
             }
         }
 
         return [];
+    }
+
+    /**
+     * Return the effective departments of the user's active assignments.
+     * Assignment-level department takes precedence over the job master default.
+     */
+    public function getActiveBagianIds(): array
+    {
+        return $this->karyawan?->jabatan
+            ?->map(fn ($jabatan) => $jabatan->pivot?->bagian_id ?? $jabatan->bagian_id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->map(fn ($id) => (int) $id)
+            ->all() ?? [];
+    }
+
+    /**
+     * Ruangan aktif milik karyawan yang terhubung ke user ini.
+     *
+     * Ruangan utama tetap dipertahankan sebagai fallback karena beberapa
+     * data lama belum memiliki baris pada sdm_kary_ruangan.
+     */
+    public function getOwnRuanganIds(): array
+    {
+        $karyawan = $this->karyawan;
+
+        if (!$karyawan || $karyawan->resign_at) {
+            return [];
+        }
+
+        $ids = $karyawan->ruangans()->pluck('ruangan.id')->all();
+
+        if ($karyawan->ruangan_id) {
+            $ids[] = (int) $karyawan->ruangan_id;
+        }
+
+        return collect($ids)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
@@ -365,4 +408,3 @@ class User extends Authenticatable
         return $this->isKoordinator() && !$this->isDokter();
     }
 }
-

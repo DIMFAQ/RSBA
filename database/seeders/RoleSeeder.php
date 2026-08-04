@@ -125,8 +125,12 @@ class RoleSeeder extends Seeder
         });
         $administrasi->syncPermissions(array_unique(array_merge($admPermissions, $commonPermissions)));
 
-        // 5. Guest permissions
-        $guest->syncPermissions($commonPermissions);
+        // 5. Guest permissions: hanya dapat melihat jadwal pada ruangan
+        // penempatan karyawannya sendiri (scope ruangan ditegakkan di kode).
+        $guest->syncPermissions(array_unique(array_merge(
+            $commonPermissions,
+            ['view-kepegawaian-jadwal-kerja']
+        )));
         
         // 6. Bedah & UGD basic permissions
         $staffBedah->syncPermissions($commonPermissions);

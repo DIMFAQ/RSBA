@@ -59,21 +59,43 @@ class Kelola extends Component
         $canManage = false;
 
         if ($user) {
+            $isRestrictedGuest = $user->hasRole('Guest') && !$user->isKoordinator();
+
+            if ($isRestrictedGuest) {
+                $canView = in_array(
+                    (int) $this->jadwalKerja->ruangan_id,
+                    $user->getOwnRuanganIds(),
+                    true
+                ) && in_array($this->jadwalKerja->status, [
+                    StatusJadwalKerja::PUBLISHED,
+                    StatusJadwalKerja::LOCKED,
+                ], true)
+                && $this->jadwalKerja->tipe === ($user->isDokter() ? 'dokter' : 'karyawan');
+            }
+
             $isGlobalApprover = $user->hasRole([
                 'Super-Admin', 'Staff-SDM', 'Wakil-Direktur',
                 'Wadir-Medis-Keperawatan', 'Wadir-SDM-Umum', 'Wadir-Keuangan', 'Direktur'
-            ]) || $user->can('approve-jadwal-wadir') || $user->can('view-kepegawaian-jadwal-kerja');
+            ]) || $user->can('approve-jadwal-wadir');
 
-            if ($isGlobalApprover) {
+            if (!$isRestrictedGuest && $isGlobalApprover) {
                 $canView = true;
                 if ($user->hasRole(['Super-Admin', 'Staff-SDM'])) {
                     $canManage = true;
                 }
-            } elseif ($user->hasRole('Kepala-Bidang') || $user->can('approve-jadwal-kabid')) {
-                $bagianRuanganIds = $user->getBagianScopedRuanganIds() ?? [];
+            } elseif (!$isRestrictedGuest && ($user->hasRole('Kepala-Bidang') || $user->can('approve-jadwal-kabid'))) {
+                $bagianIds = $user->getActiveBagianIds();
+                $legacyBagianRuanganIds = $user->getBagianScopedRuanganIds() ?? [];
                 $koorIds = $user->getRuanganKoordinatorIds() ?? [];
-                $scopedIds = array_unique(array_merge($bagianRuanganIds, $koorIds));
-                if (in_array($this->jadwalKerja->ruangan_id, $scopedIds)) {
+                $jadwalBagianId = $this->jadwalKerja->bagian_id
+                    ?? $this->jadwalKerja->ruangan?->bagian_id;
+                $hasDepartmentAccess = $jadwalBagianId
+                    && in_array((int) $jadwalBagianId, $bagianIds, true);
+                $hasLegacyRoomAccess = !$this->jadwalKerja->bagian_id
+                    && in_array($this->jadwalKerja->ruangan_id, $legacyBagianRuanganIds);
+                $hasCoordinatorRoomAccess = in_array($this->jadwalKerja->ruangan_id, (array) $koorIds);
+
+                if ($hasDepartmentAccess || $hasLegacyRoomAccess || $hasCoordinatorRoomAccess) {
                     $canView = true;
                     $canManage = true;
                 }
@@ -91,7 +113,7 @@ class Kelola extends Component
                 $canManage = true;
             }
 
-            if ($ownRuanganId && $this->jadwalKerja->ruangan_id === $ownRuanganId) {
+            if (!$isRestrictedGuest && $ownRuanganId && $this->jadwalKerja->ruangan_id === $ownRuanganId) {
                 $canView = true;
                 if ($user->isKoordinator() || $user->hasRole('Kepala-Bidang')) {
                     $canManage = true;
@@ -110,7 +132,10 @@ class Kelola extends Component
         abort_unless($canView, 403, 'Anda tidak memiliki akses ke jadwal ruangan ini.');
 
         // Populate valid shifts using service (includes jam override)
-        $validShifts = $service->shiftValidUntukRuangan($this->jadwalKerja->ruangan_id);
+        $validShifts = $service->shiftValidUntukRuangan(
+            $this->jadwalKerja->ruangan_id,
+            $this->jadwalKerja->bagian_id
+        );
         $this->shiftOptions = $validShifts->map(function ($rs) {
             $shift = $rs->shift;
             return [
@@ -141,7 +166,11 @@ class Kelola extends Component
         $isKoorDokter = $user?->isKoordinatorDokter() ?? false;
         $isKoorKaryawan = $user?->isKoordinatorKaryawan() ?? false;
 
-        $this->syncDetails($daysInMonth, $isKoorDokter, $isKoorKaryawan);
+        // Sinkronisasi detail adalah operasi tulis. User Guest/read-only tidak
+        // boleh mengubah atau menghapus detail hanya karena membuka halaman.
+        if ($canManage) {
+            $this->syncDetails($daysInMonth, $isKoorDokter, $isKoorKaryawan);
+        }
 
         // Group details by Karyawan
         $grouped = $this->jadwalKerja->details->groupBy('karyawan_id');
@@ -279,6 +308,21 @@ class Kelola extends Component
         if ($this->isReadOnly) {
             $this->toast()->error('Gagal', 'Jadwal kerja ini dalam status terlindungi / read-only.')->send();
             return;
+        }
+
+        $allowedShiftIds = collect($this->shiftOptions)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        foreach ($this->state as $shiftId) {
+            if ($shiftId !== null && $shiftId !== '' && !in_array((int) $shiftId, $allowedShiftIds, true)) {
+                $this->toast()->error(
+                    'Gagal',
+                    'Shift yang dipilih tidak berlaku untuk Bagian pada jadwal ini.'
+                )->send();
+                return;
+            }
         }
 
         try {

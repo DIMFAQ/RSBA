@@ -44,6 +44,35 @@ class JadwalKerja extends Model
         return $this->belongsTo(\App\Models\Ruangan::class, 'ruangan_id');
     }
 
+    public function bagian()
+    {
+        return $this->belongsTo(Bagian::class, 'bagian_id');
+    }
+
+    /**
+     * Resolve one department for a room-based schedule.
+     * A schedule is intentionally limited to one department in the first rollout.
+     */
+    public static function resolveBagianIdForKaryawanIds(iterable $karyawanIds, ?int $ruanganId = null): ?int
+    {
+        $ids = collect($karyawanIds)->filter()->unique()->values();
+        $bagianIds = Karyawan::with('jabatan')
+            ->whereIn('id', $ids)
+            ->get()
+            ->map(fn (Karyawan $karyawan) => $karyawan->active_bagian_id)
+            ->values();
+
+        if ($bagianIds->isNotEmpty() && $bagianIds->every(fn ($id) => $id !== null) && $bagianIds->unique()->count() === 1) {
+            return (int) $bagianIds->first();
+        }
+
+        if (($bagianIds->isEmpty() || $bagianIds->every(fn ($id) => $id === null)) && $ruanganId) {
+            return \App\Models\Ruangan::whereKey($ruanganId)->value('bagian_id');
+        }
+
+        return null;
+    }
+
     public function approvalLogs()
     {
         return $this->hasMany(JadwalApprovalLog::class, 'jadwal_kerja_id')->latest();
@@ -101,10 +130,11 @@ class JadwalKerja extends Model
             return $stepNumber === 1 ? 'Kepala Dept / Bidang' : 'Wakil Direktur';
         }
 
-        $bagianId = $this->ruangan?->bagian_id;
+        // Legacy fallback is kept until all existing schedules are backfilled.
+        $bagianId = $this->bagian_id ?? $this->ruangan?->bagian_id;
 
         if ($targetTingkatId === 3 && !$bagianId) {
-            return 'Kepala Dept / Bidang (ruangan belum dipetakan ke bagian)';
+            return 'Kepala Dept / Bidang (jadwal belum memiliki bagian)';
         }
 
         // Query karyawan yang memegang Jabatan AKTIF (tgl_berakhir IS NULL) dengan tingkat_id yang cocok
@@ -112,7 +142,13 @@ class JadwalKerja extends Model
             $q->where('tingkat_id', $targetTingkatId)
               ->whereNull('sdm_kary_jabatan.tgl_berakhir'); // hanya jabatan aktif saat ini
             if ($bagianId && $targetTingkatId === 3) {
-                $q->where('bagian_id', $bagianId);
+                $q->where(function ($partQuery) use ($bagianId) {
+                    $partQuery->where('sdm_kary_jabatan.bagian_id', $bagianId)
+                        ->orWhere(function ($legacyQuery) use ($bagianId) {
+                            $legacyQuery->whereNull('sdm_kary_jabatan.bagian_id')
+                                ->where('sdm_jabatan.bagian_id', $bagianId);
+                        });
+                });
             }
         })->orderBy('id')->first();
 
@@ -180,6 +216,7 @@ class JadwalKerja extends Model
             try {
                 $payload = [
                     'ruangan_id'  => $ruanganId,
+                    'bagian_id'   => self::resolveBagianIdForKaryawanIds([$karyawanId], $ruanganId),
                     'bulan'       => $bulan,
                     'tahun'       => $tahun,
                     'status'      => $isReguler ? \App\Enums\StatusJadwalKerja::PUBLISHED : \App\Enums\StatusJadwalKerja::DRAFT,
@@ -201,8 +238,20 @@ class JadwalKerja extends Model
                     return;
                 }
             }
-        } elseif ($isReguler && $jadwalKerja->status === \App\Enums\StatusJadwalKerja::DRAFT) {
-            $jadwalKerja->update(['status' => \App\Enums\StatusJadwalKerja::PUBLISHED]);
+        } else {
+            $updates = [];
+            if (!$jadwalKerja->bagian_id) {
+                $resolvedBagianId = self::resolveBagianIdForKaryawanIds([$karyawanId], $ruanganId);
+                if ($resolvedBagianId) {
+                    $updates['bagian_id'] = $resolvedBagianId;
+                }
+            }
+            if ($isReguler && $jadwalKerja->status === \App\Enums\StatusJadwalKerja::DRAFT) {
+                $updates['status'] = \App\Enums\StatusJadwalKerja::PUBLISHED;
+            }
+            if ($updates) {
+                $jadwalKerja->update($updates);
+            }
         }
 
         $hasDetails = \App\Models\Sdm\JadwalKerjaDetail::where('jadwal_kerja_id', $jadwalKerja->id)
@@ -210,7 +259,10 @@ class JadwalKerja extends Model
             ->exists();
 
         if ($hasDetails) {
-            $shiftReguler = \App\Models\Sdm\JadwalShift::where('kode', 'REGULER')->where('aktif', true)->first();
+            $shiftReguler = app(\App\Services\AturanJadwalService::class)
+                ->shiftValidUntukRuangan($ruanganId, $jadwalKerja->bagian_id)
+                ->first(fn ($ruanganShift) => $ruanganShift->shift?->kode === 'REGULER')
+                ?->shift;
             if ($isReguler && $shiftReguler) {
                 $details = \App\Models\Sdm\JadwalKerjaDetail::where('jadwal_kerja_id', $jadwalKerja->id)
                     ->where('karyawan_id', $karyawanId)
@@ -228,7 +280,10 @@ class JadwalKerja extends Model
             return;
         }
 
-        $shiftReguler = \App\Models\Sdm\JadwalShift::where('kode', 'REGULER')->where('aktif', true)->first();
+        $shiftReguler = app(\App\Services\AturanJadwalService::class)
+            ->shiftValidUntukRuangan($ruanganId, $jadwalKerja->bagian_id)
+            ->first(fn ($ruanganShift) => $ruanganShift->shift?->kode === 'REGULER')
+            ?->shift;
         $daysInMonth = \Carbon\Carbon::create($tahun, $bulan, 1)->daysInMonth;
         
         $startDate = \Carbon\Carbon::create($tahun, $bulan, 1)->format('Y-m-d');
