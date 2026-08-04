@@ -5,6 +5,7 @@ namespace App\Livewire\Karyawan;
 use Throwable;
 use Livewire\Component;
 use App\Models\Sdm\Jabatan;
+use App\Models\Sdm\Bagian;
 use App\Models\Sdm\Karyawan;
 use App\Enums\StatusKaryawan;
 use App\Enums\KategoriKerja;
@@ -26,7 +27,9 @@ class EditKedinasan extends Component
     public $kategori_options;
     public $kategori_init;
     public $jabatan_options;
+    public $bagian_options;
     public $jabatan_init;
+    public $bagian_init;
 
     public $dinas_options = [
         ['id' => 'resign', 'label' => 'Resign / Mengundurkan Diri'],
@@ -45,8 +48,11 @@ class EditKedinasan extends Component
             'form.status' => 'required',
             'form.kategori_kerja' => 'required',
             'form.jabatan' => 'required',
+            'form.bagian' => 'required|exists:bagian,id',
             'form.tgl_status' => Rule::requiredIf(fn() => $this->form->status != $this->status_init),
-            'form.tgl_jabatan' => Rule::requiredIf(fn() => $this->form->jabatan != $this->jabatan_init),
+            'form.tgl_jabatan' => Rule::requiredIf(fn() =>
+                $this->form->jabatan != $this->jabatan_init || $this->form->bagian != $this->bagian_init
+            ),
             'form.tgl_ruangan' => Rule::requiredIf(fn() => $this->form->ruangan != $this->ruangan_init),
             'form.tgl_dinas' => Rule::requiredIf(fn() => $this->form->dinas != $this->dinas_init)
         ];
@@ -66,8 +72,16 @@ class EditKedinasan extends Component
         $this->kategori_init = $karyawan->kategori_kerja?->value ?? 'shift';
 
         $this->jabatan_options = Jabatan::all();
-        $this->jabatan_init = $karyawan->jabatan[0]->id ?? '';
+        $this->bagian_options = Bagian::query()->where('is_active', true)->orderBy('nama')->get();
+        $this->jabatan_init = $this->form->jabatan;
+        $this->bagian_init = $this->form->bagian;
         $this->ruangan_init = $karyawan->ruangan_id ?? '';
+    }
+
+    public function updatedFormJabatan($value): void
+    {
+        $jabatan = Jabatan::find($value);
+        $this->form->bagian = $jabatan?->bagian_id ?? '';
     }
 
     public function update()
@@ -80,7 +94,10 @@ class EditKedinasan extends Component
         }
 
         // update jabatan
-        if ($this->form->tgl_jabatan && ($this->form->jabatan != $this->jabatan_init)) {
+        if ($this->form->tgl_jabatan && (
+            $this->form->jabatan != $this->jabatan_init ||
+            $this->form->bagian != $this->bagian_init
+        )) {
             $this->updateJabatan();
         }
 
@@ -123,8 +140,11 @@ class EditKedinasan extends Component
 
     public function updateJabatan()
     {
-        $latestJabatan = $this->form->karyawan->jabatan?->first();
+        $karyawan = $this->form->karyawan;
+
         try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
             // Tutup SEMUA jabatan aktif (tgl_berakhir IS NULL) agar tidak ada duplikat pejabat aktif
             KaryawanJabatan::where('karyawan_id', $this->form->karyawan->id)
                 ->whereNull('tgl_berakhir')
@@ -133,6 +153,7 @@ class EditKedinasan extends Component
             $data = [
                 'jabatan_id'  => $this->form->jabatan,
                 'karyawan_id' => $this->form->karyawan->id,
+                'bagian_id'   => $this->form->bagian,
                 'tgl_mulai'   => $this->form->tgl_jabatan
             ];
 
@@ -140,7 +161,7 @@ class EditKedinasan extends Component
             KaryawanJabatan::create($data);
 
             // Auto-sync role user jika terhubung dengan akun user
-            $this->form->karyawan->user?->syncRoleFromJabatan();
+            $karyawan->user?->syncRoleFromJabatan();
 
             // Cek jika jabatan baru adalah level struktural (tingkat_id <= 3 / Kabag / Wadir / Direktur)
             // dan karyawan memiliki penugasan koordinator aktif
@@ -157,12 +178,18 @@ class EditKedinasan extends Component
                 }
             }
 
+            \Illuminate\Support\Facades\DB::commit();
+
+            $this->jabatan_init = $this->form->jabatan;
+            $this->bagian_init = $this->form->bagian;
+
             $this->dispatch('new-jabatan-created'); //dispatch event
 
             $this->toast()
                 ->success('Berhasil', 'Jabatan baru berhasil disimpan.')
                 ->send();
         } catch (Throwable $th) {
+            \Illuminate\Support\Facades\DB::rollBack();
             $this->toast()
                 ->error('Failed', 'Error : ', $th->getMessage())
                 ->send();

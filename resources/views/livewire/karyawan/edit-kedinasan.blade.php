@@ -17,7 +17,15 @@
                 <x-ts:select.styled wire:model.live="form.jabatan" searchable placeholder="Jabatan" :options="$jabatan_options" select="label:nama|value:id" />
                 @if ($form->jabatan != $jabatan_init)
                     <div class="w-full mt-1">
-                        <x-ts:date wire:model.lazy='form.tgl_jabatan' placeholder="Tanggal Jabatan Baru" />
+                        <x-ts:date wire:model.lazy='form.tgl_jabatan' placeholder="Tanggal Penugasan Baru" />
+                    </div>
+                @endif
+            </div>
+            <div class="w-full">
+                <x-ts:select.styled wire:model.live="form.bagian" searchable placeholder="Bagian / Departemen" :options="$bagian_options" select="label:nama|value:id" />
+                @if ($form->bagian != $bagian_init && $form->jabatan == $jabatan_init)
+                    <div class="w-full mt-1">
+                        <x-ts:date wire:model.lazy='form.tgl_jabatan' placeholder="Tanggal Penugasan Baru" />
                     </div>
                 @endif
             </div>
@@ -122,6 +130,7 @@
                         <thead class="bg-slate-50 text-slate-700 uppercase font-semibold border-b border-slate-200">
                             <tr>
                                 <th class="px-3 py-2">Jabatan</th>
+                                <th class="px-3 py-2">Bagian</th>
                                 <th class="px-3 py-2">Tgl Mulai</th>
                                 <th class="px-3 py-2">Tgl Selesai</th>
                                 <th class="px-3 py-2 text-center">Status</th>
@@ -132,6 +141,9 @@
                                 <tr class="hover:bg-slate-50/80">
                                     <td class="px-3 py-2 font-semibold text-slate-800">
                                         {{ $histJ->nama }}
+                                    </td>
+                                    <td class="px-3 py-2 font-medium text-slate-600">
+                                        {{ \App\Models\Sdm\Bagian::find($histJ->pivot->bagian_id ?? $histJ->bagian_id)?->nama ?? '-' }}
                                     </td>
                                     <td class="px-3 py-2 font-medium text-slate-600">
                                         {{ $histJ->pivot->tgl_mulai ? date('d/m/Y', strtotime($histJ->pivot->tgl_mulai)) : '-' }}

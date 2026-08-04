@@ -80,7 +80,7 @@ class Karyawan extends Model
     function historyJabatan()
     {
         return $this->belongsToMany(Jabatan::class, KaryawanJabatan::class)
-            ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
+            ->withPivot('id', 'bagian_id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
             ->orderByPivot('created_at', 'desc');
     }
 
@@ -89,9 +89,21 @@ class Karyawan extends Model
     function jabatan()
     {
         return $this->belongsToMany(Jabatan::class, 'sdm_kary_jabatan', 'karyawan_id', 'jabatan_id')
-            ->withPivot('id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
+            ->withPivot('id', 'bagian_id', 'created_at', 'tgl_mulai', 'tgl_berakhir')
             ->wherePivotNull('tgl_berakhir')
             ->orderByPivot('tgl_mulai', 'desc');
+    }
+
+    /**
+     * The effective department for the current assignment.
+     * Assignment-level department wins; the job master is the legacy/default fallback.
+     */
+    public function getActiveBagianIdAttribute(): ?int
+    {
+        $jabatan = $this->jabatan->first();
+
+        return $jabatan?->pivot?->bagian_id
+            ?? $jabatan?->bagian_id;
     }
 
     // Get History Ruangan

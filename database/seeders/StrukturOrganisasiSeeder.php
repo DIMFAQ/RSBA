@@ -658,6 +658,7 @@ class StrukturOrganisasiSeeder extends Seeder
                 'karyawan_id' => $karyawan->id,
                 'jabatan_id' => $jabatan->id,
             ], [
+                'bagian_id' => $jabatan->bagian_id,
                 'tgl_mulai' => '2020-01-01',
             ]);
 
@@ -692,15 +693,9 @@ class StrukturOrganisasiSeeder extends Seeder
         DB::table('sdm_jabatan')->where('nama', 'like', '%kabid%')->orWhere('nama', 'like', '%kepala bidang%')->orWhere('nama', 'like', '%kabag%')->orWhere('nama', 'like', '%kepala bagian%')->orWhere('nama', 'like', '%manajer%')->update(['tingkat_id' => 3]);
         DB::table('sdm_jabatan')->where('nama', 'like', '%koordinator%')->orWhere('nama', 'like', '%karu%')->orWhere('nama', 'like', '%kepala ruangan%')->update(['tingkat_id' => 4]);
 
-        // Auto-map ruangan Farmasi & Apotek ke Bagian Farmasi
+        // Bagian hanya ditetapkan pada penugasan karyawan/jadwal.
+        // Master Ruangan dikelola manual dan tidak lagi dipetakan ke Bagian di sini.
         if ($b_farmasi) {
-            DB::table('ruangan')
-                ->where(function ($q) {
-                    $q->where('nama', 'LIKE', '%Farmasi%')
-                      ->orWhere('nama', 'LIKE', '%Apotek%');
-                })
-                ->update(['bagian_id' => $b_farmasi]);
-
             // Buat/update jabatan Kepala Bidang Farmasi
             $kabidFarmasi = Jabatan::updateOrCreate(
                 ['nama' => 'Kepala Bidang Farmasi'],
@@ -715,17 +710,13 @@ class StrukturOrganisasiSeeder extends Seeder
             // Assign Andi Surya sebagai Kabid Farmasi
             $andiSurya = Karyawan::where('nama', 'like', '%Andi Surya%')->first();
             if ($andiSurya && $kabidFarmasi) {
-                $farmasiRuangan = \App\Models\Ruangan::where('bagian_id', $b_farmasi)->first();
-                if ($farmasiRuangan) {
-                    $andiSurya->update(['ruangan_id' => $farmasiRuangan->id]);
-                }
-
                 KaryawanJabatan::updateOrCreate(
                     [
                         'karyawan_id' => $andiSurya->id,
                         'jabatan_id'  => $kabidFarmasi->id,
                     ],
                     [
+                        'bagian_id'   => $kabidFarmasi->bagian_id,
                         'tgl_mulai'   => '2024-01-01',
                         'tgl_berakhir'=> null,
                     ]

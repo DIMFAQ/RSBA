@@ -448,6 +448,7 @@ class UserSeeder extends Seeder
                             'jabatan_id'  => $jabatanTarget->id,
                         ],
                         [
+                            'bagian_id'   => $jabatanTarget->bagian_id,
                             'tgl_mulai'   => '2020-01-01',
                             'tgl_berakhir'=> null,
                         ]

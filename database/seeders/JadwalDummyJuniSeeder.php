@@ -64,6 +64,7 @@ class JadwalDummyJuniSeeder extends Seeder
                 // Buat header Jadwal Kerja
                 $jadwalKerja = JadwalKerja::create([
                     'ruangan_id' => $ruangan->id,
+                    'bagian_id' => JadwalKerja::resolveBagianIdForKaryawanIds($karyawans->pluck('id'), $ruangan->id),
                     'bulan' => $bulan,
                     'tahun' => $tahun,
                     'status' => 'published',
