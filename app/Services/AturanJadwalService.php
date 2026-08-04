@@ -43,7 +43,9 @@ class AturanJadwalService
     public function validasiJadwal(JadwalKerja $jadwal): array
     {
         $violations = [];
-        $bagianId = $jadwal->ruangan?->bagian_id ?? 0;
+        // Use the schedule snapshot. The room mapping is only a legacy fallback
+        // while existing schedules are being backfilled.
+        $bagianId = $jadwal->bagian_id ?? $jadwal->ruangan?->bagian_id ?? 0;
 
         // Ambil batas aturan
         $maxMalam = (int) $this->get($bagianId, KodeAturanJadwal::MAX_SHIFT_MALAM_BERTURUT);
@@ -119,19 +121,40 @@ class AturanJadwalService
     }
 
     /**
-     * Kembalikan daftar RuanganShift (pivot) aktif untuk ruangan ini.
-     * Fallback: jika ruangan belum dikonfigurasi, kembalikan semua shift aktif (tanpa override).
+     * Kembalikan daftar shift yang valid untuk ruangan dan Bagian jadwal.
+     *
+     * Shift tanpa mapping Bagian berlaku umum. Jika sebuah shift memiliki
+     * mapping Bagian, shift tersebut hanya valid untuk Bagian yang dipilih.
+     * Konfigurasi RuanganShift tetap digunakan untuk override jam/toleransi.
      */
-    public function shiftValidUntukRuangan(int $ruanganId): Collection
+    public function shiftValidUntukRuangan(int $ruanganId, ?int $bagianId = null): Collection
     {
+        $eligibleShiftIds = JadwalShift::query()
+            ->where('aktif', true)
+            ->where(function ($query) use ($bagianId) {
+                $query->whereDoesntHave('bagians');
+
+                if ($bagianId) {
+                    $query->orWhereHas('bagians', fn ($bagianQuery) =>
+                        $bagianQuery->whereKey($bagianId)
+                    );
+                }
+            })
+            ->pluck('id');
+
+        if ($eligibleShiftIds->isEmpty()) {
+            return new Collection();
+        }
+
         $ruanganShifts = \App\Models\Sdm\RuanganShift::where('ruangan_id', $ruanganId)
+            ->whereIn('shift_id', $eligibleShiftIds)
             ->with('shift')
             ->get()
             ->filter(fn($rs) => $rs->shift && $rs->shift->aktif);
 
         if ($ruanganShifts->isEmpty()) {
-            // Fallback: bungkus shift global ke dalam objek sementara
-            return JadwalShift::where('aktif', true)->get()->map(function ($shift) use ($ruanganId) {
+            // Fallback: bungkus shift yang valid untuk Bagian ke dalam objek sementara
+            return JadwalShift::whereIn('id', $eligibleShiftIds)->get()->map(function ($shift) use ($ruanganId) {
                 $rs = new \App\Models\Sdm\RuanganShift();
                 $rs->ruangan_id = $ruanganId;
                 $rs->shift_id   = $shift->id;
