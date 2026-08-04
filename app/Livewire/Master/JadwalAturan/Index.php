@@ -39,10 +39,6 @@ class Index extends Component implements HasForms, HasTable, HasActions
         $user = auth()->user();
         $query = JadwalAturan::query()->with('bagian');
 
-        // Aturan Jadwal pada Konfigurasi Jadwal hanya menampilkan Aturan Umum RSBA (bagian_id IS NULL).
-        // Aturan spesifik per departemen dikelola khusus di Master Bagian.
-        $query->whereNull('bagian_id');
-
         $actions = [];
         if ($user && $user->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum'])) {
             $actions = [

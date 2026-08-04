@@ -18,12 +18,21 @@
                     class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">
                     Master Shift
                 </button>
+                <button wire:click="$set('tab', 'aturan-jadwal')" @click="tab = 'aturan-jadwal'"
+                    :class="tab === 'aturan-jadwal' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'"
+                    class="whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium">
+                    Aturan Jadwal
+                </button>
             </nav>
         </div>
 
         <div class="mt-4">
             @if($tab === 'master-shift')
                 @livewire('master.jadwal-shift.index')
+            @endif
+
+            @if($tab === 'aturan-jadwal')
+                @livewire('master.jadwal-aturan.index')
             @endif
             
             {{-- Hidden tab, accessible only via URL ?tab=shift-ruangan --}}

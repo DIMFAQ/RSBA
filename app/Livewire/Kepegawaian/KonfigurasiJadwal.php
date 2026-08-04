@@ -27,7 +27,6 @@ class KonfigurasiJadwal extends Component
             $user->hasRole(['Super-Admin', 'Staff-SDM', 'Wakil-Direktur', 'Wadir-SDM-Umum', 'Koordinator'])
             || $user->isKoordinator()
             || $user->can('view-kepegawaian-konfigurasi-jadwal')
-            || $user->can('view-kepegawaian-jadwal-kerja')
         );
 
         abort_unless(
@@ -39,4 +38,3 @@ class KonfigurasiJadwal extends Component
         return view('livewire.kepegawaian.konfigurasi-jadwal');
     }
 }
-

@@ -43,7 +43,7 @@ class Edit extends Component
     public function rules()
     {
         return [
-            'bagian_id' => 'nullable',
+            'bagian_id' => 'nullable|exists:bagian,id',
             'kode' => 'required|string',
             'nilai' => 'required|string',
             'aktif' => 'boolean'
@@ -52,6 +52,12 @@ class Edit extends Component
 
     public function submit()
     {
+        abort_unless(
+            auth()->user()?->can('edit-kepegawaian-master-jadwal-aturan'),
+            403,
+            'Tidak memiliki akses untuk mengubah Aturan Jadwal.'
+        );
+
         $this->validate();
 
         $targetBagianId = $this->bagian_id ?: null;
@@ -94,7 +100,14 @@ class Edit extends Component
         ])->toArray();
 
         return view('livewire.master.jadwal-aturan.edit', [
-            'bagianOptions' => Bagian::select('id', 'nama')->get()->map(fn($item) => ['value' => $item->id, 'label' => $item->nama])->toArray(),
+            'bagianOptions' => array_merge(
+                [['value' => '', 'label' => 'Aturan Umum RSBA (Semua Departemen)']],
+                Bagian::select('id', 'nama')
+                    ->orderBy('nama')
+                    ->get()
+                    ->map(fn($item) => ['value' => $item->id, 'label' => $item->nama])
+                    ->toArray()
+            ),
             'kodeOptions' => $kodeOptions,
         ]);
     }
