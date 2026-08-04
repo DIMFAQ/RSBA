@@ -22,9 +22,9 @@ class Add extends Component
     public $isDomisiliKTP = false;
     public $jk_options;
     public $pernikahan_options = [
-        ['value' => 'belum', 'label' => 'Belum Menikah'],
+        ['value' => 'belum_menikah', 'label' => 'Belum Menikah'],
         ['value' => 'menikah', 'label' => 'Menikah'],
-        ['value' => 'single', 'label' => 'Janda/Duda']
+        ['value' => 'janda_duda', 'label' => 'Janda/Duda']
     ];
 
     public function mount()
