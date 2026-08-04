@@ -1,4 +1,17 @@
 <div class="space-y-6">
+    <!-- Header Controls & SIMRS Integration Status -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm">
+        <div class="flex items-center gap-3">
+        </div>
+        <button wire:click="syncMasterData"
+            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-xl transition dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Sync Master Data
+        </button>
+    </div>
+
     <!-- Tab Navigation -->
     <div class="flex border-b border-gray-200 dark:border-gray-700">
         <button 
@@ -11,32 +24,46 @@
             wire:click="setTab('doctors')" 
             class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'doctors' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
         >
-            Dokter
+            Dokter Bertugas
         </button>
         <button 
             wire:click="setTab('queue')" 
             class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'queue' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
         >
-            Antrian Hari Ini
+            Antrian Pasien SIMRS
         </button>
     </div>
 
     <!-- Alert Banner -->
     @if($successMessage)
-        <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 text-sm dark:bg-emerald-950/20 dark:border-emerald-800/30 dark:text-emerald-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <span>{{ $successMessage }}</span>
+        <div x-data="{ show: true }" x-show="show" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center justify-between gap-3 text-sm dark:bg-emerald-950/20 dark:border-emerald-800/30 dark:text-emerald-400">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <span>{{ $successMessage }}</span>
+            </div>
+            <button type="button" @click="show = false" wire:click="$set('successMessage', '')" class="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-200 p-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors focus:outline-none shrink-0" title="Tutup">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     @endif
 
     @if($errorMessage)
-        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center gap-2 text-sm dark:bg-rose-950/20 dark:border-rose-800/30 dark:text-rose-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-            </svg>
-            <span>{{ $errorMessage }}</span>
+        <div x-data="{ show: true }" x-show="show" class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center justify-between gap-3 text-sm dark:bg-rose-950/20 dark:border-rose-800/30 dark:text-rose-400">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-rose-600 dark:text-rose-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <span>{{ $errorMessage }}</span>
+            </div>
+            <button type="button" @click="show = false" wire:click="$set('errorMessage', '')" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-200 p-1 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors focus:outline-none shrink-0" title="Tutup">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     @endif
 
@@ -45,28 +72,38 @@
     ═══════════════════════════════════════════════════════════════════════════ --}}
     @if($activeTab === 'poli')
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Form Tambah/Edit Poli -->
+            <!-- Form Pilih Poliklinik dari Master Ruangan -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700/50">
                 <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-4">
-                    {{ $editingPoliId ? 'Edit Poliklinik' : 'Tambah Poliklinik' }}
+                    {{ $editingPoliId ? 'Edit Mapping Poliklinik' : 'Pilih dari Master Ruangan' }}
                 </h3>
                 <form wire:submit="savePoli" class="space-y-4">
                     <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Master Ruangan</label>
+                        <select wire:model.live="selectedRuanganId"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
+                            <option value="">— Pilih Ruangan Master —</option>
+                            @foreach($masterRuangans as $r)
+                                <option value="{{ $r['id'] }}">{{ $r['name'] }} ({{ $r['code'] }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Kode Poli</label>
-                        <input type="text" wire:model="poliCode" placeholder="POLI-UMUM"
+                        <input type="text" wire:model="poliCode" placeholder="POLI-INT"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white" />
                         @error('poliCode') <span class="text-xs text-rose-500 mt-1">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nama Poli</label>
-                        <input type="text" wire:model="poliName" placeholder="Poliklinik Umum"
+                        <input type="text" wire:model="poliName" placeholder="Poli Penyakit Dalam"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white" />
                         @error('poliName') <span class="text-xs text-rose-500 mt-1">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex gap-2">
                         <button type="submit"
                             class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2.5 rounded-xl transition">
-                            {{ $editingPoliId ? 'Simpan Perubahan' : 'Tambah Poli' }}
+                            {{ $editingPoliId ? 'Simpan Perubahan' : 'Aktifkan Poli' }}
                         </button>
                         @if($editingPoliId)
                             <button type="button" wire:click="resetPoliForm"
@@ -81,14 +118,14 @@
             <!-- Tabel Daftar Poli -->
             <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
                 <div class="p-5 border-b border-gray-100 dark:border-gray-700/50">
-                    <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Daftar Poliklinik</h3>
+                    <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Daftar Poliklinik Terdaftar</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
                                 <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kode</th>
-                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nama</th>
+                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nama Poliklinik</th>
                                 <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Dokter</th>
                                 <th class="text-right px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -97,7 +134,7 @@
                             @forelse($polyclinics as $poli)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition">
                                     <td class="px-5 py-3 font-mono font-bold text-violet-600 dark:text-violet-400">{{ $poli['code'] }}</td>
-                                    <td class="px-5 py-3 text-gray-700 dark:text-gray-300">{{ $poli['name'] }}</td>
+                                    <td class="px-5 py-3 text-gray-700 dark:text-gray-300 font-medium">{{ $poli['name'] }}</td>
                                     <td class="px-5 py-3 text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400">
                                             {{ $poli['doctors_count'] ?? count($poli['doctors'] ?? []) }} dokter
@@ -121,7 +158,7 @@
     @endif
 
     {{-- ═══════════════════════════════════════════════════════════════════════════
-         TAB: DOKTER
+         TAB: DOKTER (MASTER SDM)
     ═══════════════════════════════════════════════════════════════════════════ --}}
     @if($activeTab === 'doctors')
         <div class="space-y-6">
@@ -139,28 +176,36 @@
 
             @if($selectedPoliId)
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Form Tambah/Edit Dokter -->
+                    <!-- Form Pilih Dokter dari Master SDM -->
                     <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700/50">
                         <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-4">
-                            {{ $editingDoctorId ? 'Edit Dokter' : 'Tambah Dokter' }}
+                            {{ $editingDoctorId ? 'Edit Dokter' : 'Tugaskan Dokter (Master SDM)' }}
                         </h3>
                         <form wire:submit="saveDoctor" class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nama Dokter</label>
-                                <input type="text" wire:model="doctorName" placeholder="dr. Ahmad, Sp.A"
-                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white" />
-                                @error('doctorName') <span class="text-xs text-rose-500 mt-1">{{ $message }}</span> @enderror
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Pilih Dokter (Master SDM)</label>
+                                <select wire:model.live="selectedMasterDoctorId" required
+                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
+                                    <option value="">— Pilih Dokter —</option>
+                                    @foreach($masterDoctors as $mDoc)
+                                        <option value="{{ $mDoc['id'] }}">{{ $mDoc['name'] }} ({{ $mDoc['specialty'] }})</option>
+                                    @endforeach
+                                </select>
+                                @error('selectedMasterDoctorId') <span class="text-xs text-rose-500 mt-1">{{ $message }}</span> @enderror
                             </div>
+
+                            @if($doctorName)
+                                <div class="p-3 bg-violet-50 dark:bg-violet-950/20 rounded-xl border border-violet-100 dark:border-violet-900/30 text-xs space-y-1">
+                                    <p class="font-bold text-violet-800 dark:text-violet-300">{{ $doctorName }}</p>
+                                    <p class="text-gray-500 dark:text-gray-400">Spesialisasi: {{ $doctorSpecialty }}</p>
+                                    <p class="text-gray-400 dark:text-gray-500 font-mono">Kode Dokter / NIP: {{ $doctorCode }}</p>
+                                </div>
+                            @endif
+
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Foto Dokter</label>
+                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Foto Dokter (Opsional Override)</label>
                                 <input type="file" wire:model="doctorPhoto" accept="image/*"
                                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-600 hover:file:bg-violet-100 dark:text-gray-400 dark:file:bg-violet-900/30 dark:file:text-violet-400" />
-                                @error('doctorPhoto') <span class="text-xs text-rose-500 mt-1">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Spesialisasi</label>
-                                <input type="text" wire:model="doctorSpecialty" placeholder="Spesialis Anak"
-                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Urutan Tampil</label>
@@ -170,12 +215,12 @@
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" wire:model="doctorIsActive" id="doctorActive"
                                     class="rounded border-gray-300 text-violet-600 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-900">
-                                <label for="doctorActive" class="text-sm text-gray-600 dark:text-gray-400">Aktif praktik hari ini</label>
+                                <label for="doctorActive" class="text-sm text-gray-600 dark:text-gray-400 font-medium">Aktif praktik hari ini</label>
                             </div>
                             <div class="flex gap-2">
                                 <button type="submit"
                                     class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2.5 rounded-xl transition">
-                                    {{ $editingDoctorId ? 'Simpan Perubahan' : 'Tambah Dokter' }}
+                                    {{ $editingDoctorId ? 'Simpan Perubahan' : 'Tugaskan Dokter' }}
                                 </button>
                                 @if($editingDoctorId)
                                     <button type="button" wire:click="resetDoctorForm"
@@ -190,16 +235,15 @@
                     <!-- Tabel Dokter -->
                     <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
                         <div class="p-5 border-b border-gray-100 dark:border-gray-700/50">
-                            <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Daftar Dokter</h3>
+                            <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Daftar Dokter Bertugas</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 dark:bg-gray-900/50">
                                     <tr>
                                         <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Foto</th>
-                                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Nama</th>
+                                        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Nama Dokter (Master SDM)</th>
                                         <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Spesialisasi</th>
-                                        <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Urutan</th>
                                         <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Status</th>
                                         <th class="text-right px-5 py-3 text-xs font-semibold text-gray-400 uppercase">Aksi</th>
                                     </tr>
@@ -218,12 +262,11 @@
                                             </td>
                                             <td class="px-5 py-3 font-semibold text-gray-700 dark:text-gray-300">{{ $doc['name'] }}</td>
                                             <td class="px-5 py-3 text-gray-500 dark:text-gray-400">{{ $doc['specialty'] ?? '-' }}</td>
-                                            <td class="px-5 py-3 text-center text-gray-500">{{ $doc['sort_order'] }}</td>
                                             <td class="px-5 py-3 text-center">
                                                 <button wire:click="toggleDoctorActive('{{ $doc['id'] }}')"
                                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold cursor-pointer transition
                                                     {{ $doc['is_active'] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' }}">
-                                                    {{ $doc['is_active'] ? 'Aktif' : 'Nonaktif' }}
+                                                    {{ $doc['is_active'] ? 'Aktif Praktik' : 'Nonaktif' }}
                                                 </button>
                                             </td>
                                             <td class="px-5 py-3 text-right space-x-2">
@@ -233,7 +276,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="px-5 py-8 text-center text-gray-400">Belum ada dokter di poli ini.</td>
+                                            <td colspan="5" class="px-5 py-8 text-center text-gray-400">Belum ada dokter bertugas di poli ini.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -246,7 +289,7 @@
     @endif
 
     {{-- ═══════════════════════════════════════════════════════════════════════════
-         TAB: ANTRIAN HARI INI
+         TAB: ANTRIAN PASIEN SIMRS
     ═══════════════════════════════════════════════════════════════════════════ --}}
     @if($activeTab === 'queue')
         <div class="space-y-6">
@@ -268,11 +311,7 @@
                         <select wire:model.live="queueDoctorId" wire:change="loadQueue"
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                             <option value="">Semua Dokter</option>
-                            @php
-                                $selectedPoli = collect($polyclinics)->firstWhere('id', $queuePoliId);
-                                $availableDoctors = $selectedPoli['doctors'] ?? [];
-                            @endphp
-                            @foreach($availableDoctors as $doc)
+                            @foreach($queueAvailableDoctors as $doc)
                                 <option value="{{ $doc['id'] }}">{{ $doc['name'] }}</option>
                             @endforeach
                         </select>
@@ -281,36 +320,36 @@
             </div>
 
             @if($queuePoliId)
-                <!-- Form Tambah Pasien -->
+                <!-- Form Tambah Pasien Wadah SIMRS -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/50">
-                    <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-4">Tambah Pasien ke Antrian</h3>
+                    <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-4">Wadah Entri Antrian Pasien</h3>
                     <form wire:submit="addPatient" class="flex flex-wrap gap-3 items-end">
                         <div class="flex-1 min-w-[200px]">
-                            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Dokter</label>
+                            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Dokter Bertugas</label>
                             <select wire:model="queueDoctorId" required
                                 class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                                 <option value="">— Pilih Dokter —</option>
-                                @foreach($availableDoctors as $doc)
+                                @foreach($queueAvailableDoctors as $doc)
                                     <option value="{{ $doc['id'] }}">{{ $doc['name'] }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="flex-1 min-w-[200px]">
                             <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nama Pasien</label>
-                            <input type="text" wire:model="patientName" placeholder="Nama lengkap pasien" required
+                            <input type="text" wire:model="patientName" placeholder="Nama pasien dari SIMRS" required
                                 class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-violet-500 dark:bg-gray-900 dark:border-gray-700 dark:text-white" />
                         </div>
                         <button type="submit"
                             class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2.5 px-6 rounded-xl transition">
-                            + Tambah
+                            + Tambah Antrian
                         </button>
                     </form>
                 </div>
 
-                <!-- Tabel Antrian -->
+                <!-- Tabel Antrian Pasien -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden">
                     <div class="p-5 border-b border-gray-100 dark:border-gray-700/50 flex justify-between items-center">
-                        <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Antrian — {{ now()->translatedFormat('l, d F Y') }}</h3>
+                        <h3 class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Antrian Pasien SIMRS — {{ now()->translatedFormat('l, d F Y') }}</h3>
                         <span class="text-xs text-gray-400">{{ count($queueItems) }} pasien</span>
                     </div>
                     <div class="overflow-x-auto">
@@ -319,8 +358,8 @@
                                 <tr>
                                     <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase w-16">No.</th>
                                     <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Nama Pasien</th>
-                                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Dokter</th>
-                                    <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Status</th>
+                                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Dokter Bertugas</th>
+                                    <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Status Antrean</th>
                                     <th class="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Dipanggil</th>
                                     <th class="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Aksi</th>
                                 </tr>
@@ -336,6 +375,9 @@
                                         </td>
                                         <td class="px-4 py-3 font-semibold {{ $item['status'] === 'terlewat' ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300' }}">
                                             {{ $item['patient_name'] }}
+                                            @if($item['is_fallback'] ?? false)
+                                                <span class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">Mode Local</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $item['doctor_name'] ?? '-' }}</td>
                                         <td class="px-4 py-3 text-center">
@@ -368,7 +410,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-5 py-8 text-center text-gray-400">Belum ada antrian hari ini.</td>
+                                        <td colspan="6" class="px-5 py-8 text-center text-gray-400">Belum ada antrian pasien.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
