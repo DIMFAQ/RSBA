@@ -21,11 +21,6 @@ class Ruangan extends Model
             ->withPivot('id', 'tgl_mulai', 'tgl_berakhir', 'is_utama', 'keterangan');
     }
 
-    public function bagian()
-    {
-        return $this->belongsTo(\App\Models\Sdm\Bagian::class, 'bagian_id');
-    }
-
     public function karyawanPrimary()
     {
         return $this->hasMany(\App\Models\Sdm\Karyawan::class, 'ruangan_id')->whereNull('resign_at');
