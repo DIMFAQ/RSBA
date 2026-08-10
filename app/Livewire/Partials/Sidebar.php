@@ -163,12 +163,12 @@ class Sidebar extends Component
             ];
         }
 
-        // Inject into Akreditasi parent (id = 40)
+        // Inject into Akreditasi parent
         foreach ($menus as $group => &$groupMenus) {
             foreach ($groupMenus as &$menu) {
-                if ((int)$menu['id'] === 40) {
+                if ($menu['nama'] === 'Akreditasi') {
                     $menu['submenus'] = array_merge(
-                        $menu['submenus'],   // existing: "Semua Kegiatan" (id=64)
+                        $menu['submenus'],   // existing: "Semua Kegiatan"
                         $dynamicSubMenus
                     );
                     break 2;
