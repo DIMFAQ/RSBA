@@ -18,12 +18,19 @@
             </div>
 
             <hr class="border-gray-200">
-            <div class="flex w-full flex-col">
+            <div class="flex w-full flex-col gap-1">
                 <p class="max-w text-sm leading-5 text-gray-600">
                     Belum mempunyai akun ?
                 </p>
                 <a wire:navigate href="{{ route('register') }}" class="font-medium text-indigo-600 transition duration-150 ease-in-out hover:text-indigo-500 focus:underline focus:outline-none">
                     Registrasi
+                </a>
+            </div>
+            <div class="flex w-full flex-col gap-1">
+                <p class="text-sm leading-5 text-gray-500">Ada kerusakan fasilitas?</p>
+                <a wire:navigate href="{{ route('public.pengaduan') }}"
+                   class="inline-flex items-center gap-1 font-medium text-orange-500 transition duration-150 ease-in-out hover:text-orange-400 focus:underline focus:outline-none">
+                    🔧 Laporkan Kerusakan
                 </a>
             </div>
         </form>

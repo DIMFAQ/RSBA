@@ -28,10 +28,17 @@
                                     <p class="mb-2 font-medium uppercase text-gray-700">{{ config('app.name') }}</p>
                                     <h2 class="text-5xl font-bold text-gray-900 xl:text-6xl">RS Bintang Amin</h2>
                                 </div>
-                                <p class="text-2xl text-gray-700">
-                                    Pelayanan Prima, Sehat Milik Semua <br>
-                                    <span class="italic">We Care, We Cure</span>
-                                </p>
+                                @if (request()->routeIs('public.pengaduan'))
+                                    <p class="text-2xl text-gray-700">
+                                        Pusat Pengaduan Kerusakan <br>
+                                        <span class="italic text-orange-500">Laporkan, Kami Tangani.</span>
+                                    </p>
+                                @else
+                                    <p class="text-2xl text-gray-700">
+                                        Pelayanan Prima, Sehat Milik Semua <br>
+                                        <span class="italic">We Care, We Cure</span>
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>

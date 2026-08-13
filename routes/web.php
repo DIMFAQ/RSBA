@@ -5,9 +5,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')
     ->group(function () {
         Route::get('/', App\Livewire\Auth\Login::class)->name('login');
-
         Route::get('/register', App\Livewire\Auth\Register::class)->name('register');
     });
+
+// Public route - no auth required
+Route::get('/pengaduan', App\Livewire\Public\PengaduanForm::class)->name('public.pengaduan');
 
 Route::middleware('auth')
     ->prefix('profile')
@@ -34,6 +36,7 @@ Route::middleware('auth')
     });
 
 Route::get('surat/verification', App\Livewire\Surat\Verifikasi\Index::class)->name('surat.verification');
+
 
 // // Administrator
 // Route::middleware('auth')
