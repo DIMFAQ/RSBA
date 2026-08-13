@@ -16,6 +16,17 @@
             <x-ts:tab.items tab="Jadwal">
                 <livewire:Maintenance.ListJadwal :key="'list-jadwal'" />
             </x-ts:tab.items>
+
+            <x-ts:tab.items tab="Laporan Publik" class="items-center">
+                @if ($this->getPendingPublicReportsCountProperty() > 0)
+                    <x-slot:right>
+                        <span class="inline-flex items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white leading-none">
+                            {{ $this->getPendingPublicReportsCountProperty() }}
+                        </span>
+                    </x-slot:right>
+                @endif
+                <livewire:Maintenance.PublicReports.Index :key="'public-reports'" />
+            </x-ts:tab.items>
         </x-ts:tab>
 
     </div>

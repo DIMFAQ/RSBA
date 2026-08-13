@@ -44,6 +44,7 @@ Route::prefix('maintenance')
     ->group(function () {
         Route::get('/', App\Livewire\Maintenance\Index::class)->name('index');
         // Route::get('/create', App\Livewire\Maintenance\Create::class)->name('create');
+        Route::get('/laporan-publik', App\Livewire\Maintenance\PublicReports\Index::class)->name('public-reports');
     });
 
 

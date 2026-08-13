@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Maintenance;
 
+use App\Models\Maintenance\PublicReport;
 use App\Models\Maintenance\Request as MaintenanceRequest;
 use App\Traits\AuthorizesFromRoute;
 use Livewire\Attributes\Computed;
@@ -21,6 +22,12 @@ class Index extends Component
         return MaintenanceRequest::withoutGlobalScopes()
             ->where('status', 'pending')
             ->exists();
+    }
+
+    #[Computed]
+    public function getPendingPublicReportsCountProperty(): int
+    {
+        return PublicReport::where('status', 'pending')->count();
     }
 
     public function render()
