@@ -13,7 +13,15 @@ trait AuthorizesFromRoute
 
         if (!empty($this->currentRouteName)) return;
 
-        // Ambil dari Referer header — selalu URL halaman asli
+        $currentRoute = request()->route();
+        $routeName = $currentRoute ? $currentRoute->getName() : null;
+
+        if ($routeName && !str_contains($routeName, 'livewire.update')) {
+            $this->currentRouteName = $routeName;
+            return;
+        }
+
+        // Ambil dari Referer header — jika ini request via livewire update
         $referer = request()->header('referer');
 
         if (!$referer) return;
@@ -23,7 +31,7 @@ trait AuthorizesFromRoute
             $route     = app('router')->getRoutes()->match($request);
             $routeName = $route->getName();
 
-            if ($routeName && $routeName !== 'livewire.update') {
+            if ($routeName && !str_contains($routeName, 'livewire.update')) {
                 $this->currentRouteName = $routeName;
             }
         } catch (Exception) {
@@ -65,8 +73,22 @@ trait AuthorizesFromRoute
 
     protected function authorizeFromRoute(): void
     {
+        if (empty($this->currentRouteName)) {
+            return;
+        }
+
         $permission = $this->buildPermission();
 
+        // Bypassing permission check untuk Koordinator Ruangan / Atasan pada menu utama kepegawaian
+        if ((auth()->user()?->isKoordinator() || auth()->user()?->isKepalaDept() || auth()->user()?->isWadir()) && in_array($permission, [
+            'view-kepegawaian-jadwal-kerja',
+            'view-kepegawaian-absensi',
+            'view-kepegawaian-konfigurasi-jadwal',
+            'view-kepegawaian-surat-cuti',
+            'view-kepegawaian-surat-sp3',
+        ])) {
+            return;
+        }
         abort_unless(
             auth()->user()?->can($permission),
             403,

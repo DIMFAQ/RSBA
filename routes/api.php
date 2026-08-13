@@ -14,6 +14,11 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::prefix('bpjs')->name('api.bpjs.')->group(function () {
+    Route::get('/wards', [\App\Http\Controllers\Api\BpjsDataController::class, 'wards'])->name('wards');
+    Route::get('/rooms', [\App\Http\Controllers\Api\BpjsDataController::class, 'rooms'])->name('rooms');
+});
+
 
 Route::prefix('karyawan')
     ->name('api.karyawan.')
@@ -21,6 +26,7 @@ Route::prefix('karyawan')
         Route::get('/register', [KaryawanController::class, 'register'])->name('register');
         Route::get('/ref', [KaryawanController::class, 'list'])->name('ref');
         Route::get('/listnjabatan/{atasan?}', [KaryawanController::class, 'listWithJabatan'])->name('listnjabatan');
+        Route::get('/atasan-approver/{jabatanId?}', [KaryawanController::class, 'atasanApprover'])->name('atasan.approver');
         Route::get('reg/dokter', [KaryawanController::class, 'registerDokter'])->name('reg.dokter');
     });
 

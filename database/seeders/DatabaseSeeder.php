@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +11,36 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Core / Master Seeders (Always executed)
+        $mainSeeders = [
+            PermissionSeeder::class,
+            RoleSeeder::class,
+            UserSeeder::class,
+            SuperAdminSignatureSeeder::class,
+            MenuSeeder::class,
+            PerusahaanSeeder::class,
+            WilayahSeeder::class,
+            UmDataSeeder::class,
+            UmumSeeder::class,
+            JadwalSeeder::class,
+            PayrollSeeder::class,
+            SdmPayrollGolonganMatrixSeeder::class,
+            PayrollPph21ReferenceSeeder::class,
+            KaryawanExcelSeeder::class,
+            DummyPayrollSlipSeeder::class,
+            JadwalDummyJuniSeeder::class,
+            SkenarioTriRahayuSeeder::class,
+            JadwalDuaTahunSeeder::class,
+            CutiJenisSeeder::class,
+            CutiBersamaSeeder::class,
+            StrukturOrganisasiSeeder::class,
+        ];
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach ($mainSeeders as $seeder) {
+            if (class_exists($seeder)) {
+                $this->call($seeder);
+            }
+        }
     }
 }
+

@@ -49,7 +49,25 @@
                 <x-ts:select.styled wire:model.lazy='form.jk' placeholder="Kelamin" :options="$jk_options" select="label:label|value:value" />
             </div>
             <div class="w-full lg:w-1/4">
-                <x-ts:select.styled wire:model.lazy='form.status_pernikahan' placeholder="Status Pernikahan" :options="" :options="$pernikahan_options" select="label:label|value:value" />
+                <x-ts:select.styled label="Status Pernikahan *" wire:model.lazy='form.status_pernikahan' placeholder="Pilih status pernikahan" :options="$pernikahan_options" select="label:label|value:value" />
+            </div>
+        </div>
+
+        {{-- BPJS --}}
+        <div class="space-y-2 pt-2">
+            <hr class="text-gray-200">
+            <span class="text-primary-500 flex gap-1 font-semibold">
+                <x-ts:icon name="tabler.shield-check" class="h-5 w-5" />
+                BPJS
+            </span>
+        </div>
+
+        <div class="flex flex-col gap-2 lg:flex-row">
+            <div class="w-full lg:w-1/2">
+                <x-ts:input wire:model.lazy='form.bpjs_kesehatan' placeholder="Nomor BPJS Kesehatan" />
+            </div>
+            <div class="w-full lg:w-1/2">
+                <x-ts:input wire:model.lazy='form.bpjs_tk' placeholder="Nomor BPJS Ketenagakerjaan (TK)" />
             </div>
         </div>
 

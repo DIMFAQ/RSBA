@@ -6,10 +6,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>{{ $title ?? config('app.name') }}</title>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                if (window.Alpine && !window.Alpine.store('theme')) {
+                    window.Alpine.store('theme', localStorage.getItem('theme') || 'light');
+                }
+            });
+        </script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <tallstackui:script />
-        @livewireStyles
         @filamentStyles
     </head>
 
@@ -49,7 +55,6 @@
             </div>
         </div>
 
-        @livewireScripts
         @filamentScripts
     </body>
 
