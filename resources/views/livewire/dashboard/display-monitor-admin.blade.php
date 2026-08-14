@@ -1,38 +1,49 @@
 <div class="space-y-6">
     <!-- Tab Navigation -->
-    <div class="flex border-b border-gray-200 dark:border-gray-700">
+    <div class="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hidden">
         <button 
             wire:click="setTab('dashboard')" 
-            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'dashboard' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 whitespace-nowrap {{ $activeTab === 'dashboard' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
         >
             Dashboard
         </button>
         <button 
             wire:click="setTab('devices')" 
-            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'devices' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 whitespace-nowrap {{ $activeTab === 'devices' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
         >
             Display & Mapping
         </button>
         <button 
             wire:click="setTab('data')" 
-            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'data' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 whitespace-nowrap {{ $activeTab === 'data' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
         >
             Data Cache BPJS
         </button>
         @if($isSuperAdmin)
             <button 
                 wire:click="setTab('logs')" 
-                class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'logs' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+                class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 whitespace-nowrap {{ $activeTab === 'logs' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
             >
                 Log Audit
             </button>
         @endif
         <button 
             wire:click="setTab('inpatient_rooms')" 
-            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 {{ $activeTab === 'inpatient_rooms' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+            class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 whitespace-nowrap {{ $activeTab === 'inpatient_rooms' ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
         >
             Ruangan Custom
         </button>
+        @if($canAccessServerRoom)
+            <button 
+                wire:click="setTab('server_room')" 
+                class="py-3 px-6 text-sm font-semibold border-b-2 transition duration-150 whitespace-nowrap inline-flex items-center gap-1.5 {{ $activeTab === 'server_room' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300' }}"
+            >
+                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                </svg>
+                Server Room IoT
+            </button>
+        @endif
     </div>
 
     <!-- Alert Banner -->
@@ -79,6 +90,8 @@
         <livewire:dashboard.display-monitor.display-tab-audit-logs wire:key="tab-logs" />
     @elseif($activeTab === 'inpatient_rooms')
         <livewire:dashboard.display-monitor.display-tab-inpatient-rooms wire:key="tab-inpatient-rooms" />
+    @elseif($activeTab === 'server_room' && $canAccessServerRoom)
+        <livewire:dashboard.server-room-monitoring wire:key="tab-server-room" />
     @endif
 </div>
 
