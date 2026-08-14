@@ -20,6 +20,12 @@ class DisplayTabServerRoom extends Component
     public ?string $customStartDate = null;
     public ?string $customEndDate = null;
 
+    // Filter Only Alerts Toggle
+    public bool $filterOnlyAlerts = false;
+
+    // Modal Log Alert
+    public bool $showAlertModal = false;
+
     // Pagination
     public int $currentPage = 1;
     public int $perPage = 10;
@@ -67,7 +73,29 @@ class DisplayTabServerRoom extends Component
     {
         $this->customStartDate = null;
         $this->customEndDate = null;
+        $this->filterOnlyAlerts = false;
         $this->setTimeRange('latest_10', $client);
+    }
+
+    public function toggleAlertFilter(): void
+    {
+        $this->filterOnlyAlerts = !$this->filterOnlyAlerts;
+        $this->currentPage = 1;
+    }
+
+    public function openAlertModal(): void
+    {
+        $this->showAlertModal = true;
+    }
+
+    public function closeAlertModal(): void
+    {
+        $this->showAlertModal = false;
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->currentPage = 1;
     }
 
     public function loadMonitoringData(DmsMiddlewareClient $client): void
@@ -116,15 +144,54 @@ class DisplayTabServerRoom extends Component
         $this->currentPage = max(1, min($page, $this->totalPages));
     }
 
+    /**
+     * Filtered readings (including or excluding alerts).
+     */
+    public function getFilteredReadingsProperty(): array
+    {
+        if (!$this->filterOnlyAlerts) {
+            return $this->readings;
+        }
+
+        return array_values(array_filter($this->readings, function ($row) {
+            $temp = (float) ($row['temperature'] ?? 0);
+            $hum  = (float) ($row['humidity'] ?? 0);
+            return $temp >= 28.0 || $hum >= 70.0;
+        }));
+    }
+
+    /**
+     * All alert rows in current dataset.
+     */
+    public function getAlertLogsProperty(): array
+    {
+        return array_values(array_filter($this->readings, function ($row) {
+            $temp = (float) ($row['temperature'] ?? 0);
+            $hum  = (float) ($row['humidity'] ?? 0);
+            return $temp >= 28.0 || $hum >= 70.0;
+        }));
+    }
+
+    public function getAlertCountProperty(): int
+    {
+        return count($this->alertLogs);
+    }
+
     public function getPaginatedReadingsProperty(): array
     {
-        $offset = ($this->currentPage - 1) * $this->perPage;
-        return array_slice($this->readings, $offset, $this->perPage);
+        $filtered = $this->filteredReadings;
+        $offset   = ($this->currentPage - 1) * $this->perPage;
+        return array_slice($filtered, $offset, $this->perPage);
+    }
+
+    public function getTotalFilteredProperty(): int
+    {
+        return count($this->filteredReadings);
     }
 
     public function getTotalPagesProperty(): int
     {
-        return max(1, (int) ceil(count($this->readings) / $this->perPage));
+        return max(1, (int) ceil($this->totalFiltered / $this->perPage));
     }
 
     public function exportAuditLog()
@@ -138,6 +205,22 @@ class DisplayTabServerRoom extends Component
         
         return Excel::download(
             new ServerRoomTelemetryExport($this->readings, $this->device ?? []),
+            $filename
+        );
+    }
+
+    public function exportAlertLogOnly()
+    {
+        $alerts = $this->alertLogs;
+        if (empty($alerts)) {
+            $this->errorMessage = 'Tidak ada insiden alert yang tercatat untuk diekspor.';
+            return null;
+        }
+
+        $filename = 'Audit_Insiden_Alert_Ruang_Server_' . date('Ymd_His') . '.xlsx';
+        
+        return Excel::download(
+            new ServerRoomTelemetryExport($alerts, $this->device ?? []),
             $filename
         );
     }
@@ -159,7 +242,8 @@ class DisplayTabServerRoom extends Component
             </div>
 
             {{-- Cards Skeleton --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="h-44 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6"></div>
                 <div class="h-44 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6"></div>
                 <div class="h-44 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6"></div>
                 <div class="h-44 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-6"></div>
