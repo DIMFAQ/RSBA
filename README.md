@@ -8,11 +8,15 @@
 
 ### 🎨 Modern UI & Experience
 - **Collapsible Sidebar**: Navigasi sidebar modern yang dapat dilipat (*collapsible*) melalui tombol hamburger di navbar desktop/mobile dengan scroll terpisah dan auto-scroll prevention.
-- **Dynamic Header & 2-Tier Card Layout**: Layout header dua tingkat yang responsif untuk judul halaman, breadcrumb, serta tombol aksi (*action buttons*) tanpa overflow.
+- **Dynamic Header & 2-Tier Card Layout**: Layout header dua tingkat yang responsif untuk judul halaman, breadcrumb, serta tombol aksi (*action buttons*) tanpa overflow. Sinkronisasi dinamis judul tab browser dengan nama instansi **RS Bintang Amin**.
 - **Dynamic Stats Grid Layout**: Tampilan grid statistik dashboard yang responsif dan fleksibel mengisi lebar layar secara dinamis.
 - **Notification System (Realtime)**: Fitur notifikasi interaktif dengan opsi tandai dibaca per notif/semua dibaca dan *badge bell indicator* dinamis.
 
 ### 💼 Manajemen Kepegawaian & HRIS
+- **Integrasi SATUSEHAT Practitioner (IHS Number, STR, SIP & Upload Softcopy STR)**:
+  - Pencatatan Practitioner IHS Number dari Kemenkes RI, Nomor STR, Jenis STR, Tanggal Terbit & Kadaluarsa STR, Jenis Profesi, serta Spesialisasi/Kompetensi pada data identitas karyawan.
+  - Fitur unggah berkas softcopy STR (PDF/Gambar) terintegrasi langsung di form identitas & lisensi medis yang otomatis tersinkronisasi ke repositori dokumen pegawai (`sdm_kary_document`).
+  - Tampilan kolom IHS Number, Nomor STR, dan badge status STR Expired (Aktif, Warning ≤90 hari, Expired) pada tabel daftar Dokter & Pegawai Medis.
 - **Manajemen Karyawan & Dokter**: Pengelolaan profil karyawan terintegrasi, nomor BPJS Kesehatan & Ketenagakerjaan, serta seeder spesialisasi dan struktur organisasi (`StrukturOrganisasiSeeder`, `DokterSeeder`).
 - **Master Data SDM**: Pengelolaan Master Bagian, Jabatan, Ruangan, dan Spesialisasi Dokter.
 - **Izin & Cuti & Cuti Bersama**: Pengajuan dan persetujuan izin/cuti karyawan, simulasi cuti bersama berbasis grouping karyawan dengan layout tabel HTML *rowspan*, serta command otomatis reset kuota cuti tahunan (`app:reset-cuti`).
@@ -24,6 +28,10 @@
 - **Komponen & Matriks Payroll**: Pengelolaan Master Tunjangan, Denda Keterlambatan Flat, Matriks Golongan dinamis, Ekspor/Impor Excel, serta Log Edit Payroll (*Audit Trail*).
 
 ### ⏱️ Presensi & Absensi
+- **Export PDF Jadwal Kerja Dinamis dengan Header Logo RSBA**:
+  - Fitur ekspor jadwal kerja ruangan ke format PDF (*Landscape A4*) dengan tampilan presisi mengacu pada format standar dokumen fisik rumah sakit.
+  - Dilengkapi **Header Logo Resmi RSBA** (Base64 Data URI) dan Nama Perusahaan.
+  - Sinkronisasi dinamis 100% dengan tampilan web UI: pencetakan kode shift singkat (`REG`, `PAGI`, `SIANG`, `MALAM`), skema warna sel (*background & font contrast*), serta tabel legenda shift otomatis sesuai konfigurasi shift ruangan aktif.
 - **Audit Log Koreksi Absensi**: Recording riwayat koreksi absensi (`sdm_absensi_koreksi_log`) dengan modal audit log interaktif, fitur pencarian, dan paginasi pada Rekap Absensi.
 - **Backfill & Optimasi Kinerja**: CLI Command `app:backfill-absensi-metrics` dan indeks database untuk mempercepat kalkulasi rekapitulasi absensi.
 
@@ -38,8 +46,6 @@
 - **Laporan Kepegawaian**: Modul laporan komprehensif berbasis tab interaktif dengan filter pencarian, ekspor Excel/CSV, dan tampilan cetak.
 - **Role & Permission & Sequential Menu**: Otorisasi granular menggunakan Spatie Permission dan Seeder Menu terstruktur dengan urutan ID sekuensial (1–61) pada `MenuSeeder`.
 - **Terstruktur & Clean Architecture**: Pemisahan namespace model domain yang rapi (`App\Models\Gaji`, `App\Models\Sdm\Payroll`).
-
----
 
 ## Prerequisite
 - **PHP**: `^8.2`
