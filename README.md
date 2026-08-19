@@ -148,4 +148,5 @@ php artisan cache:clear
 ## Lisensi
 Aplikasi ini berlisensi di bawah [MIT license](https://opensource.org/licenses/MIT).
 
+Dimas
 
