@@ -82,3 +82,18 @@ Route::prefix('akreditasi')
 
         Route::get('documents/{element?}', [App\Http\Controllers\AkreditasiController::class, 'documents'])->name('documents');
     });
+
+
+// Public Ticketing API
+Route::prefix('public/tickets')
+    ->name('api.public.tickets.')
+    ->group(function () {
+        Route::post('/', [\App\Http\Controllers\Api\PublicTicketController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('store');
+
+        Route::get('/{trackingCode}', [\App\Http\Controllers\Api\PublicTicketController::class, 'show'])
+            ->middleware('throttle:30,1')
+            ->name('show');
+    });
+

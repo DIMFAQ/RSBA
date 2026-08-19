@@ -6,12 +6,26 @@ use App\Models\Ruangan;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class PublicReport extends Model
 {
     protected $table = 'public_maintc_reports';
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (PublicReport $report) {
+            if (empty($report->tracking_code)) {
+                do {
+                    $code = 'TKT-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+                } while (static::where('tracking_code', $code)->exists());
+
+                $report->tracking_code = $code;
+            }
+        });
+    }
 
     public function ruangan(): BelongsTo
     {
