@@ -13,7 +13,7 @@
         <div class="flex-1">
             <x-ts:input
                 wire:model.live.debounce.400ms="search"
-                placeholder="Cari ruangan..."
+                placeholder="Cari ruangan, kode tiket, deskripsi, pelapor..."
                 prefix-icon="tabler-search"
             />
         </div>
@@ -48,6 +48,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-4 py-3 text-left font-semibold text-gray-600">#</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Kode Tiket</th>
                     <th class="px-4 py-3 text-left font-semibold text-gray-600">Ruangan</th>
                     <th class="px-4 py-3 text-left font-semibold text-gray-600">Jenis</th>
                     <th class="px-4 py-3 text-left font-semibold text-gray-600">Deskripsi</th>
@@ -61,7 +62,21 @@
                 @forelse ($reports as $report)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-4 py-3 text-gray-500">{{ $report->id }}</td>
-                        <td class="px-4 py-3 font-medium text-gray-800">{{ $report->ruangan?->nama ?? '-' }}</td>
+                        <td class="px-4 py-3">
+                            @if ($report->tracking_code)
+                                <span class="inline-flex items-center gap-1 font-mono text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                                    {{ $report->tracking_code }}
+                                </span>
+                            @else
+                                <span class="text-xs text-gray-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="font-medium text-gray-800">{{ $report->ruangan?->nama ?? '-' }}</span>
+                            @if ($report->pelapor_nama)
+                                <span class="block text-xs text-gray-500">Oleh: {{ $report->pelapor_nama }}</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             @if ($report->jenis === 'it')
                                 <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
@@ -115,7 +130,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="py-12 text-center text-gray-400">
+                        <td colspan="9" class="py-12 text-center text-gray-400">
                             <div class="flex flex-col items-center gap-2">
                                 <x-icon name="tabler-inbox" class="size-10 opacity-40" />
                                 <span>Belum ada laporan pengaduan.</span>

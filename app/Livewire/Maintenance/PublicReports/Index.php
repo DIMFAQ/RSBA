@@ -75,7 +75,14 @@ class Index extends Component
         $reports = PublicReport::with(['ruangan', 'handler'])
             ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterJenis,  fn($q) => $q->where('jenis', $this->filterJenis))
-            ->when($this->search, fn($q) => $q->whereHas('ruangan', fn($r) => $r->where('nama', 'like', '%' . $this->search . '%')))
+            ->when($this->search, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereHas('ruangan', fn($r) => $r->where('nama', 'like', '%' . $this->search . '%'))
+                        ->orWhere('tracking_code', 'like', '%' . $this->search . '%')
+                        ->orWhere('deskripsi', 'like', '%' . $this->search . '%')
+                        ->orWhere('pelapor_nama', 'like', '%' . $this->search . '%');
+                });
+            })
             ->latest()
             ->paginate(15);
 
