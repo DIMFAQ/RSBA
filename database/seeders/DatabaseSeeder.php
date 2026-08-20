@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Core / Master Seeders (Always executed)
+        // Core / Master Seeders (Essential System & Reference Data)
         $mainSeeders = [
             PermissionSeeder::class,
             RoleSeeder::class,
@@ -21,18 +21,14 @@ class DatabaseSeeder extends Seeder
             PerusahaanSeeder::class,
             WilayahSeeder::class,
             UmDataSeeder::class,
-            UmumSeeder::class,
+            RuanganDummySeeder::class,
             JadwalSeeder::class,
             PayrollSeeder::class,
             SdmPayrollGolonganMatrixSeeder::class,
             PayrollPph21ReferenceSeeder::class,
-            KaryawanExcelSeeder::class,
-            DummyPayrollSlipSeeder::class,
-            JadwalDummyJuniSeeder::class,
-            SkenarioTriRahayuSeeder::class,
-            JadwalDuaTahunSeeder::class,
             CutiJenisSeeder::class,
             CutiBersamaSeeder::class,
+            KaryawanExcelSeeder::class,
             StrukturOrganisasiSeeder::class,
         ];
 

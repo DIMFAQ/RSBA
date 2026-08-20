@@ -152,7 +152,8 @@ class Notif extends Component
                 $violations = $aturanService->checkViolations($sched);
                 if (!empty($violations)) {
                     $totalViolations = count($violations);
-                    $sample = $violations[0]['message'];
+                    $first = $violations[0];
+                    $sample = is_array($first) ? ($first['message'] ?? reset($first)) : $first;
                     
                     $items[] = [
                         'id' => 'jadwal-violation-' . $sched->id . '-' . $totalViolations,

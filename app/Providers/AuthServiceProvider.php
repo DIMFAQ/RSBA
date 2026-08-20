@@ -29,7 +29,7 @@ class AuthServiceProvider extends ServiceProvider
                 return true;
             }
 
-            if ($user->isKoordinator()) {
+            if ($user->isKoordinator() || $user->isKepalaDept() || $user->isWadir()) {
                 $allowedAbilities = [
                     'view-kepegawaian-jadwal-kerja',
                     'add-kepegawaian-jadwal-kerja',

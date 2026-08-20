@@ -48,17 +48,18 @@ class Navbar extends Component
 
         $datas = Cache::remember($cacheKey, $cacheExp, function () {
             $User = Auth::user();
-            $karyawan = $User->karyawan;
+            $karyawan = $User?->karyawan;
+            $nama = $karyawan?->nama ?? $User?->name ?? $User?->email ?? 'User';
+            $foto = $karyawan?->foto ?? null;
+            $jk = $karyawan?->jk ?? 'L';
 
             return [
-                'nama' => $karyawan->nama,
-                'email' => $User->email,
-                // 'foto' => $karyawan->foto ? asset('storage/' . $karyawan->foto) : null,
-                // 'foto' => $karyawan->foto ?? null,
-                'foto' => $karyawan->foto ? route('api.users.avatar', ['userId' => $User->id]) : null,
-                'has_foto' => !empty($karyawan->foto),
-                'text_foto' => $this->getInitials($karyawan->nama),
-                'color' => $karyawan->jk === 'L' ? 'indigo' : 'rose'
+                'nama' => $nama,
+                'email' => $User?->email ?? '',
+                'foto' => $foto ? route('api.users.avatar', ['userId' => $User->id]) : null,
+                'has_foto' => !empty($foto),
+                'text_foto' => $this->getInitials($nama),
+                'color' => $jk === 'L' ? 'indigo' : 'rose'
             ];
         });
 

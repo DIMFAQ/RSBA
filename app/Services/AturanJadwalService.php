@@ -37,6 +37,21 @@ class AturanJadwalService
     }
 
     /**
+     * Cek apakah ada pelanggaran aturan jadwal pada JadwalKerja tertentu (kompatibilitas notifikasi).
+     */
+    public function checkViolations(JadwalKerja $jadwal): array
+    {
+        $messages = $this->validasiJadwal($jadwal);
+        $result = [];
+        foreach ($messages as $msg) {
+            $result[] = [
+                'message' => $msg,
+            ];
+        }
+        return $result;
+    }
+
+    /**
      * Validasi kelayakan Jadwal Kerja terhadap aturan aktif (Umum RSBA & Override Departemen).
      * Returns array pesan pelanggaran. Jika kosong, berarti jadwal VALID!
      */
