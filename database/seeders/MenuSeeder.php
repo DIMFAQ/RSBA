@@ -456,7 +456,7 @@ class MenuSeeder extends Seeder
             [
                 'id' => 49,
                 'nama' => 'Pasien',
-                'route' => 'administrasi.pasien.index',
+                'route' => null,
                 'icon' => 'users',
                 'permission' => ['view-administrasi-pasien-index', 'add-administrasi-pasien-index', 'edit-administrasi-pasien-index', 'delete-administrasi-pasien-index'],
                 'parent_id' => 1,
@@ -483,7 +483,7 @@ class MenuSeeder extends Seeder
             [
                 'id' => 52,
                 'nama' => 'Pendaftaran',
-                'route' => 'administrasi.registrasi.index',
+                'route' => null,
                 'icon' => 'notes',
                 'permission' => ['view-administrasi-registrasi-index', 'add-administrasi-registrasi-index', 'edit-administrasi-registrasi-index', 'delete-administrasi-registrasi-index'],
                 'parent_id' => 1,
@@ -575,9 +575,41 @@ class MenuSeeder extends Seeder
         ];
 
         foreach ($menus as $menu) {
+            $route = $menu['route'] ?? null;
+            $autoPermissions = $this->generatePermissionsFromRoute($route);
+            
+            $existingPermissions = is_array($menu['permission']) ? $menu['permission'] : [];
+            $allPermissions = array_values(array_unique(array_merge($autoPermissions, $existingPermissions)));
+
+            if (!empty($allPermissions)) {
+                $menu['permission'] = $allPermissions;
+                foreach ($allPermissions as $perm) {
+                    Permission::firstOrCreate([
+                        'name'       => $perm,
+                        'guard_name' => 'web',
+                    ]);
+                }
+            }
+
             Menu::create($menu);
         }
 
         \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+    }
+
+    protected function generatePermissionsFromRoute(?string $route = null): array
+    {
+        if (empty($route)) {
+            return [];
+        }
+
+        $resource = str_replace('.', '-', $route);
+
+        return [
+            "view-{$resource}",
+            "add-{$resource}",
+            "edit-{$resource}",
+            "delete-{$resource}",
+        ];
     }
 }

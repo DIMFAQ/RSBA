@@ -7,17 +7,18 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Seed the application's database for Production / Clean Master Data.
      */
     public function run(): void
     {
-        // Core / Master Seeders (Always executed)
+        // Core / Master Seeders (Always executed for Production)
         $mainSeeders = [
+            MenuSeeder::class,
+            SpecialPermissionSeeder::class,
             PermissionSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
             SuperAdminSignatureSeeder::class,
-            MenuSeeder::class,
             PerusahaanSeeder::class,
             WilayahSeeder::class,
             UmDataSeeder::class,
@@ -26,13 +27,8 @@ class DatabaseSeeder extends Seeder
             PayrollSeeder::class,
             SdmPayrollGolonganMatrixSeeder::class,
             PayrollPph21ReferenceSeeder::class,
-            KaryawanExcelSeeder::class,
-            DummyPayrollSlipSeeder::class,
-            JadwalDummyJuniSeeder::class,
             CutiJenisSeeder::class,
             CutiBersamaSeeder::class,
-            SkenarioTriRahayuSeeder::class,
-            JadwalDuaTahunSeeder::class,
             StrukturOrganisasiSeeder::class,
         ];
 
@@ -43,4 +39,3 @@ class DatabaseSeeder extends Seeder
         }
     }
 }
-
