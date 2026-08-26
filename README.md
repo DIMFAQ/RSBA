@@ -1,8 +1,24 @@
 <h1 align="center">RSBA OFFICE</h1>
 
 <p align="center">
-  Aplikasi perkantoran (SIM-SDM & Internal Office) pada <b>Rumah Sakit Bintang Amin Lampung</b>.
+  <b>Sistem Informasi Manajemen Sumber Daya Manusia (SIM-SDM) & Internal Office</b><br>
+  Rumah Sakit Pertamina Bintang Amin (RSBA) Bandar Lampung
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
+  <img src="https://img.shields.io/badge/PHP-%5E8.2-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2">
+  <img src="https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Livewire-3.x-FB70A9?style=for-the-badge&logo=livewire&logoColor=white" alt="Livewire">
+  <img src="https://img.shields.io/badge/TallStackUI-v2-4F46E5?style=for-the-badge" alt="TallStackUI">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License">
+</p>
+
+---
+
+## 📖 Tentang Aplikasi
+
+**RSBA Office** adalah aplikasi web internal komprehensif yang dirancang untuk mendukung operasional perkantoran, tata kelola sumber daya manusia (SDM), presensi & penjadwalan dinas medis/non-medis, kalkulasi perpajakan dan penggajian (payroll), administrasi persuratan digital, serta pengelolaan aset dan inventaris logistik di lingkungan **Rumah Sakit Pertamina Bintang Amin Lampung**.
 
 ---
 
@@ -59,7 +75,7 @@
 
 ### 📦 Manajemen Umum, Aset & Inventaris
 - **Master Barang & Konversi Satuan (UoM)**: Pengelolaan Supplier, Kategori, Lokasi Penyimpanan, dan Konversi Satuan Dasar ke Satuan Tambahan (misal: 1 Box = 16 Pcs) yang otomatis mengonversi stok dan nominal harga pada transaksi Pembelian Langsung.
-- **Penjadwalan Maintenance Aset Berkala**: Modul penjadwalan dan pemeliharaan aset rumah sakit secara periodik untuk memastikan keandalan sarana dan prasarana.
+- **Penjadwalan Maintenance Aset Berkala**: Modul penjadwalan dan pemeliharaan aset rumah sakit secara periodik (`app:process-scheduled-maintenance`) untuk memastikan keandalan sarana dan prasarana.
 - **Integrasi Monitoring IoT**: Tab dan antarmuka monitoring perangkat IoT untuk pemantauan fasilitas secara terpadu.
 
 ### 🔐 Keamanan, Autorisasi & Arsitektur Sistem
@@ -72,17 +88,20 @@
 
 ---
 
-## 🛠️ Prerequisite
+## 🛠️ Prerequisite & Tech Stack
 
-- **PHP**: `^8.2` (atau mengikuti rekomendasi Laravel)
-- **Framework**: [Laravel 12](https://laravel.com/docs/12.x)
-- **Database**: MySQL / MariaDB
-- **UI Components**: [TallStackUI](https://tallstackui.com/docs/v2)
-- **Reactive Engine**: [Livewire](https://livewire.laravel.com/docs/quickstart)
-- **Table Component**: [Filament Table](https://filamentphp.com/docs/3.x/tables/installation)
-- **Styling**: [Tailwind CSS 3](https://v3.tailwindcss.com/docs/installation)
-- **Icons**: [Tabler Icons](https://tabler.io/icons) (`secondnetwork/blade-tabler-icons`)
-- **PDF Engine**: [Laravel DomPDF](https://github.com/barryvdh/laravel-dompdf) (`barryvdh/laravel-dompdf`)
+| Komponen | Spesifikasi / Library |
+| :--- | :--- |
+| **PHP** | `^8.2` (disarankan PHP 8.2 atau 8.3) |
+| **Framework** | [Laravel 12](https://laravel.com/docs/12.x) |
+| **Database** | MySQL `^8.0` / MariaDB `^10.4` |
+| **UI Components** | [TallStackUI](https://tallstackui.com/docs/v2) |
+| **Reactive Engine** | [Livewire 3](https://livewire.laravel.com/docs/quickstart) |
+| **Table Component**| [Filament Table 3.x](https://filamentphp.com/docs/3.x/tables/installation) |
+| **Styling** | [Tailwind CSS 3](https://v3.tailwindcss.com/docs/installation) |
+| **Icons** | [Tabler Icons](https://tabler.io/icons) (`secondnetwork/blade-tabler-icons`) |
+| **PDF Engine** | [Laravel DomPDF](https://github.com/barryvdh/laravel-dompdf) (`barryvdh/laravel-dompdf`) |
+| **Excel Handler** | [Laravel Excel](https://laravel-excel.com/) (`maatwebsite/excel`) |
 
 ---
 
@@ -90,28 +109,46 @@
 
 ### 1. Clone Repository & Install Dependencies
 ```bash
+# Clone repository
+git clone https://gitlab.com/fn-febri/office.git
+cd office
+
+# Install PHP dependencies
 composer install
+
+# Install NPM dependencies & build assets
 npm install
 npm run dev
 ```
 
 ### 2. Konfigurasi Environment (`.env`)
-Salin file `.env.example` ke `.env` dan sesuaikan konfigurasi database serta mailer SMTP:
+Salin file `.env.example` ke `.env` lalu sesuaikan kredensial database dan SMTP mailer:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Contoh konfigurasi penting pada `.env`:
 ```ini
 APP_NAME="RS Bintang Amin"
+APP_ENV=local
+APP_KEY=base64:...
+APP_DEBUG=true
+APP_TIMEZONE="Asia/Jakarta"
+APP_URL=http://localhost:8000
 
 # Database Configuration
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=nama_database_anda
+DB_DATABASE=db_rsba_office
 DB_USERNAME=root
 DB_PASSWORD=
 
-# Queue Driver (Disarankan 'database' untuk async job)
+# Queue Driver (Disarankan 'database' untuk async background jobs)
 QUEUE_CONNECTION=database
 
-# Mail SMTP Configuration (Contoh Gmail)
+# Mail SMTP Configuration (Contoh Google SMTP / Mailtrap)
 MAIL_MAILER=smtp
 MAIL_SCHEME=null
 MAIL_HOST=smtp.gmail.com
@@ -119,55 +156,60 @@ MAIL_PORT=587
 MAIL_USERNAME=email_anda@gmail.com
 MAIL_PASSWORD=sandi_aplikasi_16_karakter
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="email_anda@gmail.com"
+MAIL_FROM_ADDRESS="no-reply@rsbintangamin.com"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
 ### 3. Migrasi & Seeding Database
-Jalankan migrasi database dan seeder awal:
+Jalankan migrasi database dan pemuatan data master/seeder awal:
 ```bash
 php artisan migrate:fresh --seed
 ```
 
-### 4. Jalankan Queue Worker & Scheduler
-Penting untuk pemrosesan antrean email slip gaji dan eksekusi tugas terjadwal:
+### 4. Storage Link
+Buat symlink untuk akses berkas publik / dokumen:
 ```bash
-# Worker untuk memproses queue
+php artisan storage:link
+```
+
+### 5. Jalankan Queue Worker & Scheduler
+Diperlukan untuk memproses antrean email slip gaji, sinkronisasi dokumen, dan penjadwalan tugas:
+```bash
+# Terminal 1: Worker untuk memproses queue
 php artisan queue:work
 
-# Scheduler untuk lingkungan pengembangan
+# Terminal 2: Scheduler untuk lingkungan lokal
 php artisan schedule:work
+
+# Terminal 3: Laravel Web Server
+php artisan serve
 ```
 
 ---
 
 ## ⚡ Perintah Artisan Kustom
 
-```bash
-# Pengiriman slip gaji massal terjadwal
-php artisan app:send-scheduled-payroll-slips
-
-# Backfill metrik dan kalkulasi absensi
-php artisan app:backfill-absensi-metrics
-
-# Reset kuota cuti tahunan karyawan
-php artisan app:reset-cuti
-
-# Sinkronisasi & Resync Docstore
-php artisan app:docstore-sync-all
-php artisan app:docstore-resync
-```
+| Perintah | Deskripsi |
+| :--- | :--- |
+| `php artisan app:send-scheduled-payroll-slips` | Memproses pengiriman slip gaji massal terjadwal via email. |
+| `php artisan app:backfill-absensi-metrics` | Melakukan kalkulasi ulang dan rekapitulasi data metrik absensi. |
+| `php artisan app:reset-cuti` | Mereset kuota cuti tahunan pegawai secara otomatis. |
+| `php artisan app:process-scheduled-maintenance` | Memeriksa dan memproses jadwal maintenance aset berkala. |
+| `php artisan app:docstore-sync-all` | Melakukan sinkronisasi seluruh dokumen ke repositori Docstore. |
+| `php artisan app:docstore-resync` | Melakukan resinkronisasi dokumen yang belum terverifikasi. |
+| `php artisan app:sync-documents-to-docstore` | Menyinkronkan dokumen SK dan berkas ke Docstore. |
 
 ---
 
-## 🧹 Perintah Clear Cache
+## 🧹 Perintah Pembersihan Cache
 
-Jika melakukan perubahan konfigurasi pada file `.env`, route, atau view template:
+Gunakan perintah berikut jika terjadi perubahan konfigurasi `.env`, routes, atau blade views:
 ```bash
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
+php artisan optimize:clear
 ```
 
 ---
