@@ -167,7 +167,7 @@ class Index extends Component
         $isDecember = str_ends_with($this->periode, '-12');
         $year = (int) substr($this->periode, 0, 4);
 
-        $karyawans->getCollection()->transform(function ($karyawan) use ($isDecember, $year) {
+        $karyawans->getCollection()->transform(function (Karyawan $karyawan) use ($isDecember, $year) {
             $slip = DB::table('sdm_payroll_slips')
                 ->where('karyawan_id', $karyawan->id)
                 ->where('periode', $this->periode)
