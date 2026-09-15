@@ -58,22 +58,35 @@
 
                         <!-- List of Changes -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-3 pl-1">
-                            @foreach($log['perubahan'] as $col => $change)
-                                <div class="flex items-center justify-between py-1 border-b border-dashed border-slate-200/60 last:border-0">
-                                    <span class="text-slate-500 font-medium">{{ $change['label'] }}</span>
-                                    <div class="flex items-center gap-2 font-semibold">
-                                        @if($col === 'bpjs_keluarga_tambahan')
-                                            <span class="text-slate-400 font-normal line-through">{{ $change['old'] }}</span>
-                                            <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
-                                            <span class="text-indigo-600">{{ $change['new'] }}</span>
-                                        @else
-                                            <span class="text-slate-400 font-normal line-through">Rp {{ number_format($change['old'], 0, ',', '.') }}</span>
-                                            <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
-                                            <span class="text-indigo-600">Rp {{ number_format($change['new'], 0, ',', '.') }}</span>
-                                        @endif
+                            @php
+                                $perubahan = is_array($log) ? ($log['perubahan'] ?? $log['changed_fields'] ?? []) : ($log->perubahan ?? $log->changed_fields ?? []);
+                                if (is_string($perubahan)) {
+                                    $perubahan = json_decode($perubahan, true) ?: [];
+                                }
+                            @endphp
+                            @if(!empty($perubahan) && (is_array($perubahan) || is_object($perubahan)))
+                                @foreach($perubahan as $col => $change)
+                                    @php
+                                        $label = is_array($change) ? ($change['label'] ?? ucwords(str_replace('_', ' ', $col))) : $col;
+                                        $oldVal = is_array($change) ? ($change['old'] ?? $change['before'] ?? 0) : 0;
+                                        $newVal = is_array($change) ? ($change['new'] ?? $change['after'] ?? 0) : 0;
+                                    @endphp
+                                    <div class="flex items-center justify-between py-1 border-b border-dashed border-slate-200/60 last:border-0">
+                                        <span class="text-slate-500 font-medium">{{ $label }}</span>
+                                        <div class="flex items-center gap-2 font-semibold">
+                                            @if($col === 'bpjs_keluarga_tambahan')
+                                                <span class="text-slate-400 font-normal line-through">{{ $oldVal }}</span>
+                                                <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
+                                                <span class="text-indigo-600">{{ $newVal }}</span>
+                                            @else
+                                                <span class="text-slate-400 font-normal line-through">Rp {{ number_format((float) $oldVal, 0, ',', '.') }}</span>
+                                                <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
+                                                <span class="text-indigo-600">Rp {{ number_format((float) $newVal, 0, ',', '.') }}</span>
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            @endif
                         </div>
                     </div>
                 @endforeach

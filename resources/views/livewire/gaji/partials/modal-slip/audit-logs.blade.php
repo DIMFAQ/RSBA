@@ -7,38 +7,53 @@
         </div>
         <div class="space-y-4 max-h-[300px] overflow-y-auto pr-1">
             @foreach($selectedSlip['edit_logs'] as $log)
+                @php
+                    $editorName = is_array($log) ? ($log['editor_name'] ?? 'Admin') : ($log->editor_name ?? 'Admin');
+                    $createdAt = is_array($log) ? ($log['created_at'] ?? now()) : ($log->created_at ?? now());
+                    $perubahan = is_array($log) ? ($log['perubahan'] ?? $log['changed_fields'] ?? []) : ($log->perubahan ?? $log->changed_fields ?? []);
+                    if (is_string($perubahan)) {
+                        $perubahan = json_decode($perubahan, true) ?: [];
+                    }
+                @endphp
                 <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-xs text-slate-600">
                     <div class="flex justify-between items-start gap-4 mb-2">
                         <div class="flex items-center gap-2">
                             <div class="rounded-full bg-slate-200 text-slate-700 w-6 h-6 flex items-center justify-center font-bold text-[10px]">
-                                {{ strtoupper(substr($log->editor_name, 0, 2)) }}
+                                {{ strtoupper(substr($editorName, 0, 2)) }}
                             </div>
                             <div>
-                                <span class="font-bold text-slate-800">{{ $log->editor_name }}</span>
+                                <span class="font-bold text-slate-800">{{ $editorName }}</span>
                                 <span class="text-slate-400 text-[10px] ml-1.5">• Mengubah data</span>
                             </div>
                         </div>
                         <span class="text-[10px] text-slate-400 font-semibold bg-white border border-slate-200/60 rounded-md px-2 py-0.5 shadow-sm">
-                            {{ \Carbon\Carbon::parse($log->created_at)->translatedFormat('d M Y, H:i') }} WIB
+                            {{ \Carbon\Carbon::parse($createdAt)->translatedFormat('d M Y, H:i') }} WIB
                         </span>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-2.5 pl-8">
-                        @foreach($log->perubahan as $col => $change)
-                            <div class="flex items-center justify-between py-1 border-b border-dashed border-slate-200 last:border-0">
-                                <span class="text-slate-500 font-medium">{{ $change['label'] }}</span>
-                                <div class="flex items-center gap-2 font-semibold">
-                                    @if($col === 'bpjs_keluarga_tambahan')
-                                        <span class="text-slate-400 font-normal line-through">{{ $change['old'] }}</span>
-                                        <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
-                                        <span class="text-indigo-600">{{ $change['new'] }}</span>
-                                    @else
-                                        <span class="text-slate-400 font-normal line-through">Rp {{ number_format($change['old'], 0, ',', '.') }}</span>
-                                        <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
-                                        <span class="text-indigo-600">Rp {{ number_format($change['new'], 0, ',', '.') }}</span>
-                                    @endif
+                        @if(!empty($perubahan) && (is_array($perubahan) || is_object($perubahan)))
+                            @foreach($perubahan as $col => $change)
+                                @php
+                                    $label = is_array($change) ? ($change['label'] ?? ucwords(str_replace('_', ' ', $col))) : $col;
+                                    $oldVal = is_array($change) ? ($change['old'] ?? $change['before'] ?? 0) : 0;
+                                    $newVal = is_array($change) ? ($change['new'] ?? $change['after'] ?? 0) : 0;
+                                @endphp
+                                <div class="flex items-center justify-between py-1 border-b border-dashed border-slate-200 last:border-0">
+                                    <span class="text-slate-500 font-medium">{{ $label }}</span>
+                                    <div class="flex items-center gap-2 font-semibold">
+                                        @if($col === 'bpjs_keluarga_tambahan')
+                                            <span class="text-slate-400 font-normal line-through">{{ $oldVal }}</span>
+                                            <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
+                                            <span class="text-indigo-600">{{ $newVal }}</span>
+                                        @else
+                                            <span class="text-slate-400 font-normal line-through">Rp {{ number_format((float) $oldVal, 0, ',', '.') }}</span>
+                                            <x-tabler-arrow-narrow-right class="h-3 w-3 text-slate-400" />
+                                            <span class="text-indigo-600">Rp {{ number_format((float) $newVal, 0, ',', '.') }}</span>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             @endforeach

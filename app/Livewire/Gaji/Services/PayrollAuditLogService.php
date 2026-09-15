@@ -33,7 +33,9 @@ class PayrollAuditLogService
             ->orderBy('sdm_payroll_edit_logs.created_at', 'desc')
             ->get()
             ->map(function ($log) {
-                $log->changed_fields = is_string($log->perubahan) ? json_decode($log->perubahan, true) : (array) $log->perubahan;
+                $decoded = is_string($log->perubahan) ? json_decode($log->perubahan, true) : (array) $log->perubahan;
+                $log->perubahan = is_array($decoded) ? $decoded : [];
+                $log->changed_fields = $log->perubahan;
                 return $log;
             })
             ->toArray();
@@ -75,7 +77,9 @@ class PayrollAuditLogService
             ->orderBy('sdm_payroll_edit_logs.created_at', 'desc')
             ->get()
             ->map(function ($log) {
-                $log->changed_fields = is_string($log->perubahan) ? json_decode($log->perubahan, true) : (array) $log->perubahan;
+                $decoded = is_string($log->perubahan) ? json_decode($log->perubahan, true) : (array) $log->perubahan;
+                $log->perubahan = is_array($decoded) ? $decoded : [];
+                $log->changed_fields = $log->perubahan;
                 return (array) $log;
             })
             ->toArray();

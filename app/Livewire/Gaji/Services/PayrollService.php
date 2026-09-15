@@ -371,26 +371,44 @@ class PayrollService
 
             if ($oldSlip) {
                 $changedFields = [];
-                $fieldsToCheck = [
-                    'gaji_pokok', 'tunjangan_tetap', 'tunjangan_absensi', 'tunjangan_jabatan',
-                    'tunjangan_shift', 'tunjangan_radiologi', 'tunjangan_lain', 'uang_lembur',
-                    'tunjangan_hari_raya', 'potongan_absensi', 'potongan_cash_bon', 'potongan_obat',
-                    'potongan_lain', 'potongan_bank', 'potongan_bpjs_kes', 'potongan_bpjs_tk',
-                    'potongan_pph21'
+                $labels = [
+                    'gaji_pokok' => 'Gaji Pokok',
+                    'tunjangan_tetap' => 'Tunjangan Tetap',
+                    'tunjangan_absensi' => 'Tunjangan Absensi',
+                    'tunjangan_jabatan' => 'Tunjangan Jabatan',
+                    'tunjangan_shift' => 'Tunjangan Shift',
+                    'tunjangan_radiologi' => 'Tunjangan Radiologi',
+                    'tunjangan_lain' => 'Tunjangan Lain-lain',
+                    'uang_lembur' => 'Uang Lembur',
+                    'tunjangan_hari_raya' => 'Tunjangan Hari Raya',
+                    'potongan_absensi' => 'Potongan Absensi',
+                    'potongan_cash_bon' => 'Potongan Cash Bon',
+                    'potongan_obat' => 'Potongan Obat',
+                    'potongan_lain' => 'Potongan Lain-lain',
+                    'potongan_bank' => 'Potongan Bank',
+                    'potongan_bpjs_kes' => 'Potongan BPJS Kesehatan',
+                    'potongan_bpjs_tk' => 'Potongan BPJS Ketenagakerjaan',
+                    'bpjs_keluarga_tambahan' => 'BPJS Keluarga Tambahan',
+                    'potongan_pph21' => 'Potongan PPh 21',
                 ];
 
-                foreach ($fieldsToCheck as $f) {
-                    $newVal = (double) ($formData[$f] ?? 0);
-                    $oldVal = (double) $oldSlip->{$f};
+                foreach ($labels as $f => $label) {
+                    $newVal = $f === 'bpjs_keluarga_tambahan' ? (int) ($formData[$f] ?? 0) : (double) ($formData[$f] ?? 0);
+                    $oldVal = $f === 'bpjs_keluarga_tambahan' ? (int) ($oldSlip->{$f} ?? 0) : (double) ($oldSlip->{$f} ?? 0);
                     if ($oldVal != $newVal) {
                         $changedFields[$f] = [
+                            'label' => $label,
+                            'old' => $oldVal,
+                            'new' => $newVal,
                             'before' => $oldVal,
                             'after' => $newVal,
                         ];
                     }
                 }
 
-                app(PayrollAuditLogService::class)->logEdit($slip->id, $karyawanId, $periode, $changedFields, $userId);
+                if (!empty($changedFields)) {
+                    app(PayrollAuditLogService::class)->logEdit($slip->id, $karyawanId, $periode, $changedFields, $userId);
+                }
             }
 
             DB::commit();
