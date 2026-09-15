@@ -477,7 +477,7 @@ class StrukturOrganisasiSeeder extends Seeder
             [
                 'role' => 'Wadir-Medis-Keperawatan',
                 'jabatan_id' => $wadirMedisJabatan->id,
-                'email' => 'zkii0110011@gmail.com',
+                'email' => 'wadir_medis@rsba.com',
                 'nama' => 'dr. Wadir Medis Sp.OG',
                 'nip' => 'NIP-WADIR-001',
                 'perms' => $wadirMedisPermissions,
@@ -485,7 +485,7 @@ class StrukturOrganisasiSeeder extends Seeder
             [
                 'role' => 'Wadir-SDM-Umum',
                 'jabatan_id' => $wadirSdmJabatan->id,
-                'email' => 'don.remora0987@gmail.com',
+                'email' => 'wadir_sdm@rsba.com',
                 'nama' => 'Wadir SDM & Umum S.H., M.H.',
                 'nip' => 'NIP-WADIR-002',
                 'perms' => $wadirSdmPermissions,
@@ -494,7 +494,7 @@ class StrukturOrganisasiSeeder extends Seeder
             [
                 'role' => 'Wadir-Keuangan',
                 'jabatan_id' => $wadirKeuanganJabatan->id,
-                'email' => 'fasialmuhammad2610@gmail.com',
+                'email' => 'wadir_keuangan@rsba.com',
                 'nama' => 'Wadir Keuangan S.E., M.Si.',
                 'nip' => 'NIP-WADIR-003',
                 'perms' => $wadirKeuanganPermissions,

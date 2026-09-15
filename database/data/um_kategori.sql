@@ -1,8 +1,7 @@
 -- --------------------------------------------------------
--- Host:                         172.17.100.111
--- Server version:               10.11.11-MariaDB-ubu2204 - mariadb.org binary distribution
--- Server OS:                    debian-linux-gnu
--- HeidiSQL Version:             12.20.0.7320
+-- Host:                         localhost
+-- Server version:               MariaDB
+-- Server OS:                    Linux
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
